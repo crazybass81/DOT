@@ -1,0 +1,19 @@
+# Build configuration for code generation
+targets:
+  $default:
+    builders:
+      injectable_generator:injectable_builder:
+        generate_for:
+          - lib/core/di/injection_container.dart
+      json_serializable:
+        options:
+          explicit_to_json: true
+          include_if_null: false
+      freezed:
+        options:
+          # Disable copyWith method generation for better performance
+          # copyWith: false
+      riverpod_generator:
+        options:
+          # Enable scoped providers
+          scoped: true

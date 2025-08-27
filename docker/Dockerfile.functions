@@ -1,0 +1,33 @@
+# Firebase Functions Development Environment
+FROM node:18-alpine
+
+# Install Firebase CLI and other tools
+RUN npm install -g firebase-tools@latest
+
+# Install additional tools
+RUN apk add --no-cache \
+    git \
+    curl \
+    bash \
+    openjdk11-jre-headless
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files for dependency caching
+COPY mobile/dot_attendance/functions/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy function source code
+COPY mobile/dot_attendance/functions/ ./
+
+# Build TypeScript
+RUN npm run build
+
+# Expose Firebase emulator ports
+EXPOSE 5001 8080 9099 9199 4000
+
+# Start Firebase emulators
+CMD ["firebase", "emulators:start", "--only", "functions,firestore,auth,storage", "--host", "0.0.0.0"]

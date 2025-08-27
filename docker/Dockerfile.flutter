@@ -1,0 +1,54 @@
+# Flutter Build Environment Dockerfile
+FROM cirrusci/flutter:3.16.0
+
+# Set environment variables
+ENV FLUTTER_ROOT=/usr/local/flutter
+ENV PATH=$PATH:$FLUTTER_ROOT/bin
+ENV FLUTTER_WEB=true
+
+# Create app directory
+WORKDIR /app
+
+# Install additional dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    wget \
+    unzip \
+    lib32stdc++6 \
+    libglu1-mesa \
+    default-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Chrome for Flutter web testing
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable Flutter web
+RUN flutter config --enable-web
+RUN flutter doctor
+
+# Set up Flutter web cache
+RUN flutter precache --web
+
+# Copy pubspec files for dependency caching
+COPY mobile/dot_attendance/pubspec.yaml /app/pubspec.yaml
+COPY mobile/dot_attendance/pubspec.lock /app/pubspec.lock
+
+# Install dependencies
+RUN flutter pub get
+
+# Copy the rest of the application
+COPY mobile/dot_attendance/ /app/
+
+# Generate code
+RUN dart run build_runner build --delete-conflicting-outputs
+
+# Expose port for hot reload (development)
+EXPOSE 8080
+
+# Default command
+CMD ["flutter", "run", "-d", "web-server", "--web-hostname", "0.0.0.0", "--web-port", "8080"]

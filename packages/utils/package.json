@@ -1,0 +1,16 @@
+{
+  "name": "@dot/utils",
+  "version": "1.0.0",
+  "description": "DOT 유틸리티 함수",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "jest": "^30.0.5"
+  }
+}

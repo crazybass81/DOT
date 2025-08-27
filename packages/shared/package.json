@@ -1,0 +1,17 @@
+{
+  "name": "@dot/shared",
+  "version": "1.0.0",
+  "description": "DOT 공통 비즈니스 로직",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

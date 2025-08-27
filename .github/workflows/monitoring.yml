@@ -1,0 +1,421 @@
+name: Monitoring & Alerting
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/monitoring/**'
+      - '.github/workflows/monitoring.yml'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of monitoring test to run'
+        required: true
+        type: choice
+        options:
+          - health-check
+          - performance
+          - security
+          - all
+        default: health-check
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'health-check' || github.event.inputs.test_type == 'all' || github.event_name == 'schedule'
+    strategy:
+      matrix:
+        environment: [staging, production]
+        service: [api, app, functions]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Health Check - ${{ matrix.service }}
+        id: health
+        run: |
+          case "${{ matrix.environment }}" in
+            "staging")
+              case "${{ matrix.service }}" in
+                "api") URL="https://staging-api.dotattendance.com/health" ;;
+                "app") URL="https://staging-app.dotattendance.com" ;;
+                "functions") URL="${{ secrets.FIREBASE_FUNCTIONS_URL_STAGING }}/api/health" ;;
+              esac
+              ;;
+            "production")
+              case "${{ matrix.service }}" in
+                "api") URL="https://api.dotattendance.com/health" ;;
+                "app") URL="https://app.dotattendance.com" ;;
+                "functions") URL="${{ secrets.FIREBASE_FUNCTIONS_URL_PROD }}/api/health" ;;
+              esac
+              ;;
+          esac
+          
+          echo "Checking: $URL"
+          
+          # Perform health check
+          RESPONSE=$(curl -s -w "%{http_code}:%{time_total}" -o /dev/null "$URL" --max-time 30)
+          HTTP_CODE=$(echo $RESPONSE | cut -d: -f1)
+          RESPONSE_TIME=$(echo $RESPONSE | cut -d: -f2)
+          
+          echo "http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
+          echo "response_time=$RESPONSE_TIME" >> $GITHUB_OUTPUT
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          
+          if [[ $HTTP_CODE -ge 200 && $HTTP_CODE -lt 400 ]]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ ${{ matrix.service }} (${{ matrix.environment }}) is healthy - ${HTTP_CODE} in ${RESPONSE_TIME}s"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ ${{ matrix.service }} (${{ matrix.environment }}) is unhealthy - ${HTTP_CODE}"
+            exit 1
+          fi
+      
+      - name: Alert on Failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Service Down: ${{ matrix.service }} (${{ matrix.environment }})`,
+              body: `## 🚨 Service Health Alert
+              
+              **Service**: ${{ matrix.service }}
+              **Environment**: ${{ matrix.environment }}
+              **Status**: ❌ UNHEALTHY
+              **URL**: ${{ steps.health.outputs.url }}
+              **HTTP Code**: ${{ steps.health.outputs.http_code }}
+              **Time**: ${new Date().toISOString()}
+              
+              ### 🔍 Immediate Actions Required:
+              1. Check service logs
+              2. Verify infrastructure status
+              3. Review recent deployments
+              4. Contact on-call engineer if necessary
+              
+              ### 🔗 Quick Links:
+              - [Service Logs](https://console.cloud.google.com/logs)
+              - [Infrastructure Status](https://console.aws.amazon.com)
+              - [Firebase Console](https://console.firebase.google.com)
+              - [Monitoring Dashboard](http://localhost:3000/monitoring)`,
+              labels: ['critical', 'service-down', '${{ matrix.environment }}', '${{ matrix.service }}']
+            });
+
+  performance-test:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'performance' || github.event.inputs.test_type == 'all' || github.event_name == 'schedule'
+    strategy:
+      matrix:
+        environment: [production]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Artillery
+        run: npm install -g artillery@latest
+      
+      - name: Create Performance Test Script
+        run: |
+          cat > performance-test.yml << EOF
+          config:
+            target: 'https://api.dotattendance.com'
+            phases:
+              - duration: 60
+                arrivalRate: 5
+                name: "Warm up"
+              - duration: 120
+                arrivalRate: 20
+                name: "Load test"
+              - duration: 60
+                arrivalRate: 5
+                name: "Cool down"
+            defaults:
+              headers:
+                Authorization: 'Bearer ${{ secrets.TEST_API_TOKEN }}'
+          
+          scenarios:
+            - name: "Health Check"
+              weight: 20
+              flow:
+                - get:
+                    url: "/health"
+            
+            - name: "User Authentication"
+              weight: 30
+              flow:
+                - post:
+                    url: "/auth/login"
+                    json:
+                      email: "test@example.com"
+                      password: "testpass"
+                - get:
+                    url: "/user/profile"
+            
+            - name: "Attendance Operations"
+              weight: 40
+              flow:
+                - get:
+                    url: "/attendance/today"
+                - post:
+                    url: "/attendance/checkin"
+                    json:
+                      location: "office"
+                      timestamp: "{{ \$timestamp }}"
+            
+            - name: "Reports"
+              weight: 10
+              flow:
+                - get:
+                    url: "/reports/summary"
+                    qs:
+                      period: "week"
+          EOF
+      
+      - name: Run Performance Test
+        run: |
+          artillery run performance-test.yml \
+            --output performance-results.json \
+            --overrides '{
+              "config": {
+                "target": "https://${{ matrix.environment == "staging" && "staging-" || "" }}api.dotattendance.com"
+              }
+            }'
+      
+      - name: Generate Performance Report
+        run: |
+          artillery report performance-results.json \
+            --output performance-report.html
+      
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results-${{ matrix.environment }}
+          path: |
+            performance-results.json
+            performance-report.html
+      
+      - name: Analyze Results
+        run: |
+          # Extract key metrics
+          RESPONSE_TIME_P95=$(jq -r '.aggregate.latency.p95' performance-results.json)
+          ERROR_RATE=$(jq -r '.aggregate.counters["http.codes.400"] // 0 + .aggregate.counters["http.codes.500"] // 0' performance-results.json)
+          TOTAL_REQUESTS=$(jq -r '.aggregate.counters["http.requests"]' performance-results.json)
+          
+          echo "## 📊 Performance Test Results - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **P95 Response Time**: ${RESPONSE_TIME_P95}ms" >> $GITHUB_STEP_SUMMARY
+          echo "- **Error Rate**: ${ERROR_RATE}/${TOTAL_REQUESTS}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Requests**: ${TOTAL_REQUESTS}" >> $GITHUB_STEP_SUMMARY
+          
+          # Set thresholds
+          if (( $(echo "$RESPONSE_TIME_P95 > 2000" | bc -l) )); then
+            echo "⚠️ **WARNING**: P95 response time exceeds 2000ms" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          if (( ERROR_RATE > 5 )); then
+            echo "❌ **ERROR**: Error rate exceeds 5 errors" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'security' || github.event.inputs.test_type == 'all' || github.event_name == 'schedule'
+    strategy:
+      matrix:
+        environment: [production]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: OWASP ZAP Security Scan
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: 'https://${{ matrix.environment == "staging" && "staging-" || "" }}app.dotattendance.com'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -d -T 60 -m 10'
+      
+      - name: SSL/TLS Security Check
+        run: |
+          # Check SSL certificate and configuration
+          DOMAIN="${{ matrix.environment == 'staging' && 'staging-' || '' }}api.dotattendance.com"
+          
+          echo "🔒 Checking SSL/TLS configuration for $DOMAIN"
+          
+          # Check SSL certificate validity
+          SSL_INFO=$(openssl s_client -connect $DOMAIN:443 -servername $DOMAIN < /dev/null 2>/dev/null | openssl x509 -noout -dates -subject)
+          
+          echo "## 🔒 SSL/TLS Security Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$SSL_INFO" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          # Check for security headers
+          HEADERS=$(curl -s -I "https://$DOMAIN")
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Security Headers Check" >> $GITHUB_STEP_SUMMARY
+          
+          if echo "$HEADERS" | grep -qi "strict-transport-security"; then
+            echo "✅ HSTS header present" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ HSTS header missing" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if echo "$HEADERS" | grep -qi "content-security-policy"; then
+            echo "✅ CSP header present" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ CSP header missing" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if echo "$HEADERS" | grep -qi "x-frame-options"; then
+            echo "✅ X-Frame-Options header present" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ X-Frame-Options header missing" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  database-monitoring:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_type == 'all'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      
+      - name: Check Firestore Performance
+        run: |
+          # Monitor Firestore metrics
+          gcloud logging read "
+            resource.type=gce_instance AND
+            jsonPayload.message:firestore AND
+            timestamp>=\"$(date -d '15 minutes ago' --iso-8601)\"
+          " \
+          --format="json" \
+          --project=${{ secrets.GCP_PROJECT_ID }} > firestore-logs.json
+          
+          # Analyze logs for errors or performance issues
+          ERROR_COUNT=$(jq '[.[] | select(.severity == "ERROR")] | length' firestore-logs.json)
+          WARNING_COUNT=$(jq '[.[] | select(.severity == "WARNING")] | length' firestore-logs.json)
+          
+          echo "## 📊 Database Monitoring Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Errors (15min)**: $ERROR_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Warnings (15min)**: $WARNING_COUNT" >> $GITHUB_STEP_SUMMARY
+          
+          if [ $ERROR_COUNT -gt 10 ]; then
+            echo "❌ **HIGH ERROR RATE**: $ERROR_COUNT errors in the last 15 minutes" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+      
+      - name: Firebase Functions Monitoring
+        run: |
+          # Check Firebase Functions performance and errors
+          gcloud logging read "
+            resource.type=cloud_function AND
+            timestamp>=\"$(date -d '15 minutes ago' --iso-8601)\"
+          " \
+          --format="json" \
+          --project=${{ secrets.GCP_PROJECT_ID }} > functions-logs.json
+          
+          # Count errors and cold starts
+          FUNCTION_ERRORS=$(jq '[.[] | select(.severity == "ERROR")] | length' functions-logs.json)
+          COLD_STARTS=$(jq '[.[] | select(.jsonPayload.message | contains("Function execution started"))] | length' functions-logs.json)
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Firebase Functions Status" >> $GITHUB_STEP_SUMMARY
+          echo "- **Function Errors (15min)**: $FUNCTION_ERRORS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cold Starts (15min)**: $COLD_STARTS" >> $GITHUB_STEP_SUMMARY
+
+  create-monitoring-dashboard:
+    runs-on: ubuntu-latest
+    needs: [health-check, performance-test, security-scan, database-monitoring]
+    if: always()
+    steps:
+      - name: Generate Monitoring Summary
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const healthResults = '${{ needs.health-check.result }}';
+            const performanceResults = '${{ needs.performance-test.result }}';
+            const securityResults = '${{ needs.security-scan.result }}';
+            const databaseResults = '${{ needs.database-monitoring.result }}';
+            
+            const getStatusEmoji = (status) => {
+              switch(status) {
+                case 'success': return '✅';
+                case 'failure': return '❌';
+                case 'skipped': return '⏭️';
+                default: return '⚠️';
+              }
+            };
+            
+            const summary = `## 📊 System Monitoring Report
+            
+            **Timestamp**: ${new Date().toISOString()}
+            
+            ### 🔍 Test Results
+            | Test Type | Status | Result |
+            |-----------|---------|--------|
+            | Health Checks | ${getStatusEmoji(healthResults)} | ${healthResults} |
+            | Performance Tests | ${getStatusEmoji(performanceResults)} | ${performanceResults} |
+            | Security Scans | ${getStatusEmoji(securityResults)} | ${securityResults} |
+            | Database Monitoring | ${getStatusEmoji(databaseResults)} | ${databaseResults} |
+            
+            ### 🎯 Overall System Status
+            ${healthResults === 'success' && performanceResults !== 'failure' && securityResults !== 'failure' ? '🟢 **HEALTHY**' : '🔴 **ISSUES DETECTED**'}
+            
+            ### 📈 Monitoring Links
+            - [Real-time Dashboard](http://localhost:3000/monitoring)
+            - [Performance Metrics](https://console.cloud.google.com/monitoring)
+            - [Error Tracking](https://console.firebase.google.com/project/dot-attendance/crashlytics)
+            - [Security Reports](https://console.cloud.google.com/security)`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 System Monitoring Report - ${new Date().toISOString().split('T')[0]}`,
+              body: summary,
+              labels: ['monitoring', 'report', 'automated']
+            });
+            
+            // Update or create monitoring status file
+            try {
+              const { data: file } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'MONITORING_STATUS.md'
+              });
+              
+              await github.rest.repos.createOrUpdateFileContents({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'MONITORING_STATUS.md',
+                message: 'Update monitoring status',
+                content: Buffer.from(summary).toString('base64'),
+                sha: file.sha
+              });
+            } catch (error) {
+              // File doesn't exist, create it
+              await github.rest.repos.createOrUpdateFileContents({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'MONITORING_STATUS.md',
+                message: 'Create monitoring status file',
+                content: Buffer.from(summary).toString('base64')
+              });
+            }

@@ -1,0 +1,31 @@
+# Flutter Code Analysis Environment
+FROM dart:3.2.0
+
+# Install Flutter
+ENV FLUTTER_VERSION=3.16.0
+RUN git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VERSION} /flutter
+ENV PATH="/flutter/bin:${PATH}"
+
+# Install additional analysis tools
+RUN dart pub global activate dart_code_metrics
+RUN dart pub global activate dependency_validator
+RUN dart pub global activate pana
+
+# Create app directory
+WORKDIR /app
+
+# Copy pubspec files
+COPY mobile/dot_attendance/pubspec.yaml /app/pubspec.yaml
+COPY mobile/dot_attendance/pubspec.lock /app/pubspec.lock
+
+# Install dependencies
+RUN flutter pub get
+
+# Copy source code
+COPY mobile/dot_attendance/ /app/
+
+# Create analysis results directory
+RUN mkdir -p analysis-results
+
+# Run analysis by default
+CMD ["sh", "-c", "flutter analyze --write=analysis-results/analysis.txt && dart format --set-exit-if-changed . && dart pub global run dart_code_metrics:metrics analyze lib --reporter=json > analysis-results/metrics.json"]

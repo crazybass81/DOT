@@ -1,0 +1,134 @@
+groups:
+  - name: dot_attendance_alerts
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.instance }}"
+
+      # Service down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.job }} service is down for {{ $labels.instance }}"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% for {{ $labels.instance }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% for {{ $labels.instance }}"
+
+      # Disk space low
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 90
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space low"
+          description: "Disk usage is {{ $value }}% for {{ $labels.instance }} on {{ $labels.mountpoint }}"
+
+      # Firebase Functions cold starts
+      - alert: HighColdStarts
+        expr: rate(firebase_function_cold_starts_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Firebase Function cold starts"
+          description: "Cold start rate is {{ $value }} per second for {{ $labels.function_name }}"
+
+      # Database connection issues
+      - alert: DatabaseConnectionIssues
+        expr: rate(firebase_database_errors_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection issues"
+          description: "Database error rate is {{ $value }} per second"
+
+      # Authentication failures
+      - alert: HighAuthFailureRate
+        expr: rate(firebase_auth_failures_total[5m]) > 5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Auth failure rate is {{ $value }} per second"
+
+      # SSL certificate expiration
+      - alert: SSLCertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+
+  - name: business_metrics
+    rules:
+      # Daily active users drop
+      - alert: DAUDrop
+        expr: (daily_active_users - daily_active_users offset 1d) / daily_active_users offset 1d * 100 < -20
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Significant drop in daily active users"
+          description: "DAU decreased by {{ $value }}% compared to yesterday"
+
+      # Check-in success rate
+      - alert: LowCheckinSuccessRate
+        expr: rate(attendance_checkin_success_total[1h]) / rate(attendance_checkin_total[1h]) < 0.95
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low check-in success rate"
+          description: "Check-in success rate is {{ $value | humanizePercentage }}"
+
+      # Report generation failures
+      - alert: ReportGenerationFailures
+        expr: rate(report_generation_failures_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Report generation failures"
+          description: "Report generation failure rate is {{ $value }} per second"

@@ -1,0 +1,20 @@
+{
+  "FunctionName": "SmartPlaceScraper",
+  "Runtime": "python3.11",
+  "Handler": "lambda_function.lambda_handler",
+  "Timeout": 60,
+  "MemorySize": 1024,
+  "Environment": {
+    "Variables": {
+      "PLAYWRIGHT_BROWSERS_PATH": "/opt/python",
+      "PYTHONPATH": "/opt/python"
+    }
+  },
+  "Layers": [
+    "arn:aws:lambda:ap-northeast-2:YOUR_ACCOUNT:layer:playwright-chromium:1"
+  ],
+  "Description": "네이버 스마트플레이스 스크래핑 Lambda 함수",
+  "EphemeralStorage": {
+    "Size": 2048
+  }
+}

@@ -1,0 +1,62 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Firebase Functions (via custom metrics endpoint)
+  - job_name: 'firebase-functions'
+    static_configs:
+      - targets: ['functions-dev:5001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Nginx metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['api-gateway:80']
+    metrics_path: '/nginx_status'
+    scrape_interval: 30s
+
+  # Custom application metrics
+  - job_name: 'dot-attendance-app'
+    static_configs:
+      - targets: ['flutter-builder:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+
+  # Firebase Performance Monitoring (external)
+  - job_name: 'firebase-performance'
+    static_configs:
+      - targets: ['firebase-performance-monitoring.googleapis.com:443']
+    scheme: https
+    metrics_path: '/v1/projects/YOUR_PROJECT_ID/performanceMetrics'
+    scrape_interval: 300s  # 5 minutes
+    bearer_token_file: /etc/prometheus/firebase-token
+
+  # Health check endpoints
+  - job_name: 'health-checks'
+    static_configs:
+      - targets: 
+        - 'api-gateway:80'
+        - 'functions-dev:5001'
+    metrics_path: '/health'
+    scrape_interval: 30s

@@ -1,0 +1,44 @@
+{
+  "name": "@dot/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DOT 비즈니스 플랫폼 - 외식업 디지털 전환 솔루션",
+  "workspaces": [
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "dev:attendance": "npm run dev -w @dot/attendance",
+    "dev:marketing": "npm run dev -w @dot/marketing",
+    "build": "npm run build --workspaces",
+    "build:attendance": "npm run build -w @dot/attendance",
+    "build:marketing": "npm run build -w @dot/marketing",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "install:all": "npm install && npm install --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dot-team/dot-platform.git"
+  },
+  "keywords": [
+    "restaurant",
+    "attendance",
+    "marketing",
+    "automation",
+    "saas",
+    "microservices"
+  ],
+  "author": "DOT Team",
+  "license": "MIT"
+}
