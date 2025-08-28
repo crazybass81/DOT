@@ -273,20 +273,3 @@ final attendanceRatesProvider = FutureProvider<dynamic>((ref) async {
   };
 });
 
-// Total employees provider
-final totalEmployeesProvider = FutureProvider<dynamic>((ref) async {
-  await Future.delayed(const Duration(milliseconds: 300));
-  return {
-    'total': 456,
-    'active': 425,
-    'onLeave': 18,
-    'new': 13,
-    'departments': {
-      '개발팀': 150,
-      '영업팀': 120,
-      '마케팅팀': 86,
-      '인사팀': 45,
-      '기타': 55,
-    }
-  };
-});
