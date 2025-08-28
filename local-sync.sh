@@ -31,12 +31,12 @@ while true; do
         git commit -m "[Auto-sync] $(date '+%Y-%m-%d %H:%M:%S') - $(git status -s | wc -l | tr -d ' ') files changed" --quiet
         
         # Push
-        if git push origin auto-sync --quiet 2>/dev/null; then
+        if git push origin master --quiet 2>/dev/null; then
             echo -e "${GREEN}✓ 로컬 → GitHub 푸시 완료${NC}"
         else
             echo -e "${YELLOW}⚠ Push 충돌 - Pull 먼저 시도${NC}"
-            git pull --rebase origin auto-sync --quiet
-            git push origin auto-sync --quiet 2>/dev/null && echo -e "${GREEN}✓ 충돌 해결 후 푸시 완료${NC}"
+            git pull --rebase origin master --quiet
+            git push origin master --quiet 2>/dev/null && echo -e "${GREEN}✓ 충돌 해결 후 푸시 완료${NC}"
         fi
     fi
     
