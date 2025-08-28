@@ -19,7 +19,7 @@ echo -e "${BLUE}간격: ${NC}${SYNC_INTERVAL}초"
 echo -e "${YELLOW}중지: Ctrl+C${NC}\n"
 
 # 초기 동기화
-git pull origin auto-sync --quiet
+git pull origin master --quiet
 
 while true; do
     # 1. 로컬 변경사항 자동 Push
