@@ -12,13 +12,13 @@ class QrService {
   MobileScannerController? _qrController;
 
   /// Initialize QR scanner controller
-  Future<void> initializeScanner(QRViewController controller) async {
+  Future<void> initializeScanner() async {
     try {
       await _checkCameraPermission();
-      _qrController = controller;
+      _qrController = MobileScannerController();
       
       // Start scanning
-      await _qrController?.resumeCamera();
+      await _qrController?.start();
     } catch (e) {
       debugPrint('Failed to initialize QR scanner: $e');
       if (e is CameraPermissionException) {
@@ -29,12 +29,12 @@ class QrService {
   }
 
   /// Scan QR code
-  Stream<Barcode> scanQrCode() {
+  Stream<BarcodeCapture> scanQrCode() {
     if (_qrController == null) {
       throw const QrCodeException(message: 'QR scanner is not initialized');
     }
 
-    return _qrController!.scannedDataStream;
+    return _qrController!.barcodes;
   }
 
   /// Validate QR code data
@@ -202,7 +202,7 @@ class QrService {
         throw const QrCodeException(message: 'QR controller is not initialized');
       }
 
-      await _qrController!.resumeCamera();
+      await _qrController!.start();
     } catch (e) {
       debugPrint('Failed to start scanning: $e');
       throw QrCodeException(message: 'Failed to start scanning: $e');
@@ -213,7 +213,7 @@ class QrService {
   Future<void> stopScanning() async {
     try {
       if (_qrController == null) return;
-      await _qrController!.pauseCamera();
+      await _qrController!.stop();
     } catch (e) {
       debugPrint('Failed to stop scanning: $e');
     }
@@ -223,41 +223,41 @@ class QrService {
   Future<void> toggleFlash() async {
     try {
       if (_qrController == null) return;
-      await _qrController!.toggleFlash();
+      await _qrController!.toggleTorch();
     } catch (e) {
       debugPrint('Failed to toggle flash: $e');
     }
   }
 
   /// Get flash status
-  Future<bool?> getFlashStatus() async {
+  Future<bool> getFlashStatus() async {
     try {
       if (_qrController == null) return false;
-      return await _qrController!.getFlashStatus();
+      return _qrController!.torchEnabled.value;
     } catch (e) {
       debugPrint('Failed to get flash status: $e');
       return false;
     }
   }
 
-  /// Flip camera
-  Future<void> flipCamera() async {
+  /// Switch camera
+  Future<void> switchCamera() async {
     try {
       if (_qrController == null) return;
-      await _qrController!.flipCamera();
+      await _qrController!.switchCamera();
     } catch (e) {
-      debugPrint('Failed to flip camera: $e');
+      debugPrint('Failed to switch camera: $e');
     }
   }
 
-  /// Get camera info
-  Future<CameraFacing> getCameraInfo() async {
+  /// Get camera facing
+  CameraFacing getCameraFacing() {
     try {
-      if (_qrController == null) return CameraFacing.unknown;
-      return await _qrController!.getCameraInfo();
+      if (_qrController == null) return CameraFacing.back;
+      return _qrController!.facing.value;
     } catch (e) {
-      debugPrint('Failed to get camera info: $e');
-      return CameraFacing.unknown;
+      debugPrint('Failed to get camera facing: $e');
+      return CameraFacing.back;
     }
   }
 
@@ -290,7 +290,7 @@ class QrService {
   }
 
   /// Get QR controller
-  QRViewController? get qrController => _qrController;
+  MobileScannerController? get qrController => _qrController;
 
   /// Check if scanner is initialized
   bool get isInitialized => _qrController != null;
