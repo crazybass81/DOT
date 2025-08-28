@@ -7,8 +7,46 @@ import '../errors/exceptions.dart';
 
 class LocalStorageService {
   final SharedPreferences _prefs;
+  static LocalStorageService? _instance;
 
-  LocalStorageService(this._prefs);
+  LocalStorageService._(this._prefs);
+
+  static Future<LocalStorageService> initialize() async {
+    if (_instance == null) {
+      final prefs = await SharedPreferences.getInstance();
+      _instance = LocalStorageService._(prefs);
+    }
+    return _instance!;
+  }
+
+  static LocalStorageService get instance {
+    if (_instance == null) {
+      throw const StorageException(
+        message: 'LocalStorageService not initialized. Call initialize() first.',
+      );
+    }
+    return _instance!;
+  }
+
+  /// Generic setString method
+  Future<void> setString(String key, String value) async {
+    try {
+      await _prefs.setString(key, value);
+    } catch (e) {
+      debugPrint('Failed to set string for key $key: $e');
+      throw StorageException(message: 'Failed to save data for key: $key');
+    }
+  }
+
+  /// Generic getString method
+  String? getString(String key) {
+    try {
+      return _prefs.getString(key);
+    } catch (e) {
+      debugPrint('Failed to get string for key $key: $e');
+      return null;
+    }
+  }
 
   // Theme settings
   Future<void> setThemeMode(String themeMode) async {
