@@ -452,10 +452,9 @@ class AttendanceService {
           ? 'Checked In Successfully'
           : 'Checked Out Successfully';
       
-      await _notificationService.showLocalNotification(
+      await NotificationService.showNotification(
         title: title,
         body: 'Your attendance has been recorded.',
-        channel: AppConstants.attendanceNotificationChannel,
       );
     } catch (e) {
       debugPrint('Failed to show success feedback: $e');

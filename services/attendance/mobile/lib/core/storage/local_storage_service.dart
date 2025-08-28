@@ -10,6 +10,26 @@ class LocalStorageService {
 
   LocalStorageService(this._prefs);
 
+  /// Generic setString method
+  Future<void> setString(String key, String value) async {
+    try {
+      await _prefs.setString(key, value);
+    } catch (e) {
+      debugPrint('Failed to set string for key $key: $e');
+      throw StorageException(message: 'Failed to save data for key: $key');
+    }
+  }
+
+  /// Generic getString method
+  String? getString(String key) {
+    try {
+      return _prefs.getString(key);
+    } catch (e) {
+      debugPrint('Failed to get string for key $key: $e');
+      return null;
+    }
+  }
+
   // Theme settings
   Future<void> setThemeMode(String themeMode) async {
     try {
