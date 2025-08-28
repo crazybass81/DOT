@@ -10,8 +10,17 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
-echo -e "${GREEN}  SSH 서버 자동 동기화 설정${NC}"
+echo -e "${GREEN}  자동 동기화 설정 (로컬/SSH 자동 감지)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
+
+# 환경 감지
+if [[ "$HOSTNAME" == *"ec2"* ]] || [[ "$USER" == "ec2-user" ]] || [[ -f /etc/ec2-release ]]; then
+    ENV_TYPE="SSH"
+    echo -e "${BLUE}환경: SSH 서버${NC}"
+else
+    ENV_TYPE="LOCAL"
+    echo -e "${BLUE}환경: 로컬 (Mac/Linux)${NC}"
+fi
 
 # 1. tmux 설치 확인
 echo -e "\n${BLUE}1. tmux 설치 확인...${NC}"
