@@ -13,13 +13,14 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance; // Disabled for now
 
   /// Initialize notification service
   Future<void> initialize() async {
     try {
       await _initializeLocalNotifications();
-      await _initializeFirebaseMessaging();
+      // await _initializeFirebaseMessaging(); // Disabled for now
+      debugPrint('Notification service initialized (without Firebase)');
     } catch (e) {
       debugPrint('Notification service initialization failed: $e');
       throw NotificationException(message: 'Failed to initialize notifications: $e');
@@ -92,64 +93,22 @@ class NotificationService {
     }
   }
 
-  /// Initialize Firebase messaging
+  /// Initialize Firebase messaging (dummy implementation)
   Future<void> _initializeFirebaseMessaging() async {
-    // Request permissions
-    final settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.denied) {
-      throw const NotificationPermissionException(
-        message: 'Push notification permissions denied',
-      );
-    }
-
-    // Get FCM token
-    final token = await _firebaseMessaging.getToken();
-    debugPrint('FCM Token: $token');
-
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // Handle background message clicks
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageClick);
-
-    // Handle notification when app is opened from terminated state
-    final initialMessage = await _firebaseMessaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleBackgroundMessageClick(initialMessage);
-    }
-
-    // Handle background messages (when app is in background)
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    debugPrint('Firebase messaging initialization skipped (dummy implementation)');
+    // All Firebase messaging functionality is disabled for now
   }
 
-  /// Handle foreground messages
-  void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('Foreground message received: ${message.notification?.title}');
-    
-    if (message.notification != null) {
-      showNotification(
-        id: message.hashCode,
-        title: message.notification!.title ?? 'DOT Attendance',
-        body: message.notification!.body ?? '',
-        payload: message.data.toString(),
-      );
-    }
+  /// Handle foreground messages (dummy implementation)
+  void _handleForegroundMessage(dynamic message) {
+    debugPrint('Foreground message received (dummy): $message');
+    // Firebase messaging disabled
   }
 
-  /// Handle background message clicks
-  void _handleBackgroundMessageClick(RemoteMessage message) {
-    debugPrint('Background message clicked: ${message.notification?.title}');
-    // Navigate to specific screen based on message data
-    _navigateBasedOnPayload(message.data);
+  /// Handle background message clicks (dummy implementation)
+  void _handleBackgroundMessageClick(dynamic message) {
+    debugPrint('Background message clicked (dummy): $message');
+    // Firebase messaging disabled
   }
 
   /// Handle notification taps
