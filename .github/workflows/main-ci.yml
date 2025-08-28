@@ -2,9 +2,9 @@ name: Main CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, auto-sync]
+    branches: [main, develop]
   pull_request:
-    branches: [main, develop, auto-sync]
+    branches: [main, develop]
 
 jobs:
   # 변경 감지
