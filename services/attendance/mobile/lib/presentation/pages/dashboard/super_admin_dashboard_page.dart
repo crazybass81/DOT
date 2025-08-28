@@ -297,10 +297,10 @@ class _SuperAdminDashboardPageState extends ConsumerState<SuperAdminDashboardPag
             final healthData = await ref.read(systemHealthProvider.future);
 
             await ExportService.exportSystemDashboard(
-              systemStats: selectedData['systemStats'] ? systemStats : {},
-              franchiseData: selectedData['franchiseData'] ? franchiseData : [],
-              revenueData: selectedData['revenueData'] ? revenueData : {},
-              healthData: selectedData['healthData'] ? healthData : {},
+              systemStats: (selectedData['systemStats'] == true) ? systemStats : {},
+              franchiseData: (selectedData['franchiseData'] == true) ? franchiseData : [],
+              revenueData: (selectedData['revenueData'] == true) ? revenueData : {},
+              healthData: (selectedData['healthData'] == true) ? healthData : {},
               context: context,
               format: format,
             );
