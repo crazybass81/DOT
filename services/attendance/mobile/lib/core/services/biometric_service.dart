@@ -45,7 +45,7 @@ class BiometricService {
 
       // Perform authentication
       final isAuthenticated = await _localAuth.authenticate(
-        localizedFallbackTitle: 'Use PIN instead',
+        localizedReason: reason,
         authMessages: const [
           AndroidAuthMessages(
             signInTitle: 'DOT Attendance',
