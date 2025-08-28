@@ -225,10 +225,9 @@ class AttendanceService {
         await _queueOfflineAttendance(queueEntry);
         
         // Show notification
-        await _notificationService.showLocalNotification(
+        await NotificationService.showNotification(
           title: 'Attendance Queued',
           body: 'Your attendance will be synced when connection is restored.',
-          channel: AppConstants.attendanceNotificationChannel,
         );
       } else {
         // Success feedback
@@ -453,10 +452,9 @@ class AttendanceService {
           ? 'Checked In Successfully'
           : 'Checked Out Successfully';
       
-      await _notificationService.showLocalNotification(
+      await NotificationService.showNotification(
         title: title,
         body: 'Your attendance has been recorded.',
-        channel: AppConstants.attendanceNotificationChannel,
       );
     } catch (e) {
       debugPrint('Failed to show success feedback: $e');
