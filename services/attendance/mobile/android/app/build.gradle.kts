@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.dot.attendance"
         // Minimum SDK for modern features (location, biometrics, camera)
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
