@@ -40,26 +40,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      // Try to refresh token to check if user is still authenticated
-      final result = await _refreshTokenUseCase.call();
-      
-      result.fold(
-        (failure) {
-          // Refresh failed, user needs to login again
-          state = state.copyWith(
-            isLoading: false,
-            isAuthenticated: false,
-            user: null,
-          );
-        },
-        (user) {
-          // Successfully refreshed, user is authenticated
-          state = state.copyWith(
-            isLoading: false,
-            isAuthenticated: true,
-            user: user,
-          );
-        },
+      // For now, just check if we have stored credentials
+      // TODO: Implement proper refresh token check
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        user: null,
       );
     } catch (e) {
       state = state.copyWith(
@@ -82,7 +68,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final result = await _loginUseCase.call(LoginParams(
         email: email,
         password: password,
-        rememberMe: rememberMe,
       ));
 
       return result.fold(
@@ -119,10 +104,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _verifyBiometricUseCase.call(BiometricParams(
-        reason: reason,
-        biometricOnly: true,
-      ));
+      final result = await _verifyBiometricUseCase.call();
 
       return result.fold(
         (failure) {
@@ -132,14 +114,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
           );
           return false;
         },
-        (user) {
-          state = state.copyWith(
-            isLoading: false,
-            isAuthenticated: true,
-            user: user,
-            error: null,
-          );
-          return true;
+        (isVerified) {
+          if (isVerified && state.user != null) {
+            state = state.copyWith(
+              isLoading: false,
+              isAuthenticated: true,
+              error: null,
+            );
+            return true;
+          } else {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'Biometric verification failed',
+            );
+            return false;
+          }
         },
       );
     } catch (e) {
