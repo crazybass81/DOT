@@ -4,7 +4,7 @@
 # 코드 + Claude 컨텍스트 + Serena 메모리 모두 자동 동기화
 # Push + Pull 모두 자동화
 
-SYNC_INTERVAL=5
+SYNC_INTERVAL=30
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
