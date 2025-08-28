@@ -329,8 +329,8 @@ final realTimeAttendanceProvider = FutureProvider<List<Attendance>>((ref) async 
   return List.generate(10, (index) => Attendance(
     id: 'att_$index',
     userId: 'user_$index',
-    checkInTime: DateTime.now().subtract(Duration(hours: index)),
-    isCheckedIn: index % 2 == 0,
+    date: DateTime.now().subtract(Duration(days: index % 7)),
+    checkInTime: index % 2 == 0 ? DateTime.now().subtract(Duration(hours: index)) : null,
   ));
 });
 
