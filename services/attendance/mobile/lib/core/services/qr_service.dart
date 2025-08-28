@@ -9,7 +9,7 @@ import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 
 class QrService {
-  QRViewController? _qrController;
+  MobileScannerController? _qrController;
 
   /// Initialize QR scanner controller
   Future<void> initializeScanner(QRViewController controller) async {
