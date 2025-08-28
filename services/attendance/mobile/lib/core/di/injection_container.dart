@@ -42,12 +42,15 @@ import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../domain/usecases/user/upload_avatar_usecase.dart';
 
-import 'injection_container.config.dart';
+// import 'injection_container.config.dart';
 
 final getIt = GetIt.instance;
 
-@InjectableInit()
-Future<void> configureDependencies() async => getIt.init();
+// @InjectableInit()
+Future<void> configureDependencies() async {
+  // Manual registration of dependencies
+  // This replaces getIt.init() until build_runner issues are resolved
+}
 
 @module
 abstract class RegisterModule {
