@@ -16,7 +16,7 @@ echo -e "${GREEN}═════════════════════
 echo -e "${YELLOW}중지: Ctrl+C${NC}\n"
 
 # 초기 pull
-git pull origin master --quiet 2>/dev/null
+git pull origin main --quiet 2>/dev/null
 
 # 동기화 함수
 sync_changes() {
@@ -31,7 +31,7 @@ sync_changes() {
         (
             GIT_OPTIONAL_LOCKS=0 git add -A 2>/dev/null
             GIT_OPTIONAL_LOCKS=0 git commit -m "[Auto-sync] $(date '+%Y-%m-%d %H:%M:%S')" --quiet 2>/dev/null
-            GIT_OPTIONAL_LOCKS=0 git push origin master --quiet 2>/dev/null
+            GIT_OPTIONAL_LOCKS=0 git push origin main --quiet 2>/dev/null
             echo -e "${GREEN}✓ 동기화 완료${NC}"
         ) &
     fi
@@ -79,10 +79,10 @@ else
             # 원격 체크
             GIT_OPTIONAL_LOCKS=0 git fetch origin --quiet 2>/dev/null
             LOCAL=$(git rev-parse HEAD 2>/dev/null)
-            REMOTE=$(git rev-parse origin/master 2>/dev/null)
+            REMOTE=$(git rev-parse origin/main 2>/dev/null)
             
             if [ "$LOCAL" != "$REMOTE" ]; then
-                GIT_OPTIONAL_LOCKS=0 git pull origin master --quiet 2>/dev/null &
+                GIT_OPTIONAL_LOCKS=0 git pull origin main --quiet 2>/dev/null &
             fi
         ) &
     done
