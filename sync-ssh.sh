@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Git Auto Sync Script for SSH Development
-# Automatically commits and pushes changes at regular intervals
+# SSH 서버 자동 동기화 스크립트
+# 📍 실행 위치: SSH 서버 (EC2)
+# 자동으로 변경사항을 커밋하고 푸시
 
 # Configuration
 PROJECT_DIR="/home/ec2-user/DOT"
