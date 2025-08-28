@@ -5,7 +5,7 @@ on:
     # Run every 15 minutes
     - cron: '*/15 * * * *'
   push:
-    branches: [main]
+    branches: [main, auto-sync]
     paths:
       - 'infrastructure/monitoring/**'
       - '.github/workflows/monitoring.yml'

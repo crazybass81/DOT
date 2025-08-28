@@ -2,7 +2,7 @@ name: CD - iOS
 
 on:
   push:
-    branches: [main]
+    branches: [main, auto-sync]
     tags:
       - 'v*'
   workflow_dispatch:
