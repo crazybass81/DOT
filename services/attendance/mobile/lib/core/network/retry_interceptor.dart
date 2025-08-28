@@ -141,7 +141,7 @@ class RetryInterceptor extends Interceptor {
       );
     }
 
-    // Log to Firebase Analytics
+    // Log to Firebase Analytics (dummy implementation)
     await FirebaseConfig.logEvent(
       name: 'network_retry_attempt',
       parameters: {

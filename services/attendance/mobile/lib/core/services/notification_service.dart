@@ -228,17 +228,18 @@ class NotificationService {
         iOS: iosDetails,
       );
 
-      await _localNotifications.zonedSchedule(
-        id,
-        title,
-        body,
-        tz.TZDateTime.from(scheduledDate, tz.local),
-        notificationDetails,
-        payload: payload,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-      );
+      // Timezone scheduling temporarily disabled - using simple delay instead
+      final delayDuration = scheduledDate.difference(DateTime.now());
+      if (delayDuration.isNegative) {
+        // If scheduled date is in the past, show immediately
+        await _localNotifications.show(id, title, body, notificationDetails, payload: payload);
+      } else {
+        // Use simple delay for now (not persistent across app restarts)
+        Future.delayed(delayDuration, () async {
+          await _localNotifications.show(id, title, body, notificationDetails, payload: payload);
+        });
+        debugPrint('Notification scheduled with simple delay: ${delayDuration.inSeconds} seconds');
+      }
     } catch (e) {
       debugPrint('Failed to schedule notification: $e');
       throw NotificationException(message: 'Failed to schedule notification: $e');
@@ -260,19 +261,20 @@ class NotificationService {
     return await _localNotifications.pendingNotificationRequests();
   }
 
-  /// Get FCM token
+  /// Get FCM token (dummy implementation)
   Future<String?> getFCMToken() async {
-    return await _firebaseMessaging.getToken();
+    debugPrint('FCM token requested (returning dummy token)');
+    return 'dummy-fcm-token-for-development';
   }
 
-  /// Subscribe to topic
+  /// Subscribe to topic (dummy implementation)
   Future<void> subscribeToTopic(String topic) async {
-    await _firebaseMessaging.subscribeToTopic(topic);
+    debugPrint('Subscribed to topic (dummy): $topic');
   }
 
-  /// Unsubscribe from topic
+  /// Unsubscribe from topic (dummy implementation)
   Future<void> unsubscribeFromTopic(String topic) async {
-    await _firebaseMessaging.unsubscribeFromTopic(topic);
+    debugPrint('Unsubscribed from topic (dummy): $topic');
   }
 
   /// Check notification permissions
@@ -309,8 +311,8 @@ class NotificationService {
   }
 }
 
-/// Background message handler (must be top-level function)
+/// Background message handler (dummy implementation)
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Background message received: ${message.notification?.title}');
+Future<void> _firebaseMessagingBackgroundHandler(dynamic message) async {
+  debugPrint('Background message received (dummy): $message');
 }
