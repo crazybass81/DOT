@@ -2,7 +2,7 @@ name: CD - Firebase
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, develop]
     paths:
       - 'services/attendance/mobile/functions/**'
       - 'services/attendance/mobile/firestore.rules'
