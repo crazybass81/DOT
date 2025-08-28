@@ -302,7 +302,7 @@ class _NetworkErrorWidget extends StatelessWidget {
             style: NeoBrutalTheme.body,
             textAlign: TextAlign.center,
           ),
-          if (onRetry != null) ..[
+          if (onRetry != null) ...[
             const SizedBox(height: NeoBrutalTheme.space4),
             NeoBrutalButton(
               text: '다시 시도',
