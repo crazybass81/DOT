@@ -225,10 +225,9 @@ class AttendanceService {
         await _queueOfflineAttendance(queueEntry);
         
         // Show notification
-        await _notificationService.showLocalNotification(
+        await NotificationService.showNotification(
           title: 'Attendance Queued',
           body: 'Your attendance will be synced when connection is restored.',
-          channel: AppConstants.attendanceNotificationChannel,
         );
       } else {
         // Success feedback
