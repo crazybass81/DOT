@@ -72,3 +72,7 @@ temp/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Claude 설정 (동기화를 위해 일부만 제외)
+.claude/settings.local.json
+.claude/api-keys/
