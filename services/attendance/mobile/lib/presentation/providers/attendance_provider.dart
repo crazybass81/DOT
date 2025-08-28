@@ -307,9 +307,9 @@ final todayAttendanceProvider = FutureProvider<Attendance?>((ref) async {
   return Attendance(
     id: '1',
     userId: 'user_1',
+    date: DateTime.now(),
     checkInTime: DateTime.now().subtract(const Duration(hours: 8)),
-    isCheckedIn: true,
-    workDuration: const Duration(hours: 8),
+    totalWorkingHours: const Duration(hours: 8),
   );
 });
 
@@ -329,8 +329,8 @@ final realTimeAttendanceProvider = FutureProvider<List<Attendance>>((ref) async 
   return List.generate(10, (index) => Attendance(
     id: 'att_$index',
     userId: 'user_$index',
-    checkInTime: DateTime.now().subtract(Duration(hours: index)),
-    isCheckedIn: index % 2 == 0,
+    date: DateTime.now().subtract(Duration(days: index % 7)),
+    checkInTime: index % 2 == 0 ? DateTime.now().subtract(Duration(hours: index)) : null,
   ));
 });
 
