@@ -21,13 +21,10 @@ android {
 
     defaultConfig {
         applicationId = "com.dot.attendance"
-        // Minimum SDK for modern features (location, biometrics, camera)
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
-        // Enable multidex support for large applications
         multiDexEnabled = true
     }
 
@@ -36,14 +33,7 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
-            minifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
-    }
-    
-    // Support for vector drawables
-    defaultConfig {
-        vectorDrawables.useSupportLibrary = true
     }
 }
 
@@ -52,6 +42,5 @@ flutter {
 }
 
 dependencies {
-    // Support for multidex
     implementation("androidx.multidex:multidex:2.0.1")
 }
