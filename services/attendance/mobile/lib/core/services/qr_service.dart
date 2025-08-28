@@ -162,16 +162,22 @@ class QrService {
     Color foregroundColor = Colors.black,
     Color backgroundColor = Colors.white,
     int version = QrVersions.auto,
-    QrErrorCorrectLevel errorCorrectLevel = QrErrorCorrectLevel.M,
+    int errorCorrectLevel = QrErrorCorrectLevel.M,
   }) async {
     try {
       final qrPainter = QrPainter(
         data: data,
         version: version,
         errorCorrectionLevel: errorCorrectLevel,
-        color: foregroundColor,
-        emptyColor: backgroundColor,
         gapless: false,
+        eyeStyle: QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: foregroundColor,
+        ),
+        dataModuleStyle: QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: foregroundColor,
+        ),
       );
 
       final picData = await qrPainter.toImageData(size);
@@ -236,10 +242,10 @@ class QrService {
   }
 
   /// Get flash status
-  Future<bool> getFlashStatus() async {
+  bool getFlashStatus() {
     try {
       if (_qrController == null) return false;
-      return _qrController!.torchEnabled.value;
+      return _qrController!.torchEnabled;
     } catch (e) {
       debugPrint('Failed to get flash status: $e');
       return false;
@@ -260,7 +266,7 @@ class QrService {
   CameraFacing getCameraFacing() {
     try {
       if (_qrController == null) return CameraFacing.back;
-      return _qrController!.facing.value;
+      return _qrController!.facing;
     } catch (e) {
       debugPrint('Failed to get camera facing: $e');
       return CameraFacing.back;
