@@ -252,3 +252,41 @@ final systemProvider = FutureProvider<dynamic>((ref) async {
   await Future.delayed(const Duration(milliseconds: 400));
   return MockDataGenerator.generateSystemHealth();
 });
+
+// Attendance rates provider
+final attendanceRatesProvider = FutureProvider<dynamic>((ref) async {
+  await Future.delayed(const Duration(milliseconds: 500));
+  return {
+    'overall': 92.5,
+    'thisWeek': 94.2,
+    'thisMonth': 91.8,
+    'departments': [
+      {'name': '개발팀', 'rate': 95.2, 'trend': 2.1},
+      {'name': '영업팀', 'rate': 87.1, 'trend': -1.5},
+      {'name': '마케팅팀', 'rate': 91.8, 'trend': 0.8},
+      {'name': '인사팀', 'rate': 96.5, 'trend': 1.2},
+    ],
+    'trends': {
+      'weekly': [89.5, 90.2, 92.1, 94.2, 93.8, 92.5, 94.2],
+      'monthly': [91.2, 90.8, 92.3, 91.8],
+    }
+  };
+});
+
+// Total employees provider
+final totalEmployeesProvider = FutureProvider<dynamic>((ref) async {
+  await Future.delayed(const Duration(milliseconds: 300));
+  return {
+    'total': 456,
+    'active': 425,
+    'onLeave': 18,
+    'new': 13,
+    'departments': {
+      '개발팀': 150,
+      '영업팀': 120,
+      '마케팅팀': 86,
+      '인사팀': 45,
+      '기타': 55,
+    }
+  };
+});
