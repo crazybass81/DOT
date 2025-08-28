@@ -84,19 +84,17 @@ echo -e "${GREEN}✓ $SHELL_RC에 자동 시작 설정 추가됨${NC}"
 
 # 4. 즉시 실행
 echo -e "\n${BLUE}4. 동기화 서비스 시작 중...${NC}"
-cd ~/DOT
 
-# 기존 세션 정리
-tmux kill-session -t sync-ssh 2>/dev/null
-tmux kill-session -t sync-from-local 2>/dev/null
-
-# 새 세션 시작
-tmux new-session -d -s sync-ssh './auto-sync.sh'
-echo -e "${GREEN}✓ SSH → GitHub 동기화 시작됨${NC}"
-
-if [ -f "./sync-all.sh" ]; then
-    tmux new-session -d -s sync-from-local './sync-all.sh'
-    echo -e "${GREEN}✓ GitHub → SSH 동기화 시작됨${NC}"
+if [ "$ENV_TYPE" == "SSH" ]; then
+    cd ~/DOT
+    tmux kill-session -t sync-ssh 2>/dev/null
+    tmux new-session -d -s sync-ssh './ssh-sync.sh'
+    echo -e "${GREEN}✓ SSH ↔️ GitHub 동기화 시작됨${NC}"
+else
+    cd ~/Desktop/DOT
+    tmux kill-session -t sync-local 2>/dev/null  
+    tmux new-session -d -s sync-local './local-sync.sh'
+    echo -e "${GREEN}✓ 로컬 ↔️ GitHub 동기화 시작됨${NC}"
 fi
 
 # 5. 상태 확인
