@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
 
 class ForbiddenPage extends StatelessWidget {
-  const ForbiddenPage({super.key});
+  final String? message;
+  
+  const ForbiddenPage({
+    super.key,
+    this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +50,7 @@ class ForbiddenPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '이 페이지에 접근할 수 있는 권한이 없습니다.\n관리자에게 문의해주세요.',
+                  message ?? '이 페이지에 접근할 수 있는 권한이 없습니다.\n관리자에게 문의해주세요.',
                   style: NeoBrutalTheme.body,
                   textAlign: TextAlign.center,
                 ),

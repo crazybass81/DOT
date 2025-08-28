@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'user_role.dart';
 
 part 'user.freezed.dart';
 
@@ -10,6 +11,7 @@ class User extends Equatable with _$User {
     required String email,
     required String firstName,
     required String lastName,
+    @Default(UserRole.user) UserRole role,
     String? phoneNumber,
     String? avatarUrl,
     String? employeeId,
@@ -45,12 +47,15 @@ class User extends Equatable with _$User {
     }
   }
 
+  String get name => displayName;
+
   @override
   List<Object?> get props => [
         id,
         email,
         firstName,
         lastName,
+        role,
         phoneNumber,
         avatarUrl,
         employeeId,
