@@ -36,8 +36,6 @@ class DashboardPage extends ConsumerWidget {
             return const MasterAdminDashboardPage();
           case UserRole.superAdmin:
             return const SuperAdminDashboardPage();
-          default:
-            return const UserDashboardPage();
         }
       },
       loading: () => const Scaffold(

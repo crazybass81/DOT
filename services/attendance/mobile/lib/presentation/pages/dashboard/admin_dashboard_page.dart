@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
-import '../../../domain/entities/user/user_role.dart';
 import '../../widgets/common/neo_brutal_card.dart';
 import '../../widgets/common/neo_brutal_button.dart';
 import '../../widgets/dashboard/real_time_attendance_card.dart';
