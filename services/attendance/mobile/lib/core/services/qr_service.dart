@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -130,18 +129,25 @@ class QrService {
     Color foregroundColor = Colors.black,
     Color backgroundColor = Colors.white,
     int version = QrVersions.auto,
-    QrErrorCorrectLevel errorCorrectLevel = QrErrorCorrectLevel.M,
+    int errorCorrectLevel = QrErrorCorrectLevel.M,
   }) {
     try {
       return QrImageView(
         data: data,
         version: version,
         size: size,
-        foregroundColor: foregroundColor,
         backgroundColor: backgroundColor,
         errorCorrectionLevel: errorCorrectLevel,
         gapless: false,
         semanticsLabel: 'QR Code for attendance',
+        eyeStyle: QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: foregroundColor,
+        ),
+        dataModuleStyle: QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: foregroundColor,
+        ),
       );
     } catch (e) {
       debugPrint('Failed to generate QR code widget: $e');
