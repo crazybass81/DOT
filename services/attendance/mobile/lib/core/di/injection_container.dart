@@ -155,21 +155,18 @@ abstract class RegisterModule {
   @singleton
   VerifyBiometricUseCase verifyBiometricUseCase(
     AuthRepository repository,
-    BiometricService biometricService,
-  ) => VerifyBiometricUseCase(repository, biometricService);
+  ) => VerifyBiometricUseCase(repository);
 
   // Use Cases - Attendance
   @singleton
   CheckInUseCase checkInUseCase(
     AttendanceRepository repository,
-    LocationService locationService,
-  ) => CheckInUseCase(repository, locationService);
+  ) => CheckInUseCase(repository);
 
   @singleton
   CheckOutUseCase checkOutUseCase(
     AttendanceRepository repository,
-    LocationService locationService,
-  ) => CheckOutUseCase(repository, locationService);
+  ) => CheckOutUseCase(repository);
 
   @singleton
   GetAttendanceHistoryUseCase getAttendanceHistoryUseCase(
@@ -193,6 +190,5 @@ abstract class RegisterModule {
   @singleton
   UploadAvatarUseCase uploadAvatarUseCase(
     UserRepository repository,
-    CameraService cameraService,
-  ) => UploadAvatarUseCase(repository, cameraService);
+  ) => UploadAvatarUseCase(repository);
 }
