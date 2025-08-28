@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart'; // Disabled for now
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/config/firebase_config.dart';
-import 'data/services/firestore_service.dart';
-import 'data/services/firebase_attendance_service.dart';
+// import 'data/services/firestore_service.dart'; // Disabled for now
+// import 'data/services/firebase_attendance_service.dart'; // Disabled for now
 import 'core/di/injection_container.dart' as di;
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_router.dart';
@@ -23,11 +23,11 @@ void main() async {
   ]);
 
   try {
-    // Initialize Firebase
+    // Initialize Firebase (dummy implementation)
     await FirebaseConfig.initialize();
     
-    // Configure Firestore
-    await FirestoreService.configure();
+    // Configure Firestore (disabled for now)
+    // await FirestoreService.configure();
     
     // Initialize services
     await _initializeServices();
@@ -68,8 +68,8 @@ Future<void> _initializeServices() async {
     // Initialize notification service
     await NotificationService.initialize();
     
-    // Initialize Firebase attendance service
-    await FirebaseAttendanceService.initialize();
+    // Initialize Firebase attendance service (disabled for now)
+    // await FirebaseAttendanceService.initialize();
     
     debugPrint('All services initialized successfully');
   } catch (e, stackTrace) {
