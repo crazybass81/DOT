@@ -23,30 +23,30 @@ class ForbiddenPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: NeoBrutalTheme.danger.withOpacity(0.1),
+                    color: NeoBrutalTheme.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: NeoBrutalTheme.danger,
+                      color: NeoBrutalTheme.error,
                       width: 2,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.lock_outline,
                     size: 64,
-                    color: NeoBrutalTheme.danger,
+                    color: NeoBrutalTheme.error,
                   ),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   '403',
-                  style: NeoBrutalTheme.h1.copyWith(
-                    color: NeoBrutalTheme.danger,
+                  style: NeoBrutalTheme.title.copyWith(
+                    color: NeoBrutalTheme.error,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   '접근 권한이 없습니다',
-                  style: NeoBrutalTheme.h3,
+                  style: NeoBrutalTheme.heading,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -60,8 +60,8 @@ class ForbiddenPage extends StatelessWidget {
                     Navigator.of(context).pushReplacementNamed('/dashboard');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: NeoBrutalTheme.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: NeoBrutalTheme.hi,
+                    foregroundColor: NeoBrutalTheme.hiInk,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
                       vertical: 16,
