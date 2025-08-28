@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../constants/app_constants.dart';
-import '../errors/exceptions.dart';
+import '../errors/exceptions.dart' as app_exceptions;
 
 class CameraService {
   static final CameraService _instance = CameraService._internal();
@@ -23,7 +23,7 @@ class CameraService {
       _cameras = await availableCameras();
     } catch (e) {
       debugPrint('Failed to initialize cameras: $e');
-      throw CameraException(message: 'Failed to initialize camera: $e');
+      throw app_exceptions.CameraException(message: 'Failed to initialize camera: $e');
     }
   }
 
@@ -45,7 +45,7 @@ class CameraService {
       await _checkCameraPermission();
 
       if (_cameras == null || _cameras!.isEmpty) {
-        throw const CameraException(message: 'No cameras available');
+        throw const app_exceptions.CameraException(message: 'No cameras available');
       }
 
       // Find camera with specified direction
@@ -72,10 +72,10 @@ class CameraService {
       return _cameraController!;
     } catch (e) {
       debugPrint('Failed to initialize camera controller: $e');
-      if (e is CameraException || e is CameraPermissionException) {
+      if (e is app_exceptions.CameraException || e is app_exceptions.CameraPermissionException) {
         rethrow;
       }
-      throw CameraException(message: 'Failed to initialize camera: $e');
+      throw app_exceptions.CameraException(message: 'Failed to initialize camera: $e');
     }
   }
 
@@ -83,21 +83,21 @@ class CameraService {
   Future<XFile> takePicture() async {
     try {
       if (_cameraController == null || !_cameraController!.value.isInitialized) {
-        throw const CameraException(message: 'Camera is not initialized');
+        throw const app_exceptions.CameraException(message: 'Camera is not initialized');
       }
 
       if (_cameraController!.value.isTakingPicture) {
-        throw const CameraException(message: 'Camera is already taking a picture');
+        throw const app_exceptions.CameraException(message: 'Camera is already taking a picture');
       }
 
       final image = await _cameraController!.takePicture();
       return image;
     } catch (e) {
       debugPrint('Failed to take picture: $e');
-      if (e is CameraException) {
+      if (e is app_exceptions.CameraException) {
         rethrow;
       }
-      throw CameraException(message: 'Failed to take picture: $e');
+      throw app_exceptions.CameraException(message: 'Failed to take picture: $e');
     }
   }
 
@@ -120,10 +120,10 @@ class CameraService {
       return image;
     } catch (e) {
       debugPrint('Failed to pick image from gallery: $e');
-      if (e is CameraPermissionException) {
+      if (e is app_exceptions.CameraPermissionException) {
         rethrow;
       }
-      throw CameraException(message: 'Failed to pick image from gallery: $e');
+      throw app_exceptions.CameraException(message: 'Failed to pick image from gallery: $e');
     }
   }
 
@@ -148,10 +148,10 @@ class CameraService {
       return image;
     } catch (e) {
       debugPrint('Failed to pick image from camera: $e');
-      if (e is CameraPermissionException) {
+      if (e is app_exceptions.CameraPermissionException) {
         rethrow;
       }
-      throw CameraException(message: 'Failed to pick image from camera: $e');
+      throw app_exceptions.CameraException(message: 'Failed to pick image from camera: $e');
     }
   }
 
@@ -227,7 +227,7 @@ class CameraService {
       return croppedFile;
     } catch (e) {
       debugPrint('Failed to crop image: $e');
-      throw CameraException(message: 'Failed to crop image: $e');
+      throw app_exceptions.CameraException(message: 'Failed to crop image: $e');
     }
   }
 
@@ -283,12 +283,12 @@ class CameraService {
     if (status.isDenied) {
       final result = await Permission.camera.request();
       if (!result.isGranted) {
-        throw const CameraPermissionException(
+        throw const app_exceptions.CameraPermissionException(
           message: 'Camera permission is required to take photos',
         );
       }
     } else if (status.isPermanentlyDenied) {
-      throw const CameraPermissionException(
+      throw const app_exceptions.CameraPermissionException(
         message: 'Camera permission is permanently denied. Please enable it in settings.',
       );
     }
@@ -302,12 +302,12 @@ class CameraService {
       if (status.isDenied) {
         final result = await Permission.storage.request();
         if (!result.isGranted) {
-          throw const CameraPermissionException(
+          throw const app_exceptions.CameraPermissionException(
             message: 'Storage permission is required to access photos',
           );
         }
       } else if (status.isPermanentlyDenied) {
-        throw const CameraPermissionException(
+        throw const app_exceptions.CameraPermissionException(
           message: 'Storage permission is permanently denied. Please enable it in settings.',
         );
       }

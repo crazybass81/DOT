@@ -7,8 +7,26 @@ import '../errors/exceptions.dart';
 
 class LocalStorageService {
   final SharedPreferences _prefs;
+  static LocalStorageService? _instance;
 
-  LocalStorageService(this._prefs);
+  LocalStorageService._(this._prefs);
+
+  static Future<LocalStorageService> initialize() async {
+    if (_instance == null) {
+      final prefs = await SharedPreferences.getInstance();
+      _instance = LocalStorageService._(prefs);
+    }
+    return _instance!;
+  }
+
+  static LocalStorageService get instance {
+    if (_instance == null) {
+      throw const StorageException(
+        message: 'LocalStorageService not initialized. Call initialize() first.',
+      );
+    }
+    return _instance!;
+  }
 
   /// Generic setString method
   Future<void> setString(String key, String value) async {
