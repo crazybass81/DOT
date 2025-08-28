@@ -60,7 +60,7 @@ abstract class RegisterModule {
       encryptedSharedPreferences: true,
     ),
     iOptions: IOSOptions(
-      accessibility: IOSAccessibility.first_unlock_this_device,
+      accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
   );
 
@@ -96,29 +96,29 @@ abstract class RegisterModule {
   AuthLocalDataSource authLocalDataSource(
     SecureStorageService secureStorage,
     LocalStorageService localStorage,
-  ) => AuthLocalDataSource(secureStorage, localStorage);
+  ) => AuthLocalDataSourceImpl(secureStorage, localStorage);
 
   @singleton
   AuthRemoteDataSource authRemoteDataSource(Dio dio) =>
-      AuthRemoteDataSource(dio);
+      AuthRemoteDataSourceImpl(dio);
 
   @singleton
   AttendanceLocalDataSource attendanceLocalDataSource(
     LocalStorageService localStorage,
-  ) => AttendanceLocalDataSource(localStorage);
+  ) => AttendanceLocalDataSourceImpl(localStorage);
 
   @singleton
   AttendanceRemoteDataSource attendanceRemoteDataSource(Dio dio) =>
-      AttendanceRemoteDataSource(dio);
+      AttendanceRemoteDataSourceImpl(dio);
 
   @singleton
   UserLocalDataSource userLocalDataSource(
     LocalStorageService localStorage,
-  ) => UserLocalDataSource(localStorage);
+  ) => UserLocalDataSourceImpl(localStorage);
 
   @singleton
   UserRemoteDataSource userRemoteDataSource(Dio dio) =>
-      UserRemoteDataSource(dio);
+      UserRemoteDataSourceImpl(dio);
 
   // Repositories
   @singleton
