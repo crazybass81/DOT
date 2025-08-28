@@ -15,8 +15,27 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance; // Disabled for now
 
+  /// Static method for easy access
+  static Future<void> initialize() async {
+    await _instance._initialize();
+  }
+
+  /// Static method for showing notifications
+  static Future<void> showNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await _instance._showNotificationInternal(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+      payload: payload,
+    );
+  }
+
   /// Initialize notification service
-  Future<void> initialize() async {
+  Future<void> _initialize() async {
     try {
       await _initializeLocalNotifications();
       // await _initializeFirebaseMessaging(); // Disabled for now
@@ -125,8 +144,8 @@ class NotificationService {
     // This can be handled by a navigation service or router
   }
 
-  /// Show local notification
-  Future<void> showNotification({
+  /// Internal method for showing notifications
+  Future<void> _showNotificationInternal({
     required int id,
     required String title,
     required String body,
@@ -164,6 +183,23 @@ class NotificationService {
       debugPrint('Failed to show notification: $e');
       throw NotificationException(message: 'Failed to show notification: $e');
     }
+  }
+
+  /// Show local notification
+  Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+    String channelId = AppConstants.generalNotificationChannel,
+  }) async {
+    await _showNotificationInternal(
+      id: id,
+      title: title,
+      body: body,
+      payload: payload,
+      channelId: channelId,
+    );
   }
 
   /// Show attendance reminder notification
