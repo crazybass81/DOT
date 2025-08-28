@@ -235,3 +235,19 @@ final isBiometricEnabledProvider = Provider<bool>((ref) {
 final isBiometricAvailableProvider = Provider<bool>((ref) {
   return ref.watch(authProvider).isBiometricAvailable;
 });
+
+// Auth state provider that returns AsyncValue<User?> for compatibility with dashboard pages
+final authStateProvider = Provider<AsyncValue<User?>>((ref) {
+  final authState = ref.watch(authProvider);
+  
+  if (authState.isLoading) {
+    return const AsyncValue.loading();
+  }
+  
+  if (authState.error != null) {
+    return AsyncValue.error(authState.error!, StackTrace.current);
+  }
+  
+  // Return the user if authenticated, null otherwise
+  return AsyncValue.data(authState.isAuthenticated ? authState.user : null);
+});
