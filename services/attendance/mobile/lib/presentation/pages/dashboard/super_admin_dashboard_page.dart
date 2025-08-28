@@ -1262,7 +1262,7 @@ class _ExportDialogState extends State<_ExportDialog> {
           ],
         ),
         value: _selectedData[key],
-        onChanged: (value) => setState(() => _selectedData[key] = value!),
+        onChanged: (value) => setState(() => _selectedData[key] = value ?? false),
         activeColor: NeoBrutalTheme.hi,
         controlAffinity: ListTileControlAffinity.trailing,
         contentPadding: EdgeInsets.zero,
