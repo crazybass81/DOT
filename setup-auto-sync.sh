@@ -53,30 +53,30 @@ sed -i '/# DOT 프로젝트 자동 동기화/,/^$/d' "$SHELL_RC" 2>/dev/null
 # 새 설정 추가
 cat >> "$SHELL_RC" << 'EOF'
 
-# DOT 프로젝트 자동 동기화 (SSH 서버)
-if [ -d ~/DOT ]; then
-    cd ~/DOT
-    
-    # sync-ssh 세션: SSH → GitHub 동기화
-    if ! tmux has-session -t sync-ssh 2>/dev/null; then
-        tmux new-session -d -s sync-ssh './auto-sync.sh'
-        echo "✅ SSH → GitHub 동기화 시작됨 (tmux: sync-ssh)"
-    fi
-    
-    # sync-from-local 세션: GitHub → SSH 동기화
-    if ! tmux has-session -t sync-from-local 2>/dev/null; then
-        # sync-all.sh가 없으면 auto-sync.sh 사용
-        if [ -f "./sync-all.sh" ]; then
-            tmux new-session -d -s sync-from-local './sync-all.sh'
-        else
-            # auto-sync.sh는 이미 양방향이므로 충분
-            echo "ℹ️  auto-sync.sh가 양방향 동기화 처리 중"
+# DOT 프로젝트 자동 동기화 설정
+if [ "$ENV_TYPE" == "SSH" ]; then
+    # SSH 서버용 설정
+    if [ -d ~/DOT ]; then
+        cd ~/DOT
+        if ! tmux has-session -t sync-ssh 2>/dev/null; then
+            tmux new-session -d -s sync-ssh './ssh-sync.sh'
+            echo "✅ SSH ↔️ GitHub 동기화 시작됨 (tmux: sync-ssh)"
         fi
+        echo "📊 동기화 상태: tmux ls"
+        echo "📺 로그 보기: tmux attach -t sync-ssh"
     fi
-    
-    # 상태 표시
-    echo "📊 동기화 상태: tmux ls"
-    echo "📺 로그 보기: tmux attach -t sync-ssh"
+else
+    # 로컬용 설정  
+    if [ -d ~/Desktop/DOT ]; then
+        cd ~/Desktop/DOT
+        if ! tmux has-session -t sync-local 2>/dev/null; then
+            tmux new-session -d -s sync-local './local-sync.sh'
+            echo "✅ 로컬 ↔️ GitHub 동기화 시작됨 (tmux: sync-local)"
+        fi
+        echo "📊 동기화 상태: tmux ls"
+        echo "📺 로그 보기: tmux attach -t sync-local"
+        cd - > /dev/null
+    fi
 fi
 EOF
 
