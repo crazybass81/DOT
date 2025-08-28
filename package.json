@@ -4,12 +4,14 @@
   "private": true,
   "description": "DOT 비즈니스 플랫폼 - 외식업 디지털 전환 솔루션",
   "workspaces": [
-    "services/*",
+    "services/*/web",
+    "services/*/mobile",
     "packages/*"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces",
-    "dev:attendance": "npm run dev -w @dot/attendance",
+    "dev:attendance:web": "npm run dev -w @dot/attendance",
+    "dev:attendance:mobile": "cd services/attendance/mobile && flutter run",
     "dev:marketing": "npm run dev -w @dot/marketing",
     "build": "npm run build --workspaces",
     "build:attendance": "npm run build -w @dot/attendance",

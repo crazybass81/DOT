@@ -1,300 +1,199 @@
-# DOT Attendance Service - DynamoDB Implementation
+# DOT Attendance Service (근태관리 서비스)
 
 ## 📋 Overview
 
-Complete DynamoDB implementation for the DOT attendance management system, designed for Korean restaurant businesses. This service provides comprehensive attendance tracking, employee management, and scheduling capabilities using AWS DynamoDB.
+DOT 플랫폼의 핵심 서비스로, 외식업 특화 근태관리 시스템입니다.
+웹 대시보드와 모바일 앱을 통해 완벽한 근태관리 솔루션을 제공합니다.
 
 ## 🏗️ Architecture
 
-### Database Design
+```
+attendance/
+├── web/                 # Next.js 웹 애플리케이션
+│   ├── app/            # 페이지 및 라우팅
+│   ├── components/     # React 컴포넌트
+│   ├── lib/           # 비즈니스 로직
+│   └── scripts/       # 배포 및 설정 스크립트
+│
+└── mobile/             # Flutter 모바일 애플리케이션
+    ├── lib/           # Dart 소스 코드
+    ├── assets/        # 이미지, 폰트 등
+    └── test/          # 테스트 코드
+```
 
-The system uses a single-table design pattern with composite keys and Global Secondary Indexes (GSIs) for efficient querying:
+## 🚀 Features
 
-#### Tables
-1. **dot-attendance** - Main attendance records
-2. **dot-employees** - Employee information
-3. **dot-schedules** - Work schedules
+### 웹 대시보드 (Web)
+- **관리자 기능**
+  - 실시간 근태 현황 모니터링
+  - 직원 관리 및 권한 설정
+  - QR 코드 생성 및 표시
+  - 근태 승인 및 수정
+  - 통계 및 리포트 생성
 
-#### Key Patterns
-- **Primary Key (PK)**: `ATTENDANCE#<uuid>`, `EMPLOYEE#<id>`, `SCHEDULE#<id>`
-- **Sort Key (SK)**: `EMPLOYEE#<id>`, `ORG#<id>`, `DATE#<date>`
+- **직원 기능**
+  - 웹 기반 출퇴근 체크
+  - 근태 이력 조회
+  - 휴가/외출 신청
 
-#### Global Secondary Indexes
-- **employee-date-index**: Query attendance by employee and date range
-- **date-status-index**: Query all attendance for a specific date
-- **organization-index**: Query employees by organization
+### 모바일 앱 (Mobile)
+- **직원 전용 기능**
+  - QR 코드 스캔 출퇴근
+  - GPS 기반 위치 확인
+  - 생체 인증 (지문/Face ID)
+  - 오프라인 모드 지원
+  - 푸시 알림
+  - 실시간 근무 시간 확인
 
-## 🚀 Quick Start
+## 🛠️ Technology Stack
+
+### Web (관리자/대시보드)
+- **Frontend**: Next.js 15.5, React 19, TypeScript
+- **Styling**: Tailwind CSS
+- **State**: React Hooks
+- **Auth**: AWS Cognito
+- **Database**: DynamoDB
+- **Deployment**: AWS Amplify / Vercel
+
+### Mobile (직원용 앱)
+- **Framework**: Flutter 3.x
+- **Language**: Dart
+- **State**: Riverpod
+- **UI**: Neo Brutal Theme
+- **Features**: 
+  - QR Scanner (mobile_scanner)
+  - Location (geolocator)
+  - Biometric Auth (local_auth)
+  - Push Notifications (FCM)
+
+## 📦 Installation
 
 ### Prerequisites
 - Node.js 18+
-- Docker & Docker Compose
-- AWS Account (for production)
+- Flutter SDK 3.10+
+- AWS CLI (configured)
+- Docker (for local development)
 
-### Local Development Setup
-
-1. **Start Local DynamoDB**
+### Web Setup
 ```bash
-docker-compose up -d dynamodb-local dynamodb-admin
-```
-
-2. **Install Dependencies**
-```bash
-cd services/attendance
+cd services/attendance/web
 npm install
+cp .env.example .env.local
+# Configure your environment variables
+npm run dev
 ```
 
-3. **Set Environment Variables**
+### Mobile Setup
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+cd services/attendance/mobile
+flutter pub get
+flutter run
 ```
 
-4. **Create Tables**
+## 🔧 Development
+
+### Web Commands
 ```bash
-npm run db:create-tables
+# Development
+npm run dev              # Start dev server on port 3002
+
+# Testing
+npm run test            # Run all tests
+npm run test:coverage   # Generate coverage report
+
+# Build & Deploy
+npm run build          # Production build
+npm run deploy         # Deploy to AWS
 ```
 
-5. **Run Tests**
+### Mobile Commands
 ```bash
-npm test
+# Development
+flutter run            # Run on connected device/emulator
+flutter run -d web     # Run as web app
+
+# Testing
+flutter test          # Run all tests
+
+# Build
+flutter build apk     # Android APK
+flutter build ios     # iOS build
+flutter build web     # Web build
 ```
 
-## 📦 Features Implemented
+## 🌐 API Integration
 
-### ✅ Complete Features
+Both web and mobile applications connect to the same backend API:
 
-#### 1. **DynamoDB Client Configuration** (`dynamodb-client.ts`)
-- Auto-detection of local vs AWS environment
-- Optimized retry and marshalling settings
-- Connection pooling for performance
+- **Base URL**: `https://api.dot-attendance.com`
+- **Authentication**: JWT tokens via AWS Cognito
+- **API Gateway**: AWS API Gateway
+- **Functions**: AWS Lambda (Serverless)
 
-#### 2. **Data Models** (`models/attendance.model.ts`)
-- AttendanceRecord with location tracking
-- Employee with role-based access
-- Schedule with recurring patterns
-- Statistics aggregation model
+## 📱 Platform-Specific Features
 
-#### 3. **Repository Layer** (`repositories/`)
-- **AttendanceRepository**
-  - Check-in/Check-out operations
-  - Attendance history queries
-  - Statistics calculation
-  - Batch operations
-  - Status updates
-  
-- **EmployeeRepository**
-  - CRUD operations
-  - Organization/Department queries
-  - Search functionality
-  - Batch get operations
-  - Soft delete support
+### Web-Only
+- Complex admin dashboards
+- Bulk data operations
+- Report generation & export
+- Multi-organization management
 
-#### 4. **API Endpoints** (`api/attendance.api.ts`)
-- RESTful Lambda functions
-- CORS configuration
-- Error handling
-- Request validation
+### Mobile-Only
+- Biometric authentication
+- Offline mode with sync
+- Camera QR scanning
+- Push notifications
+- GPS tracking
 
-#### 5. **Local Development**
-- Docker Compose setup
-- DynamoDB Admin GUI (port 8001)
-- LocalStack option for full AWS simulation
+## 🔐 Security
 
-#### 6. **Testing Suite**
-- Repository unit tests
-- Integration tests
-- Mock data generators
-
-## 🔧 API Endpoints
-
-### Attendance Operations
-
-```typescript
-POST   /attendance/check-in
-POST   /attendance/check-out
-GET    /attendance/today/{employeeId}
-GET    /attendance/history/{employeeId}?startDate=&endDate=
-GET    /attendance/date/{date}?organizationId=
-GET    /attendance/statistics/{employeeId}?period=
-PUT    /attendance/status/{attendanceId}
-POST   /attendance/batch
-DELETE /attendance/{attendanceId}?employeeId=
-```
-
-### Employee Operations
-
-```typescript
-POST   /employees
-GET    /employees/{employeeId}?organizationId=
-GET    /employees/organization/{organizationId}
-GET    /employees/department/{departmentId}
-GET    /employees/search?organizationId=&q=
-PUT    /employees/{employeeId}
-DELETE /employees/{employeeId}?organizationId=
-```
-
-## 💻 Usage Examples
-
-### Check-in Operation
-```typescript
-const attendanceRepo = new AttendanceRepository();
-
-const result = await attendanceRepo.checkIn(
-  'employee-123',
-  'org-456',
-  { latitude: 37.5665, longitude: 126.9780 }, // Seoul
-  { deviceId: 'mobile-001', deviceType: 'iOS' }
-);
-```
-
-### Get Monthly Statistics
-```typescript
-const stats = await attendanceRepo.getAttendanceStatistics(
-  'employee-123',
-  '2024-01' // YYYY-MM format
-);
-
-console.log(`Attendance Rate: ${stats.attendanceRate}%`);
-console.log(`Total Work Hours: ${stats.totalWorkHours}`);
-```
-
-### Search Employees
-```typescript
-const employeeRepo = new EmployeeRepository();
-
-const results = await employeeRepo.searchEmployees(
-  'org-456',
-  '김' // Search Korean names
-);
-```
-
-## 🛠️ Development Commands
-
-```bash
-# Start local DynamoDB
-npm run db:local
-
-# Create tables
-npm run db:create-tables
-
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Deploy to AWS
-npm run deploy
-
-# View DynamoDB Admin
-open http://localhost:8001
-```
-
-## 📊 Performance Optimizations
-
-1. **Composite Keys**: Efficient querying without table scans
-2. **GSI Design**: Optimized for common access patterns
-3. **Batch Operations**: Reduce API calls for bulk operations
-4. **Connection Reuse**: DynamoDB client singleton pattern
-5. **Adaptive Retry**: Automatic retry with exponential backoff
-
-## 🔒 Security Features
-
-- Cognito integration for authentication
+- JWT-based authentication
 - Role-based access control (RBAC)
-- Location verification for check-ins
+- Data encryption at rest and in transit
+- GPS spoofing prevention
 - Device fingerprinting
-- Audit trails for all modifications
 
-## 🌏 Localization
+## 📊 Database Schema
 
-- Korean timezone support (Asia/Seoul)
-- Korean language ready
-- Local date/time formatting
-- Cultural business rules (Korean work week)
+Using DynamoDB with single-table design:
 
-## 📈 Monitoring
-
-### CloudWatch Metrics
-- Request latency
-- Error rates
-- Throttling events
-- Consumed capacity
-
-### Application Metrics
-- Check-in/out success rates
-- Average response times
-- Daily active users
-- Peak usage hours
-
-## 🚨 Error Handling
-
-All errors are properly caught and returned with appropriate HTTP status codes:
-
-- `400` - Bad Request (validation errors)
-- `404` - Not Found
-- `409` - Conflict (duplicate operations)
-- `500` - Internal Server Error
-
-## 🔄 Migration Guide
-
-### From RDS/MySQL
-1. Export existing data to JSON
-2. Transform to DynamoDB format
-3. Use batch import scripts
-4. Verify data integrity
-
-### Table Creation Script
-```bash
-cd services/attendance/scripts
-npx ts-node create-dynamodb-tables.ts
 ```
+Primary Key (PK): ATTENDANCE#<uuid> | EMPLOYEE#<id> | SCHEDULE#<id>
+Sort Key (SK): EMPLOYEE#<id> | ORG#<id> | DATE#<date>
+```
+
+## 🚦 CI/CD
+
+- **Web**: GitHub Actions → AWS Amplify
+- **Mobile**: GitHub Actions → App Store / Play Store
 
 ## 📝 Environment Variables
 
-```env
-# Required
-AWS_REGION=ap-northeast-2
-ATTENDANCE_TABLE_NAME=dot-attendance
-EMPLOYEES_TABLE_NAME=dot-employees
-
-# Optional
-DYNAMODB_LOCAL_ENDPOINT=http://localhost:8000
-ENABLE_XRAY=true
-LOG_LEVEL=debug
+### Web (.env.local)
+```
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_AWS_REGION=
+NEXT_PUBLIC_COGNITO_USER_POOL_ID=
+NEXT_PUBLIC_COGNITO_CLIENT_ID=
 ```
 
-## 🧪 Testing
+### Mobile (config files)
+- Firebase configuration
+- API endpoints
+- Feature flags
 
-### Unit Tests
-```bash
-npm run test:unit
-```
+## 🤝 Contributing
 
-### Integration Tests
-```bash
-npm run test:integration
-```
-
-### Load Testing
-```bash
-npm run test:load
-```
-
-## 📚 Additional Resources
-
-- [AWS DynamoDB Best Practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html)
-- [Single Table Design](https://www.alexdebrie.com/posts/dynamodb-single-table/)
-- [DynamoDB Toolbox](https://github.com/jeremydaly/dynamodb-toolbox)
-
-## 👥 Support
-
-For issues or questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the troubleshooting guide
+1. Create feature branch from `develop`
+2. Follow coding standards
+3. Write tests
+4. Create PR with description
 
 ## 📄 License
 
-Internal use only - Proprietary
+Proprietary - DOT Platform
+
+## 🔗 Related Services
+
+- [Marketing Service](../marketing/README.md)
+- [Scheduler Service](../scheduler/README.md)
