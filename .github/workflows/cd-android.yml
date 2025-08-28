@@ -56,7 +56,7 @@ jobs:
       - name: Calculate version
         id: version
         run: |
-          cd mobile/dot_attendance
+          cd services/attendance/mobile
           current_version=$(grep "version:" pubspec.yaml | cut -d' ' -f2 | cut -d'+' -f1)
           current_build=$(grep "version:" pubspec.yaml | cut -d'+' -f2)
           
@@ -97,7 +97,7 @@ jobs:
     environment: ${{ needs.prepare-release.outputs.environment }}
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
         with:
@@ -127,7 +127,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            mobile/dot_attendance/android/.gradle
+            services/attendance/mobile/android/.gradle
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: gradle-${{ runner.os }}-
       
@@ -195,7 +195,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: android-debug-symbols
-          path: mobile/dot_attendance/build/debug-info/
+          path: services/attendance/mobile/build/debug-info/
       
       - name: Sign APK/AAB
         if: needs.prepare-release.outputs.environment == 'production'
@@ -208,8 +208,8 @@ jobs:
         with:
           name: android-${{ needs.prepare-release.outputs.environment }}-${{ needs.prepare-release.outputs.version }}
           path: |
-            mobile/dot_attendance/build/app/outputs/flutter-apk/*.apk
-            mobile/dot_attendance/build/app/outputs/bundle/release/*.aab
+            services/attendance/mobile/build/app/outputs/flutter-apk/*.apk
+            services/attendance/mobile/build/app/outputs/bundle/release/*.aab
           retention-days: 30
 
   deploy-android-internal:

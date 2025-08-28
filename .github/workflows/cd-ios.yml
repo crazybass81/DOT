@@ -56,7 +56,7 @@ jobs:
       - name: Calculate version
         id: version
         run: |
-          cd mobile/dot_attendance
+          cd services/attendance/mobile
           current_version=$(grep "version:" pubspec.yaml | cut -d' ' -f2 | cut -d'+' -f1)
           current_build=$(grep "version:" pubspec.yaml | cut -d'+' -f2)
           
@@ -85,7 +85,7 @@ jobs:
     environment: ${{ needs.prepare-release.outputs.environment }}
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,7 +107,7 @@ jobs:
         with:
           path: |
             ~/.cocoapods
-            mobile/dot_attendance/ios/Pods
+            services/attendance/mobile/ios/Pods
           key: cocoapods-${{ runner.os }}-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: cocoapods-${{ runner.os }}-
       
@@ -246,8 +246,8 @@ jobs:
         with:
           name: ios-${{ needs.prepare-release.outputs.environment }}-${{ needs.prepare-release.outputs.version }}
           path: |
-            mobile/dot_attendance/ios/build/Runner.ipa/*.ipa
-            mobile/dot_attendance/ios/build/Runner.xcarchive
+            services/attendance/mobile/ios/build/Runner.ipa/*.ipa
+            services/attendance/mobile/ios/build/Runner.xcarchive
           retention-days: 30
       
       - name: Clean up keychain and provisioning profile

@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'mobile/dot_attendance/**'
+      - 'services/attendance/mobile/**'
       - '.github/workflows/**'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'mobile/dot_attendance/**'
+      - 'services/attendance/mobile/**'
 
 env:
   FLUTTER_VERSION: '3.16.0'
@@ -34,15 +34,15 @@ jobs:
         with:
           filters: |
             flutter:
-              - 'mobile/dot_attendance/lib/**'
-              - 'mobile/dot_attendance/pubspec.yaml'
-              - 'mobile/dot_attendance/test/**'
+              - 'services/attendance/mobile/lib/**'
+              - 'services/attendance/mobile/pubspec.yaml'
+              - 'services/attendance/mobile/test/**'
             functions:
-              - 'mobile/dot_attendance/functions/**'
+              - 'services/attendance/mobile/functions/**'
             ios:
-              - 'mobile/dot_attendance/ios/**'
+              - 'services/attendance/mobile/ios/**'
             android:
-              - 'mobile/dot_attendance/android/**'
+              - 'services/attendance/mobile/android/**'
 
   security-scan:
     runs-on: ubuntu-latest
@@ -55,13 +55,13 @@ jobs:
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: 'DOT-ATTENDANCE'
-          path: './mobile/dot_attendance'
+          path: './services/attendance/mobile'
           format: 'ALL'
           args: >
             --enableRetired
             --enableExperimental
-            --scan './mobile/dot_attendance/pubspec.yaml'
-            --scan './mobile/dot_attendance/functions/package.json'
+            --scan './services/attendance/mobile/pubspec.yaml'
+            --scan './services/attendance/mobile/functions/package.json'
       
       - name: Upload OWASP results
         uses: actions/upload-artifact@v3
@@ -73,7 +73,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './mobile/dot_attendance'
+          scan-ref: './services/attendance/mobile'
           format: 'sarif'
           output: 'trivy-results.sarif'
 
@@ -89,7 +89,7 @@ jobs:
     if: needs.analyze-changes.outputs.flutter-changed == 'true'
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
       
@@ -129,7 +129,7 @@ jobs:
     if: needs.analyze-changes.outputs.flutter-changed == 'true'
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     strategy:
       matrix:
         test-type: [unit, widget, integration]
@@ -177,12 +177,12 @@ jobs:
         if: always()
         with:
           name: test-results-${{ matrix.test-type }}
-          path: mobile/dot_attendance/test-results-*.json
+          path: services/attendance/mobile/test-results-*.json
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: mobile/dot_attendance/coverage/lcov.info
+          file: services/attendance/mobile/coverage/lcov.info
           flags: ${{ matrix.test-type }}
           name: codecov-${{ matrix.test-type }}
 
@@ -192,7 +192,7 @@ jobs:
     if: needs.analyze-changes.outputs.functions-changed == 'true'
     defaults:
       run:
-        working-directory: mobile/dot_attendance/functions
+        working-directory: services/attendance/mobile/functions
     steps:
       - uses: actions/checkout@v4
       
@@ -201,7 +201,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: mobile/dot_attendance/functions/package-lock.json
+          cache-dependency-path: services/attendance/mobile/functions/package-lock.json
       
       - name: Install dependencies
         run: npm ci
@@ -223,7 +223,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: mobile/dot_attendance/functions/coverage/lcov.info
+          file: services/attendance/mobile/functions/coverage/lcov.info
           flags: functions
           name: codecov-functions
 
@@ -233,7 +233,7 @@ jobs:
     if: github.event_name == 'pull_request'
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
       
@@ -265,7 +265,7 @@ jobs:
     needs: flutter-test
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
       

@@ -92,7 +92,7 @@ jobs:
         environment: [staging, production]
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
       
@@ -132,9 +132,9 @@ jobs:
         with:
           name: release-${{ matrix.platform }}-${{ matrix.environment }}-${{ needs.validate-release.outputs.version }}
           path: |
-            mobile/dot_attendance/build/app/outputs/bundle/release/*.aab
-            mobile/dot_attendance/build/web/**
-            mobile/dot_attendance/build/debug-info/
+            services/attendance/mobile/build/app/outputs/bundle/release/*.aab
+            services/attendance/mobile/build/web/**
+            services/attendance/mobile/build/debug-info/
           retention-days: 90
 
   build-ios-release:
@@ -145,7 +145,7 @@ jobs:
         environment: [staging, production]
     defaults:
       run:
-        working-directory: mobile/dot_attendance
+        working-directory: services/attendance/mobile
     steps:
       - uses: actions/checkout@v4
       
@@ -204,7 +204,7 @@ jobs:
         with:
           name: release-ios-${{ matrix.environment }}-${{ needs.validate-release.outputs.version }}
           path: |
-            mobile/dot_attendance/build/ios/ipa/*.ipa
+            services/attendance/mobile/build/ios/ipa/*.ipa
           retention-days: 90
       
       - name: Clean up keychain
@@ -356,7 +356,7 @@ jobs:
           VERSION="${{ needs.validate-release.outputs.version }}"
           
           # Update pubspec.yaml
-          cd mobile/dot_attendance
+          cd services/attendance/mobile
           sed -i "s/version: .*/version: ${VERSION#v}+${{ github.run_number }}/" pubspec.yaml
           
           # Commit and push
