@@ -5,7 +5,7 @@
 
 # Configuration
 PROJECT_DIR="/home/ec2-user/DOT"
-BRANCH="auto-sync"
+BRANCH="master"
 SYNC_INTERVAL=5  # seconds
 COMMIT_PREFIX="[Auto-sync]"
 
