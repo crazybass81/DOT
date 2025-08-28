@@ -44,13 +44,13 @@ while true; do
     git fetch origin --quiet
     
     LOCAL=$(git rev-parse HEAD)
-    REMOTE=$(git rev-parse origin/auto-sync)
+    REMOTE=$(git rev-parse origin/master)
     
     if [ "$LOCAL" != "$REMOTE" ]; then
         echo -e "${BLUE}$(date '+%H:%M:%S')${NC} - 원격 변경사항 감지"
         
         # Pull (코드 + 컨텍스트 모두)
-        if git pull origin auto-sync --quiet; then
+        if git pull origin master --quiet; then
             echo -e "${GREEN}✓ GitHub → 로컬 동기화 완료${NC}"
             
             # Claude 컨텍스트 파일 확인
