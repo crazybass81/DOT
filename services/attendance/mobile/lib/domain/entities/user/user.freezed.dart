@@ -20,6 +20,7 @@ mixin _$User {
   String get email => throw _privateConstructorUsedError;
   String get firstName => throw _privateConstructorUsedError;
   String get lastName => throw _privateConstructorUsedError;
+  UserRole get role => throw _privateConstructorUsedError;
   String? get phoneNumber => throw _privateConstructorUsedError;
   String? get avatarUrl => throw _privateConstructorUsedError;
   String? get employeeId => throw _privateConstructorUsedError;
@@ -48,6 +49,7 @@ abstract class $UserCopyWith<$Res> {
       String email,
       String firstName,
       String lastName,
+      UserRole role,
       String? phoneNumber,
       String? avatarUrl,
       String? employeeId,
@@ -80,6 +82,7 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? email = null,
     Object? firstName = null,
     Object? lastName = null,
+    Object? role = null,
     Object? phoneNumber = freezed,
     Object? avatarUrl = freezed,
     Object? employeeId = freezed,
@@ -109,6 +112,10 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           ? _value.lastName
           : lastName // ignore: cast_nullable_to_non_nullable
               as String,
+      role: null == role
+          ? _value.role
+          : role // ignore: cast_nullable_to_non_nullable
+              as UserRole,
       phoneNumber: freezed == phoneNumber
           ? _value.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
@@ -169,6 +176,7 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
       String email,
       String firstName,
       String lastName,
+      UserRole role,
       String? phoneNumber,
       String? avatarUrl,
       String? employeeId,
@@ -198,6 +206,7 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? email = null,
     Object? firstName = null,
     Object? lastName = null,
+    Object? role = null,
     Object? phoneNumber = freezed,
     Object? avatarUrl = freezed,
     Object? employeeId = freezed,
@@ -227,6 +236,10 @@ class __$$UserImplCopyWithImpl<$Res>
           ? _value.lastName
           : lastName // ignore: cast_nullable_to_non_nullable
               as String,
+      role: null == role
+          ? _value.role
+          : role // ignore: cast_nullable_to_non_nullable
+              as UserRole,
       phoneNumber: freezed == phoneNumber
           ? _value.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
@@ -283,6 +296,7 @@ class _$UserImpl extends _User {
       required this.email,
       required this.firstName,
       required this.lastName,
+      this.role = UserRole.user,
       this.phoneNumber,
       this.avatarUrl,
       this.employeeId,
@@ -304,6 +318,9 @@ class _$UserImpl extends _User {
   final String firstName;
   @override
   final String lastName;
+  @override
+  @JsonKey()
+  final UserRole role;
   @override
   final String? phoneNumber;
   @override
@@ -344,6 +361,7 @@ abstract class _User extends User {
       required final String email,
       required final String firstName,
       required final String lastName,
+      final UserRole role,
       final String? phoneNumber,
       final String? avatarUrl,
       final String? employeeId,
@@ -365,6 +383,8 @@ abstract class _User extends User {
   String get firstName;
   @override
   String get lastName;
+  @override
+  UserRole get role;
   @override
   String? get phoneNumber;
   @override
