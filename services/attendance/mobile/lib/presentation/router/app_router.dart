@@ -7,6 +7,7 @@ import '../pages/auth/master_admin_login_page.dart';
 import '../pages/auth/forgot_password_page.dart';
 import '../pages/auth/biometric_setup_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
+import '../pages/admin/master_admin_dashboard_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
@@ -26,6 +27,7 @@ import '../../features/test/database_test_screen.dart';
 class RouteNames {
   static const String splash = '/';
   static const String masterAdminLogin = '/master-admin-login';
+  static const String masterAdminDashboard = '/admin/dashboard';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
@@ -77,9 +79,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
       
-      // If authenticated and on login page, go to dashboard
+      // If authenticated and on login page, check user role
       if (isAuthenticated && state.location == RouteNames.masterAdminLogin) {
-        return RouteNames.dashboard;
+        // Check if user is admin
+        final user = authState.user;
+        if (user?.role.toString() == 'UserRole.admin') {
+          return RouteNames.masterAdminDashboard;
+        } else {
+          return RouteNames.dashboard;
+        }
       }
       
       return null;
@@ -107,6 +115,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.biometricSetup,
         builder: (context, state) => const BiometricSetupPage(),
+      ),
+      
+      // Master Admin Dashboard
+      GoRoute(
+        path: RouteNames.masterAdminDashboard,
+        builder: (context, state) => const MasterAdminDashboardPage(),
       ),
       
       // Main app with bottom navigation
