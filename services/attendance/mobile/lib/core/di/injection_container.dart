@@ -53,7 +53,9 @@ Future<void> configureDependencies() async {
   // This replaces getIt.init() until build_runner issues are resolved
   
   // Check if already initialized to prevent duplicate registrations
-  if (getIt.isRegistered<SharedPreferences>()) {
+  // Check for SecureStorageService as it's a critical dependency
+  if (getIt.isRegistered<SecureStorageService>()) {
+    debugPrint('Dependencies already configured, skipping...');
     return; // Already initialized
   }
   
@@ -75,9 +77,11 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<Dio>(dio);
 
   // Core Services
+  // Register SecureStorageService first as it's needed by AuthLocalDataSource
   getIt.registerSingleton<SecureStorageService>(
     SecureStorageService(getIt<FlutterSecureStorage>()),
   );
+  debugPrint('SecureStorageService registered successfully');
   
   final localStorage = await LocalStorageService.initialize();
   getIt.registerSingleton<LocalStorageService>(localStorage);
@@ -201,7 +205,7 @@ void resetDependencies() {
 }
 
 /// Check if dependencies are configured
-bool get isDependenciesConfigured => getIt.isRegistered<SharedPreferences>();
+bool get isDependenciesConfigured => getIt.isRegistered<SecureStorageService>();
 
 @module
 abstract class RegisterModule {
