@@ -204,8 +204,6 @@ class CameraService {
     try {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: imagePath,
-        aspectRatioPresets: aspectRatioPresets,
-        aspectRatio: aspectRatio,
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
@@ -216,11 +214,13 @@ class CameraService {
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
             hideBottomControls: false,
+            aspectRatioPresets: aspectRatioPresets,
           ),
           IOSUiSettings(
             title: 'Crop Image',
             doneButtonTitle: 'Done',
             cancelButtonTitle: 'Cancel',
+            aspectRatioPresets: aspectRatioPresets,
           ),
         ],
       );
