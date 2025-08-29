@@ -8,8 +8,15 @@ import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 
 class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
-  factory NotificationService() => _instance;
+  static NotificationService? _instance;
+  
+  /// Factory constructor for singleton pattern
+  factory NotificationService() {
+    _instance ??= NotificationService._internal();
+    return _instance!;
+  }
+  
+  /// Internal constructor
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
@@ -17,7 +24,8 @@ class NotificationService {
 
   /// Static method for easy access
   static Future<void> initialize() async {
-    await _instance._initialize();
+    final instance = NotificationService();
+    await instance._initialize();
   }
 
   /// Static method for showing notifications
@@ -26,12 +34,17 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    await _instance._showNotificationInternal(
-      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title: title,
-      body: body,
-      payload: payload,
-    );
+    try {
+      final instance = NotificationService();
+      await instance._showNotificationInternal(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title,
+        body: body,
+        payload: payload,
+      );
+    } catch (e) {
+      debugPrint('Failed to show notification: $e');
+    }
   }
 
   /// Initialize notification service

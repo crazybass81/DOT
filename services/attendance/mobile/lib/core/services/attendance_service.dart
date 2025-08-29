@@ -26,6 +26,7 @@ class AttendanceService {
   
   Timer? _syncTimer;
   StreamController<List<AttendanceQueue>>? _queueController;
+  bool _isInitialized = false;
 
   AttendanceService(
     this._locationService,
@@ -37,12 +38,27 @@ class AttendanceService {
 
   /// Initialize service and start auto-sync
   Future<void> initialize() async {
+    if (_isInitialized) return;
+    
     try {
       await _locationService.initialize();
+      _initializeStreamController();
       _startAutoSync();
+      _isInitialized = true;
+      debugPrint('Attendance service initialized successfully');
     } catch (e) {
       debugPrint('Failed to initialize attendance service: $e');
+      rethrow;
     }
+  }
+  
+  /// Initialize stream controller
+  void _initializeStreamController() {
+    _queueController ??= StreamController<List<AttendanceQueue>>.broadcast(
+      onCancel: () {
+        debugPrint('Queue stream canceled');
+      },
+    );
   }
 
   /// Verify attendance location and requirements
@@ -273,7 +289,7 @@ class AttendanceService {
       );
 
       // Notify listeners
-      _queueController?.add(existingQueue);
+      _notifyQueueChange(existingQueue);
     } catch (e) {
       debugPrint('Failed to queue offline attendance: $e');
       throw StorageException(
@@ -433,13 +449,24 @@ class AttendanceService {
       json.encode(queueJson),
     );
 
-    _queueController?.add(queue);
+    _notifyQueueChange(queue);
   }
 
   /// Get queue stream for listening to changes
   Stream<List<AttendanceQueue>> get queueStream {
-    _queueController ??= StreamController<List<AttendanceQueue>>.broadcast();
+    _initializeStreamController();
     return _queueController!.stream;
+  }
+  
+  /// Safely notify queue changes
+  void _notifyQueueChange(List<AttendanceQueue> queue) {
+    try {
+      if (_queueController != null && !_queueController!.isClosed) {
+        _queueController!.add(queue);
+      }
+    } catch (e) {
+      debugPrint('Failed to notify queue change: $e');
+    }
   }
 
   /// Show success feedback
@@ -481,7 +508,7 @@ class AttendanceService {
   /// Clear offline queue
   Future<void> clearOfflineQueue() async {
     await _localStorageService.remove(_offlineQueueKey);
-    _queueController?.add([]);
+    _notifyQueueChange([]);
   }
 
   /// Get last sync time
@@ -497,6 +524,8 @@ class AttendanceService {
   void dispose() {
     _syncTimer?.cancel();
     _queueController?.close();
+    _queueController = null;
     _locationService.dispose();
+    _isInitialized = false;
   }
 }

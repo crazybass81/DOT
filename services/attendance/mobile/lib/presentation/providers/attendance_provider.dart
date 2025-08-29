@@ -28,13 +28,16 @@ class AttendanceState with _$AttendanceState {
 
 class AttendanceNotifier extends StateNotifier<AttendanceState> {
   final AttendanceService _attendanceService;
+  bool _isInitialized = false;
 
-  AttendanceNotifier(this._attendanceService) : super(const AttendanceState()) {
-    _initialize();
-  }
+  AttendanceNotifier(this._attendanceService) : super(const AttendanceState());
 
-  /// Initialize attendance provider
-  Future<void> _initialize() async {
+  /// Initialize attendance provider - must be called after creation
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    
+    state = state.copyWith(isLoading: true, error: null);
+    
     try {
       await _attendanceService.initialize();
       await _loadOfflineQueue();
@@ -42,10 +45,18 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       
       // Listen to queue changes
       _attendanceService.queueStream.listen((queue) {
-        state = state.copyWith(offlineQueue: queue);
+        if (mounted) {
+          state = state.copyWith(offlineQueue: queue);
+        }
       });
+      
+      _isInitialized = true;
+      state = state.copyWith(isLoading: false);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
     }
   }
 
@@ -215,9 +226,13 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   Future<void> _loadOfflineQueue() async {
     try {
       final queue = await _attendanceService.getOfflineQueue();
-      state = state.copyWith(offlineQueue: queue);
+      if (mounted) {
+        state = state.copyWith(offlineQueue: queue);
+      }
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      if (mounted) {
+        state = state.copyWith(error: e.toString());
+      }
     }
   }
 
@@ -225,7 +240,9 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   Future<void> _loadLastSyncTime() async {
     try {
       final lastSync = await _attendanceService.getLastSyncTime();
-      state = state.copyWith(lastSyncTime: lastSync);
+      if (mounted) {
+        state = state.copyWith(lastSyncTime: lastSync);
+      }
     } catch (e) {
       // Ignore error for last sync time
     }
@@ -260,6 +277,12 @@ final attendanceServiceProvider = Provider<AttendanceService>((ref) {
 
 final attendanceProvider = StateNotifierProvider<AttendanceNotifier, AttendanceState>((ref) {
   return AttendanceNotifier(ref.read(attendanceServiceProvider));
+});
+
+/// Provider for initializing attendance service
+final attendanceInitializationProvider = FutureProvider<void>((ref) async {
+  final notifier = ref.read(attendanceProvider.notifier);
+  await notifier.initialize();
 });
 
 // Helper providers

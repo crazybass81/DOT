@@ -9,6 +9,8 @@ import '../../widgets/dashboard/announcement_card.dart';
 import '../../widgets/dashboard/quick_action_buttons.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
+import '../../../core/services/app_initialization_service.dart';
+import 'package:flutter/foundation.dart';
 import '../../providers/announcement_provider.dart';
 
 /// USER 역할 대시보드
@@ -26,10 +28,28 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
   @override
   void initState() {
     super.initState();
-    // 초기 데이터 로드
+    // 초기 데이터 로드 및 출근 서비스 초기화
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshData();
+      _initializeServices();
     });
+  }
+
+  /// Initialize services and load initial data
+  Future<void> _initializeServices() async {
+    try {
+      // Ensure app is initialized first
+      await ref.read(appInitializationProvider.future);
+      
+      // Then initialize attendance provider
+      await ref.read(attendanceInitializationProvider.future);
+      
+      // Load other data
+      await _refreshData();
+    } catch (e) {
+      debugPrint('Failed to initialize services: $e');
+      // Continue with data refresh even if initialization fails
+      await _refreshData();
+    }
   }
 
   Future<void> _refreshData() async {
@@ -43,9 +63,33 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final appReady = ref.watch(appReadyProvider);
     final todayAttendance = ref.watch(todayAttendanceProvider);
     final weeklyHours = ref.watch(weeklyHoursProvider);
     final announcements = ref.watch(recentAnnouncementsProvider);
+    
+    // Show loading indicator while app is initializing
+    if (!appReady) {
+      return Scaffold(
+        backgroundColor: NeoBrutalTheme.bg,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: NeoBrutalTheme.hi,
+                strokeWidth: 3.0,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Initializing services...',
+                style: NeoBrutalTheme.body,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: NeoBrutalTheme.bg,

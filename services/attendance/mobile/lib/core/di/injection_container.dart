@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
@@ -12,6 +13,7 @@ import '../services/notification_service.dart';
 import '../services/biometric_service.dart';
 import '../services/camera_service.dart';
 import '../services/qr_service.dart';
+import '../services/attendance_service.dart';
 
 import '../../data/datasources/auth/auth_local_datasource.dart';
 import '../../data/datasources/auth/auth_remote_datasource.dart';
@@ -50,7 +52,161 @@ final getIt = GetIt.instance;
 Future<void> configureDependencies() async {
   // Manual registration of dependencies
   // This replaces getIt.init() until build_runner issues are resolved
+  
+  // Check if already initialized to prevent duplicate registrations
+  // Check for SecureStorageService as it's a critical dependency
+  if (getIt.isRegistered<SecureStorageService>()) {
+    debugPrint('Dependencies already configured, skipping...');
+    return; // Already initialized
+  }
+  
+  // External dependencies
+  final sharedPreferences = await SharedPreferences.getInstance();
+  getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  
+  const flutterSecureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
+  );
+  getIt.registerSingleton<FlutterSecureStorage>(flutterSecureStorage);
+  
+  final dio = DioClient().dio;
+  getIt.registerSingleton<Dio>(dio);
+
+  // Core Services
+  // Register SecureStorageService first as it's needed by AuthLocalDataSource
+  getIt.registerSingleton<SecureStorageService>(
+    SecureStorageService(getIt<FlutterSecureStorage>()),
+  );
+  debugPrint('SecureStorageService registered successfully');
+  
+  final localStorage = await LocalStorageService.initialize();
+  getIt.registerSingleton<LocalStorageService>(localStorage);
+  
+  getIt.registerSingleton<LocationService>(LocationService());
+  getIt.registerSingleton<NotificationService>(NotificationService());
+  getIt.registerSingleton<BiometricService>(BiometricService());
+  getIt.registerSingleton<CameraService>(CameraService());
+  getIt.registerSingleton<QrService>(QrService());
+  getIt.registerSingleton<AttendanceService>(
+    AttendanceService(
+      getIt<LocationService>(),
+      getIt<QrService>(),
+      getIt<BiometricService>(),
+      getIt<NotificationService>(),
+      getIt<LocalStorageService>(),
+    ),
+  );
+
+  // Data Sources
+  getIt.registerSingleton<AuthLocalDataSource>(
+    AuthLocalDataSourceImpl(
+      getIt<SecureStorageService>(),
+      getIt<LocalStorageService>(),
+    ),
+  );
+  
+  getIt.registerSingleton<AuthRemoteDataSource>(
+    AuthRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  
+  getIt.registerSingleton<AttendanceLocalDataSource>(
+    AttendanceLocalDataSourceImpl(getIt<LocalStorageService>()),
+  );
+  
+  getIt.registerSingleton<AttendanceRemoteDataSource>(
+    AttendanceRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  
+  getIt.registerSingleton<UserLocalDataSource>(
+    UserLocalDataSourceImpl(getIt<LocalStorageService>()),
+  );
+  
+  getIt.registerSingleton<UserRemoteDataSource>(
+    UserRemoteDataSourceImpl(getIt<Dio>()),
+  );
+
+  // Repositories
+  getIt.registerSingleton<AuthRepository>(
+    AuthRepositoryImpl(
+      getIt<AuthLocalDataSource>(),
+      getIt<AuthRemoteDataSource>(),
+    ),
+  );
+  
+  getIt.registerSingleton<AttendanceRepository>(
+    AttendanceRepositoryImpl(
+      getIt<AttendanceLocalDataSource>(),
+      getIt<AttendanceRemoteDataSource>(),
+    ),
+  );
+  
+  getIt.registerSingleton<UserRepository>(
+    UserRepositoryImpl(
+      getIt<UserLocalDataSource>(),
+      getIt<UserRemoteDataSource>(),
+    ),
+  );
+
+  // Use Cases - Auth
+  getIt.registerSingleton<LoginUseCase>(
+    LoginUseCase(getIt<AuthRepository>()),
+  );
+  
+  getIt.registerSingleton<LogoutUseCase>(
+    LogoutUseCase(getIt<AuthRepository>()),
+  );
+  
+  getIt.registerSingleton<RefreshTokenUseCase>(
+    RefreshTokenUseCase(getIt<AuthRepository>()),
+  );
+  
+  getIt.registerSingleton<VerifyBiometricUseCase>(
+    VerifyBiometricUseCase(getIt<AuthRepository>()),
+  );
+
+  // Use Cases - Attendance
+  getIt.registerSingleton<CheckInUseCase>(
+    CheckInUseCase(getIt<AttendanceRepository>()),
+  );
+  
+  getIt.registerSingleton<CheckOutUseCase>(
+    CheckOutUseCase(getIt<AttendanceRepository>()),
+  );
+  
+  getIt.registerSingleton<GetAttendanceHistoryUseCase>(
+    GetAttendanceHistoryUseCase(getIt<AttendanceRepository>()),
+  );
+  
+  getIt.registerSingleton<GetAttendanceStatusUseCase>(
+    GetAttendanceStatusUseCase(getIt<AttendanceRepository>()),
+  );
+
+  // Use Cases - User
+  getIt.registerSingleton<GetUserProfileUseCase>(
+    GetUserProfileUseCase(getIt<UserRepository>()),
+  );
+  
+  getIt.registerSingleton<UpdateUserProfileUseCase>(
+    UpdateUserProfileUseCase(getIt<UserRepository>()),
+  );
+  
+  getIt.registerSingleton<UploadAvatarUseCase>(
+    UploadAvatarUseCase(getIt<UserRepository>()),
+  );
 }
+
+/// Reset all dependencies for hot reload or testing
+void resetDependencies() {
+  getIt.reset();
+}
+
+/// Check if dependencies are configured
+bool get isDependenciesConfigured => getIt.isRegistered<SecureStorageService>();
 
 @module
 abstract class RegisterModule {
