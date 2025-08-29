@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../di/injection_container.dart';
-import 'attendance_service.dart';
 import 'notification_service.dart';
 
 /// Service responsible for proper app initialization order
