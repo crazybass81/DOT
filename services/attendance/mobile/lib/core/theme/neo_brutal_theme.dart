@@ -25,6 +25,7 @@ class NeoBrutalTheme {
   static const Color accent = pastelPink;
   
   // Gray scale
+  static const Color gray200 = Color(0xFFEEEEEE);
   static const Color gray300 = Color(0xFFE0E0E0);
   static const Color gray400 = Color(0xFFBDBDBD);
   static const Color gray500 = Color(0xFF9E9E9E);
