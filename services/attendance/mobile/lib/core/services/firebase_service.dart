@@ -39,7 +39,7 @@ class FirebaseService {
     try {
       debugPrint('Initializing Firebase...');
       
-      // For now, skip actual Firebase initialization to avoid configuration issues
+      // Initialize Firebase with mock implementation for development
       // In production, uncomment these lines with proper Firebase configuration
       
       // _app = await Firebase.initializeApp();
@@ -50,12 +50,51 @@ class FirebaseService {
       // _messaging = FirebaseMessaging.instance;
       // _functions = FirebaseFunctions.instance;
       
+      // For now, create mock user database
+      await _initializeMockUserDatabase();
+      
       _initialized = true;
-      debugPrint('Firebase initialization skipped (test mode)');
+      debugPrint('Firebase initialized with mock data');
     } catch (e) {
       debugPrint('Firebase initialization error: $e');
       // Don't rethrow to allow app to run without Firebase
     }
+  }
+  
+  // Mock user database for testing
+  static final Map<String, Map<String, dynamic>> _mockUsers = {
+    'archt723@gmail.com': {
+      'uid': 'admin_001',
+      'email': 'archt723@gmail.com',
+      'password': '1q2w3e2w1q!', // In production, this would be hashed
+      'firstName': 'Master',
+      'lastName': 'Admin',
+      'role': 'admin',
+      'organizationId': 'org_001',
+      'organizationName': 'DOT 본사',
+      'createdAt': DateTime.now().toIso8601String(),
+      'isActive': true,
+      'branches': [
+        {
+          'id': 'branch_001',
+          'name': '강남지점',
+          'address': '서울시 강남구',
+          'manager': null,
+          'employeeCount': 0,
+        },
+        {
+          'id': 'branch_002', 
+          'name': '홍대지점',
+          'address': '서울시 마포구',
+          'manager': null,
+          'employeeCount': 0,
+        }
+      ]
+    }
+  };
+  
+  Future<void> _initializeMockUserDatabase() async {
+    debugPrint('Mock user database initialized with test account: archt723@gmail.com');
   }
   
   // Mock sign in for testing
