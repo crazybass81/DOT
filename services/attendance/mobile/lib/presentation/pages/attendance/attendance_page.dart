@@ -225,4 +225,199 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
       ),
     );
   }
+  
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: NeoBrutalButton(
+            onPressed: () {
+              // Handle check-in
+              ref.read(attendanceProvider.notifier).checkIn();
+            },
+            backgroundColor: NeoBrutalTheme.success,
+            foregroundColor: NeoBrutalTheme.white,
+            child: const Column(
+              children: [
+                Icon(Icons.login, size: 32),
+                SizedBox(height: NeoBrutalTheme.space2),
+                Text('Check In'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: NeoBrutalTheme.space4),
+        Expanded(
+          child: NeoBrutalButton(
+            onPressed: () {
+              // Handle check-out
+              ref.read(attendanceProvider.notifier).checkOut();
+            },
+            backgroundColor: NeoBrutalTheme.error,
+            foregroundColor: NeoBrutalTheme.white,
+            child: const Column(
+              children: [
+                Icon(Icons.logout, size: 32),
+                SizedBox(height: NeoBrutalTheme.space2),
+                Text('Check Out'),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildAttendanceMethods() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Attendance Methods',
+          style: NeoBrutalTheme.heading,
+        ),
+        const SizedBox(height: NeoBrutalTheme.space4),
+        NeoBrutalCard(
+          child: ListTile(
+            leading: const Icon(Icons.qr_code_scanner),
+            title: const Text('QR Code Scanner'),
+            subtitle: const Text('Scan QR code for attendance'),
+            onTap: () {
+              // Navigate to QR scanner
+            },
+          ),
+        ),
+        const SizedBox(height: NeoBrutalTheme.space3),
+        NeoBrutalCard(
+          child: ListTile(
+            leading: const Icon(Icons.location_on),
+            title: const Text('Location Check'),
+            subtitle: const Text('Check-in with location verification'),
+            onTap: () {
+              // Navigate to location check
+            },
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildOfflineQueueSummary() {
+    final offlineQueue = ref.watch(attendanceProvider).offlineQueue;
+    
+    return NeoBrutalCard(
+      backgroundColor: NeoBrutalTheme.warning.withOpacity(0.1),
+      borderColor: NeoBrutalTheme.warning,
+      child: Padding(
+        padding: const EdgeInsets.all(NeoBrutalTheme.space4),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.sync_problem,
+              color: NeoBrutalTheme.warning,
+            ),
+            const SizedBox(width: NeoBrutalTheme.space3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${offlineQueue.length} pending records',
+                    style: NeoBrutalTheme.body.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'Will sync when online',
+                    style: NeoBrutalTheme.caption,
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: _showOfflineQueueDialog,
+              child: const Text('View'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildSuccessCard(String message) {
+    return NeoBrutalCard(
+      backgroundColor: NeoBrutalTheme.success.withOpacity(0.1),
+      borderColor: NeoBrutalTheme.success,
+      child: Padding(
+        padding: const EdgeInsets.all(NeoBrutalTheme.space4),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.check_circle,
+              color: NeoBrutalTheme.success,
+            ),
+            const SizedBox(width: NeoBrutalTheme.space3),
+            Expanded(
+              child: Text(
+                message,
+                style: NeoBrutalTheme.body,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildErrorCard(String error) {
+    return NeoBrutalCard(
+      backgroundColor: NeoBrutalTheme.error.withOpacity(0.1),
+      borderColor: NeoBrutalTheme.error,
+      child: Padding(
+        padding: const EdgeInsets.all(NeoBrutalTheme.space4),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.error,
+              color: NeoBrutalTheme.error,
+            ),
+            const SizedBox(width: NeoBrutalTheme.space3),
+            Expanded(
+              child: Text(
+                error,
+                style: NeoBrutalTheme.body,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Future<void> _refreshAttendanceData() async {
+    // Refresh attendance data
+    await ref.read(attendanceProvider.notifier).refreshAttendance();
+  }
+  
+  void _showOfflineQueueDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const AttendanceQueueWidget(),
+    );
+  }
+  
+  void _showErrorSnackbar(String error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error),
+        backgroundColor: NeoBrutalTheme.error,
+      ),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 }

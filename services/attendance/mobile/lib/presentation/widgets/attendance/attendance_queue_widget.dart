@@ -244,7 +244,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
           ),
           
           // Location if available
-          if (item.locationName != null) ..[
+          if (item.locationName != null) ...[
             const SizedBox(height: NeoBrutalTheme.space1),
             Row(
               children: [
@@ -266,7 +266,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
           ],
           
           // Error message if failed
-          if (item.status == QueueStatus.failed && item.lastError != null) ..[
+          if (item.status == QueueStatus.failed && item.lastError != null) ...[
             const SizedBox(height: NeoBrutalTheme.space2),
             Container(
               padding: const EdgeInsets.all(NeoBrutalTheme.space2),
