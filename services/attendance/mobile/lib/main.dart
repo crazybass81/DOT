@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/pages/dashboard/dashboard_page.dart';
 import 'core/di/injection_container.dart';
@@ -38,22 +36,26 @@ class DotAttendanceApp extends ConsumerWidget {
   const DotAttendanceApp({super.key});
 
   static TextTheme _buildTextTheme(BuildContext context) {
-    try {
-      // Try to use Google Fonts
-      return GoogleFonts.doHyeonTextTheme(
-        Theme.of(context).textTheme,
-      ).apply(
-        bodyColor: NeoBrutalTheme.fg,
-        displayColor: NeoBrutalTheme.fg,
-      );
-    } catch (e) {
-      // Fallback to default text theme if Google Fonts fails
-      debugPrint('Google Fonts failed to load, using system fonts: $e');
-      return Theme.of(context).textTheme.apply(
-        bodyColor: NeoBrutalTheme.fg,
-        displayColor: NeoBrutalTheme.fg,
-      );
-    }
+    return Theme.of(context).textTheme.copyWith(
+      displayLarge: const TextStyle(fontFamily: 'DoHyeon'),
+      displayMedium: const TextStyle(fontFamily: 'DoHyeon'),
+      displaySmall: const TextStyle(fontFamily: 'DoHyeon'),
+      headlineLarge: const TextStyle(fontFamily: 'DoHyeon'),
+      headlineMedium: const TextStyle(fontFamily: 'DoHyeon'),
+      headlineSmall: const TextStyle(fontFamily: 'DoHyeon'),
+      titleLarge: const TextStyle(fontFamily: 'DoHyeon'),
+      titleMedium: const TextStyle(fontFamily: 'DoHyeon'),
+      titleSmall: const TextStyle(fontFamily: 'DoHyeon'),
+      bodyLarge: const TextStyle(fontFamily: 'Orbitron'),
+      bodyMedium: const TextStyle(fontFamily: 'Orbitron'),
+      bodySmall: const TextStyle(fontFamily: 'Orbitron'),
+      labelLarge: const TextStyle(fontFamily: 'Orbitron'),
+      labelMedium: const TextStyle(fontFamily: 'Orbitron'),
+      labelSmall: const TextStyle(fontFamily: 'Orbitron'),
+    ).apply(
+      bodyColor: NeoBrutalTheme.fg,
+      displayColor: NeoBrutalTheme.fg,
+    );
   }
 
   @override
