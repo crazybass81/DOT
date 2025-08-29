@@ -88,4 +88,13 @@ class FirebaseService {
     debugPrint('Logging event: $name with parameters: $parameters');
     // Analytics logging would happen here if Firebase was initialized
   }
+  
+  // Get attendance records
+  Stream<Map<String, dynamic>> getAttendanceRecords({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async* {
+    debugPrint('Getting attendance records from $startDate to $endDate');
+    yield {};
+  }
 }
