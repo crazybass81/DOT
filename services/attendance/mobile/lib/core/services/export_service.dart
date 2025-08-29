@@ -79,7 +79,7 @@ class ExportService {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
           .value = TextCellValue('생성일시: ${_dateFormat.format(now)}');
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-          .value = const TextCellValue(''); // 빈 행
+          .value = TextCellValue(''); // 빈 행
       
       currentRow++;
 
