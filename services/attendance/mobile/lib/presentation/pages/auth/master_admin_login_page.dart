@@ -236,78 +236,86 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
                 
                 const SizedBox(height: 24),
                 
-                // QR Scan Button for Regular Users
-                GestureDetector(
-                  onTap: _handleQRScan,
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: NeoBrutalTheme.secondary,
-                      border: Border.all(color: NeoBrutalTheme.fg, width: 3),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: NeoBrutalTheme.fg,
-                          offset: Offset(4, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.qr_code_scanner,
-                          color: NeoBrutalTheme.white,
-                          size: 32,
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'SCAN QR CODE',
-                              style: NeoBrutalTheme.headline4.copyWith(
-                                color: NeoBrutalTheme.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                // Employee Access Info
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: NeoBrutalTheme.white,
+                    border: Border.all(color: NeoBrutalTheme.fg, width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: NeoBrutalTheme.fg,
+                        offset: Offset(4, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: NeoBrutalTheme.secondary,
+                              border: Border.all(color: NeoBrutalTheme.fg, width: 2),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            Text(
-                              'For regular employees',
-                              style: NeoBrutalTheme.caption.copyWith(
-                                color: NeoBrutalTheme.white.withOpacity(0.9),
+                            child: const Icon(
+                              Icons.qr_code,
+                              color: NeoBrutalTheme.white,
+                              size: 32,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'EMPLOYEE ACCESS',
+                                  style: NeoBrutalTheme.headline4.copyWith(
+                                    color: NeoBrutalTheme.fg,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Use your phone camera to scan the QR code provided by your administrator',
+                                  style: NeoBrutalTheme.caption.copyWith(
+                                    color: NeoBrutalTheme.gray600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: NeoBrutalTheme.accent.withOpacity(0.1),
+                          border: Border.all(color: NeoBrutalTheme.accent, width: 2),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              color: NeoBrutalTheme.accent,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Scanning the QR code will automatically log you in and redirect to your dashboard',
+                                style: NeoBrutalTheme.caption.copyWith(
+                                  color: NeoBrutalTheme.fg,
+                                ),
                               ),
                             ),
                           ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Info Text
-                Container(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: NeoBrutalTheme.accent.withOpacity(0.1),
-                    border: Border.all(color: NeoBrutalTheme.accent, width: 2),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        color: NeoBrutalTheme.accent,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Regular employees: Scan the QR code provided by your administrator to access the system',
-                          style: NeoBrutalTheme.caption.copyWith(
-                            color: NeoBrutalTheme.fg,
-                          ),
                         ),
                       ),
                     ],
@@ -445,10 +453,5 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
         });
       }
     }
-  }
-  
-  void _handleQRScan() {
-    // Navigate to QR scanner page
-    context.push('/qr-scan-login');
   }
 }

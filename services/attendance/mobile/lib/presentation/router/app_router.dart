@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/auth/login_page.dart';
+import '../pages/auth/master_admin_login_page.dart';
 import '../pages/auth/forgot_password_page.dart';
 import '../pages/auth/biometric_setup_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
