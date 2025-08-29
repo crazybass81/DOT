@@ -22,6 +22,13 @@ class NeoBrutalTheme {
   static const Color black = Color(0xFF000000);
   static const Color primary = hi;
   static const Color secondary = pastelMint;
+  static const Color accent = pastelPink;
+  
+  // Gray scale
+  static const Color gray300 = Color(0xFFE0E0E0);
+  static const Color gray400 = Color(0xFFBDBDBD);
+  static const Color gray500 = Color(0xFF9E9E9E);
+  static const Color gray600 = Color(0xFF757575);
   
   // 파스텔 (사용 제한 10%)
   static const Color pastelMint = Color(0xFF6EE7B7);
