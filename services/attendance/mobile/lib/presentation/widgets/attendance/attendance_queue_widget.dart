@@ -57,7 +57,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
             const SizedBox(height: NeoBrutalTheme.space4),
             
             // Queue Items
-            if (offlineQueue.isNotEmpty) ..[
+            if (offlineQueue.isNotEmpty) ...[
               Container(
                 constraints: const BoxConstraints(maxHeight: 300),
                 child: ListView.separated(
