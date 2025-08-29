@@ -271,12 +271,15 @@ class WeeklyChartCard extends ConsumerWidget {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    SkeletonContainer.rounded(
+                    Container(
                       width: 24,
                       height: height,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        topRight: Radius.circular(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -305,10 +308,13 @@ class WeeklyChartCard extends ConsumerWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SkeletonContainer.rounded(
+                    Container(
                       width: 12,
                       height: 12,
-                      borderRadius: BorderRadius.circular(2),
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                     const SizedBox(width: 4),
                     SkeletonLine(

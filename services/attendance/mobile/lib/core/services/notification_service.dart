@@ -185,8 +185,8 @@ class NotificationService {
     }
   }
 
-  /// Show local notification
-  Future<void> showNotification({
+  /// Show local notification with ID
+  Future<void> showNotificationWithId({
     required int id,
     required String title,
     required String body,

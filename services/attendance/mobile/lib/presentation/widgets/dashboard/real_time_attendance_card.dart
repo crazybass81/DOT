@@ -138,7 +138,7 @@ class _RealTimeAttendanceCardState extends ConsumerState<RealTimeAttendanceCard>
               _buildStatusCard('출근', presentCount, NeoBrutalTheme.success, Icons.work),
               _buildStatusCard('휴게', breakCount, NeoBrutalTheme.warning, Icons.coffee),
               _buildStatusCard('지각', lateCount, NeoBrutalTheme.error, Icons.schedule),
-              _buildStatusCard('외근', remoteCount, NeoBrutalTheme.info, Icons.location_away),
+              _buildStatusCard('외근', remoteCount, NeoBrutalTheme.info, Icons.location_on),
             ],
           ),
           
@@ -477,7 +477,7 @@ class _RealTimeAttendanceCardState extends ConsumerState<RealTimeAttendanceCard>
       case '지각':
         return Icons.schedule;
       case '외근':
-        return Icons.location_away;
+        return Icons.location_on;
       default:
         return Icons.person;
     }
