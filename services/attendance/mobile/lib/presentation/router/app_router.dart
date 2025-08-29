@@ -19,6 +19,7 @@ import '../pages/reports/monthly_report_page.dart';
 import '../pages/reports/custom_report_page.dart';
 import '../widgets/common/main_navigation.dart';
 import '../providers/auth_provider.dart';
+import '../../features/test/database_test_screen.dart';
 
 // Route names
 class RouteNames {
@@ -40,6 +41,7 @@ class RouteNames {
   static const String reports = '/main/reports';
   static const String monthlyReport = '/main/reports/monthly';
   static const String customReport = '/main/reports/custom';
+  static const String databaseTest = '/main/database-test';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -168,6 +170,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const CustomReportPage(),
               ),
             ],
+          ),
+          GoRoute(
+            path: RouteNames.databaseTest,
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: DatabaseTestScreen(),
+            ),
           ),
         ],
       ),
