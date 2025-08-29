@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'user_role.dart';
+import '../business/business_profile.dart';
 
 part 'user.freezed.dart';
 
