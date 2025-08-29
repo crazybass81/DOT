@@ -268,6 +268,26 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
     _attendanceService.dispose();
     super.dispose();
   }
+  
+  // Quick actions
+  Future<void> checkIn() async {
+    await markAttendance(
+      actionType: AttendanceActionType.checkIn,
+      method: AttendanceMethod.manual,
+    );
+  }
+  
+  Future<void> checkOut() async {
+    await markAttendance(
+      actionType: AttendanceActionType.checkOut,
+      method: AttendanceMethod.manual,
+    );
+  }
+  
+  Future<void> refreshAttendance() async {
+    await _loadOfflineQueue();
+    await syncOfflineQueue();
+  }
 }
 
 // Providers
