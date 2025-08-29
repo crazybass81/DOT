@@ -76,9 +76,14 @@ Future<void> configureDependencies() async {
   }
   
   // External dependencies
+  debugPrint('Starting dependency registration...');
+  
+  debugPrint('Registering SharedPreferences...');
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  debugPrint('SharedPreferences registered');
   
+  debugPrint('Registering FlutterSecureStorage...');
   const flutterSecureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(
       encryptedSharedPreferences: true,
@@ -88,9 +93,12 @@ Future<void> configureDependencies() async {
     ),
   );
   getIt.registerSingleton<FlutterSecureStorage>(flutterSecureStorage);
+  debugPrint('FlutterSecureStorage registered');
   
+  debugPrint('Registering Dio...');
   final dio = DioClient().dio;
   getIt.registerSingleton<Dio>(dio);
+  debugPrint('Dio registered');
 
   // Core Services
   // Register SecureStorageService first as it's needed by AuthLocalDataSource
