@@ -72,7 +72,18 @@ dependencies:
   # Missing dependencies for services
   geocoding: ^2.1.1
   flutter_local_notifications: ^17.2.3
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  firebase_firestore: ^4.19.0
+  firebase_storage: ^11.7.7
   firebase_messaging: ^14.7.2
+  firebase_analytics: ^10.10.7
+  cloud_functions: ^4.7.6
+  
+  # AWS DynamoDB
+  aws_dynamodb_api: ^2.0.0
+  aws_common: ^0.6.0
+  
   timezone: ^0.9.2
   local_auth: ^2.1.6
   camera: ^0.10.5+5
