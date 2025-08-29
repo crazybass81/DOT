@@ -11,7 +11,7 @@ class MainNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentRoute = GoRouterState.of(context).location;
+    final currentRoute = GoRouterState.of(context).matchedLocation;
 
     return Scaffold(
       body: child,

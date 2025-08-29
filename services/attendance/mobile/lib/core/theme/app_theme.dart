@@ -42,7 +42,6 @@ class AppTheme {
       primaryColor: primaryColor,
       primarySwatch: createMaterialColor(primaryColor),
       scaffoldBackgroundColor: backgroundColor,
-      backgroundColor: backgroundColor,
       cardColor: cardColor,
       
       colorScheme: const ColorScheme.light(
@@ -226,7 +225,6 @@ class AppTheme {
       primaryColor: primaryColor,
       primarySwatch: createMaterialColor(primaryColor),
       scaffoldBackgroundColor: darkBackgroundColor,
-      backgroundColor: darkBackgroundColor,
       cardColor: darkCardColor,
       
       colorScheme: const ColorScheme.dark(
