@@ -22,6 +22,9 @@ class User extends Equatable with _$User {
     DateTime? joiningDate,
     @Default(true) bool isActive,
     @Default(false) bool isBiometricEnabled,
+    BusinessProfile? businessProfile,     // 사업자 프로필 정보 (admin/masterAdmin만)
+    String? organizationId,               // 소속 조직 ID (호환성 유지)
+    String? organizationName,             // 소속 조직명 (호환성 유지)
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _User;
@@ -50,6 +53,22 @@ class User extends Equatable with _$User {
 
   String get name => displayName;
 
+  /// 사업자 여부 확인 (admin 이상 권한이면서 사업자 프로필 존재)
+  bool get isBusinessOwner => 
+      role.level >= UserRole.admin.level && businessProfile != null;
+
+  /// 사업자명 반환 (사업자 프로필이 있으면 사업자명, 없으면 조직명)
+  String? get businessName => 
+      businessProfile?.businessInfo.businessName ?? organizationName;
+
+  /// 대표자 여부 확인
+  bool get isRepresentative => 
+      businessProfile?.representative.name.isNotEmpty ?? false;
+
+  /// 사업자 인증 상태
+  String? get businessVerificationStatus => 
+      businessProfile?.completionStatus;
+
   @override
   List<Object?> get props => [
         id,
@@ -66,6 +85,9 @@ class User extends Equatable with _$User {
         joiningDate,
         isActive,
         isBiometricEnabled,
+        businessProfile,
+        organizationId,
+        organizationName,
         createdAt,
         updatedAt,
       ];
