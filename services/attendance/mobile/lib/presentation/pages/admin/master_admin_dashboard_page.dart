@@ -780,4 +780,154 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
       ),
     );
   }
+
+  String _getUserDisplayName() {
+    final user = ref.read(currentUserProvider);
+    if (_organizationData != null) {
+      final firstName = _organizationData!['firstName'] ?? '';
+      final lastName = _organizationData!['lastName'] ?? '';
+      return '$firstName $lastName'.trim();
+    }
+    return user?.firstName != null && user?.lastName != null
+        ? '${user?.firstName} ${user?.lastName}'
+        : user?.email ?? 'Master Admin';
+  }
+
+  int _getTotalBranches() {
+    if (_organizationData != null && _organizationData!['branches'] != null) {
+      return (_organizationData!['branches'] as List).length;
+    }
+    return 0;
+  }
+
+  Widget _buildOrganizationInfo() {
+    if (_organizationData == null) {
+      return const SizedBox.shrink();
+    }
+
+    final branches = _organizationData!['branches'] as List<dynamic>? ?? [];
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: NeoBrutalTheme.white,
+        border: Border.all(color: NeoBrutalTheme.fg, width: 3),
+        boxShadow: const [
+          BoxShadow(
+            color: NeoBrutalTheme.fg,
+            offset: Offset(4, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: NeoBrutalTheme.accent.withOpacity(0.1),
+                  border: Border.all(color: NeoBrutalTheme.accent, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.business,
+                  color: NeoBrutalTheme.accent,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _organizationData!['organizationName'] ?? 'Unknown Organization',
+                      style: NeoBrutalTheme.body.copyWith(
+                        color: NeoBrutalTheme.fg,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${branches.length} branches registered',
+                      style: NeoBrutalTheme.caption.copyWith(
+                        color: NeoBrutalTheme.gray600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (branches.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Divider(color: NeoBrutalTheme.gray200, thickness: 2),
+            const SizedBox(height: 12),
+            Text(
+              'BRANCH LOCATIONS',
+              style: NeoBrutalTheme.caption.copyWith(
+                color: NeoBrutalTheme.fg,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...branches.map<Widget>((branch) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: NeoBrutalTheme.primary,
+                      border: Border.all(color: NeoBrutalTheme.fg, width: 1),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          branch['name'] ?? 'Unknown Branch',
+                          style: NeoBrutalTheme.caption.copyWith(
+                            color: NeoBrutalTheme.fg,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (branch['address'] != null)
+                          Text(
+                            branch['address'],
+                            style: NeoBrutalTheme.caption.copyWith(
+                              color: NeoBrutalTheme.gray500,
+                              fontSize: 11,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: NeoBrutalTheme.secondary.withOpacity(0.1),
+                      border: Border.all(color: NeoBrutalTheme.secondary, width: 1),
+                    ),
+                    child: Text(
+                      '${branch['employeeCount'] ?? 0} employees',
+                      style: NeoBrutalTheme.caption.copyWith(
+                        color: NeoBrutalTheme.secondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
+          ],
+        ],
+      ),
+    );
+  }
 }
