@@ -177,10 +177,9 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
 
   Future<void> _toggleFlash() async {
     if (controller != null) {
-      await controller!.toggleFlash();
-      final flashStatus = await controller!.getFlashStatus() ?? false;
+      await controller!.toggleTorch();
       setState(() {
-        isFlashOn = flashStatus;
+        isFlashOn = !isFlashOn;
       });
       await HapticFeedback.selectionClick();
     }
