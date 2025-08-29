@@ -61,9 +61,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoading = authState.isLoading;
       
       // Handle QR deep link
-      if (state.location.startsWith(RouteNames.qrLogin)) {
+      if (state.matchedLocation.startsWith(RouteNames.qrLogin)) {
         // Extract token from query params
-        final token = state.queryParameters['token'];
+        final token = state.uri.queryParameters['token'];
         if (token != null) {
           // Process QR login token
           // This will be handled by the QR login page
@@ -73,14 +73,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       
       // If not authenticated, always go to master admin login
       if (!isAuthenticated) {
-        if (state.location != RouteNames.masterAdminLogin) {
+        if (state.matchedLocation != RouteNames.masterAdminLogin) {
           return RouteNames.masterAdminLogin;
         }
         return null;
       }
       
       // If authenticated and on login page, check user role
-      if (isAuthenticated && state.location == RouteNames.masterAdminLogin) {
+      if (isAuthenticated && state.matchedLocation == RouteNames.masterAdminLogin) {
         // Check if user is admin
         final user = authState.user;
         if (user?.role.toString() == 'UserRole.admin') {
