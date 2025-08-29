@@ -52,6 +52,11 @@ Future<void> configureDependencies() async {
   // Manual registration of dependencies
   // This replaces getIt.init() until build_runner issues are resolved
   
+  // Check if already initialized to prevent duplicate registrations
+  if (getIt.isRegistered<SharedPreferences>()) {
+    return; // Already initialized
+  }
+  
   // External dependencies
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
@@ -189,6 +194,14 @@ Future<void> configureDependencies() async {
     UploadAvatarUseCase(getIt<UserRepository>()),
   );
 }
+
+/// Reset all dependencies for hot reload or testing
+void resetDependencies() {
+  getIt.reset();
+}
+
+/// Check if dependencies are configured
+bool get isDependenciesConfigured => getIt.isRegistered<SharedPreferences>();
 
 @module
 abstract class RegisterModule {
