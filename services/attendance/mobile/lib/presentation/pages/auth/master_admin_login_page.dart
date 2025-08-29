@@ -114,20 +114,18 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Email Field
+                        // Email or Admin ID Field
                         _buildTextField(
                           controller: _emailController,
-                          label: 'Email Address',
-                          hintText: 'Enter your email address',
-                          icon: Icons.email,
-                          keyboardType: TextInputType.emailAddress,
+                          label: 'Email or Admin ID',
+                          hintText: 'Enter email or admin ID',
+                          icon: Icons.person,
+                          keyboardType: TextInputType.text,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Email address is required';
+                              return 'Email or Admin ID is required';
                             }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                              return 'Please enter a valid email address';
-                            }
+                            // Allow both email format and admin ID format
                             return null;
                           },
                         ),
