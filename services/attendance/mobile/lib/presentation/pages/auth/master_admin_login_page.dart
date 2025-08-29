@@ -407,13 +407,13 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
       
-      // Check credentials (in production, this would be an API call)
-      if (_adminIdController.text == 'admin' && _passwordController.text == 'admin1234') {
-        // Save admin session
-        await ref.read(authProvider.notifier).loginAsAdmin(
-          adminId: _adminIdController.text,
-          password: _passwordController.text,
-        );
+      // Check credentials using Firebase service
+      final authResult = await ref.read(authProvider.notifier).loginWithEmail(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      
+      if (authResult.success) {
         
         if (mounted) {
           // Navigate to admin dashboard
