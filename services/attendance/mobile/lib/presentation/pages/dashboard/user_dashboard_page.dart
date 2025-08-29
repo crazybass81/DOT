@@ -9,6 +9,7 @@ import '../../widgets/dashboard/announcement_card.dart';
 import '../../widgets/dashboard/quick_action_buttons.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
+import 'package:flutter/foundation.dart';
 import '../../providers/announcement_provider.dart';
 
 /// USER 역할 대시보드
@@ -26,10 +27,24 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
   @override
   void initState() {
     super.initState();
-    // 초기 데이터 로드
+    // 초기 데이터 로드 및 출근 서비스 초기화
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshData();
+      _initializeServices();
     });
+  }
+
+  /// Initialize services and load initial data
+  Future<void> _initializeServices() async {
+    try {
+      // Initialize attendance provider
+      await ref.read(attendanceInitializationProvider.future);
+      // Load other data
+      await _refreshData();
+    } catch (e) {
+      debugPrint('Failed to initialize services: $e');
+      // Continue with data refresh even if attendance initialization fails
+      await _refreshData();
+    }
   }
 
   Future<void> _refreshData() async {
