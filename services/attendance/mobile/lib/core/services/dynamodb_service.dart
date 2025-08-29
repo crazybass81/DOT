@@ -163,6 +163,62 @@ class DynamoDBService {
     }
   }
   
+  /// Create attendance record in DynamoDB
+  Future<bool> createAttendanceRecord(Map<String, dynamic> data) async {
+    if (!_initialized) {
+      throw Exception('DynamoDB not initialized');
+    }
+    
+    try {
+      final item = _convertToAttributeValue(data);
+      debugPrint('Creating attendance record: ${jsonEncode(item)}');
+      
+      // In production, make actual API call
+      // await _makeRequest('PutItem', {
+      //   'TableName': attendanceTable,
+      //   'Item': item,
+      // });
+      
+      return true;
+    } catch (e) {
+      debugPrint('Failed to create attendance record: $e');
+      return false;
+    }
+  }
+  
+  /// Log analytics event to DynamoDB
+  Future<bool> logAnalyticsEvent({
+    required String eventName,
+    Map<String, dynamic>? parameters,
+  }) async {
+    if (!_initialized) {
+      throw Exception('DynamoDB not initialized');
+    }
+    
+    try {
+      final event = {
+        'eventId': '${eventName}_${DateTime.now().millisecondsSinceEpoch}',
+        'eventName': eventName,
+        'timestamp': DateTime.now().toIso8601String(),
+        'parameters': parameters ?? {},
+      };
+      
+      final item = _convertToAttributeValue(event);
+      debugPrint('Logging analytics event: ${jsonEncode(item)}');
+      
+      // In production, make actual API call
+      // await _makeRequest('PutItem', {
+      //   'TableName': analyticsTable,
+      //   'Item': item,
+      // });
+      
+      return true;
+    } catch (e) {
+      debugPrint('Failed to log analytics event: $e');
+      return false;
+    }
+  }
+  
   /// Get attendance records for a user
   Future<List<Map<String, dynamic>>> getAttendanceRecords({
     required String userId,

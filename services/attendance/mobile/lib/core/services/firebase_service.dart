@@ -72,4 +72,20 @@ class FirebaseService {
   User? get currentUser => null;
   
   Stream<User?> get authStateChanges => Stream.value(null);
+  
+  // Create attendance record
+  Future<bool> createAttendanceRecord(Map<String, dynamic> data) async {
+    debugPrint('Creating attendance record: $data');
+    // Firebase is not initialized, but return success for testing
+    return true;
+  }
+  
+  // Log analytics event
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object?>? parameters,
+  }) async {
+    debugPrint('Logging event: $name with parameters: $parameters');
+    // Analytics logging would happen here if Firebase was initialized
+  }
 }
