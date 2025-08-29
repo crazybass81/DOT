@@ -414,7 +414,7 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
         
         if (mounted) {
           // Navigate to admin dashboard
-          context.go('/admin/dashboard');
+          context.go(RouteNames.masterAdminDashboard);
         }
       } else {
         if (mounted) {
