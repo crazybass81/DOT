@@ -77,7 +77,7 @@ abstract class RegisterModule {
 
   @singleton
   LocalStorageService localStorageService(SharedPreferences prefs) =>
-      LocalStorageService(prefs);
+      LocalStorageService._(prefs);
 
   @singleton
   LocationService get locationService => LocationService();

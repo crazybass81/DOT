@@ -198,14 +198,7 @@ class LocalStorageService {
     }
   }
 
-  String? getString(String key) {
-    try {
-      return _prefs.getString(key);
-    } catch (e) {
-      debugPrint('Failed to get string for key $key: $e');
-      return null;
-    }
-  }
+  // Note: getString method already defined at line 42, removed duplicate
 
   Future<void> storeBool(String key, bool value) async {
     try {
