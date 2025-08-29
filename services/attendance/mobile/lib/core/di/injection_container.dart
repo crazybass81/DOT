@@ -50,14 +50,17 @@ final getIt = GetIt.instance;
 
 // @InjectableInit()
 Future<void> configureDependencies() async {
+  debugPrint('=== configureDependencies START ===');
   // Manual registration of dependencies
   // This replaces getIt.init() until build_runner issues are resolved
   
   // Check if already initialized to prevent duplicate registrations
   // Check if core dependencies are already registered
   try {
+    debugPrint('Checking if already registered...');
     // Try to get the services - if they exist, we're already configured
     if (getIt.isRegistered<SharedPreferences>()) {
+      debugPrint('SharedPreferences is registered, checking SecureStorageService...');
       // Check if we have a complete registration by trying to get SecureStorageService
       try {
         getIt<SecureStorageService>();
@@ -65,14 +68,17 @@ Future<void> configureDependencies() async {
         return; // Already initialized
       } catch (e) {
         // Partial registration detected - SharedPreferences exists but not SecureStorageService
-        debugPrint('Partial registration detected, resetting all dependencies...');
+        debugPrint('Partial registration detected (error: $e), resetting all dependencies...');
         resetDependencies();
         await Future.delayed(const Duration(milliseconds: 50));
+        debugPrint('Dependencies reset, continuing with registration...');
       }
+    } else {
+      debugPrint('SharedPreferences not registered, starting fresh...');
     }
   } catch (e) {
     // No registration exists, proceed with initialization
-    debugPrint('No existing registration found, proceeding with initialization...');
+    debugPrint('No existing registration found (error: $e), proceeding with initialization...');
   }
   
   // External dependencies
@@ -227,6 +233,8 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<UploadAvatarUseCase>(
     UploadAvatarUseCase(getIt<UserRepository>()),
   );
+  
+  debugPrint('=== configureDependencies COMPLETE - All dependencies registered successfully ===');
 }
 
 /// Reset all dependencies for hot reload or testing
