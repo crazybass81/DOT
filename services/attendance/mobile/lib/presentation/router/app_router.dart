@@ -82,13 +82,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       
       // If authenticated and on login page, check user role
       if (isAuthenticated && state.matchedLocation == RouteNames.masterAdminLogin) {
-        // Check if user is admin
-        final user = authState.user;
-        if (user?.role.toString() == 'UserRole.admin') {
-          return RouteNames.masterAdminDashboard;
-        } else {
-          return RouteNames.dashboard;
-        }
+        // Check if user is admin - always go to master admin dashboard for now
+        return RouteNames.masterAdminDashboard;
       }
       
       return null;
