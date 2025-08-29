@@ -19,13 +19,9 @@ class AppInitializationService {
     try {
       debugPrint('Starting app initialization... (attempt $_initializationAttempts)');
       
-      // Check if dependencies are already configured (hot reload scenario)
-      if (isDependenciesConfigured) {
-        debugPrint('Dependencies already configured, skipping DI setup');
-      } else {
-        // 1. Initialize dependency injection
-        await configureDependencies();
-      }
+      // 1. Initialize dependency injection
+      // configureDependencies() internally checks if already configured
+      await configureDependencies();
       
       // 2. Initialize notification service (safe to call multiple times)
       await NotificationService.initialize();

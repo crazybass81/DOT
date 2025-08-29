@@ -54,10 +54,17 @@ Future<void> configureDependencies() async {
   // This replaces getIt.init() until build_runner issues are resolved
   
   // Check if already initialized to prevent duplicate registrations
-  // Check for SecureStorageService as it's a critical dependency
-  if (getIt.isRegistered<SecureStorageService>()) {
+  // We check both SharedPreferences AND SecureStorageService to ensure full initialization
+  if (getIt.isRegistered<SharedPreferences>() && getIt.isRegistered<SecureStorageService>()) {
     debugPrint('Dependencies already configured, skipping...');
     return; // Already initialized
+  }
+  
+  // If partially registered (e.g., hot reload interrupted), reset and start fresh
+  if (getIt.isRegistered<SharedPreferences>() || getIt.isRegistered<FlutterSecureStorage>()) {
+    debugPrint('Partial registration detected, resetting dependencies...');
+    resetDependencies();
+    await Future.delayed(const Duration(milliseconds: 50)); // Small delay to ensure cleanup
   }
   
   // External dependencies
@@ -202,7 +209,9 @@ Future<void> configureDependencies() async {
 
 /// Reset all dependencies for hot reload or testing
 void resetDependencies() {
+  debugPrint('Resetting all dependencies...');
   getIt.reset();
+  debugPrint('Dependencies reset complete');
 }
 
 /// Check if dependencies are configured
