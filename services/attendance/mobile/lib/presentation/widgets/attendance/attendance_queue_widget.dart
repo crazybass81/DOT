@@ -147,7 +147,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
             ],
           ),
           
-          if (lastSyncTime != null) ..[
+          if (lastSyncTime != null) ...[
             const SizedBox(height: NeoBrutalTheme.space2),
             Row(
               children: [
