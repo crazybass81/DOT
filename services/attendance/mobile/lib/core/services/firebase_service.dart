@@ -280,4 +280,177 @@ class FirebaseService {
     debugPrint('Getting attendance records from $startDate to $endDate');
     yield {};
   }
+
+  // ==================== Business Profile Management ====================
+  
+  /// 사업자 프로필 조회
+  Future<Map<String, dynamic>?> getBusinessProfile(String userId) async {
+    debugPrint('Getting business profile for user: $userId');
+    
+    // Find user by ID and return business profile
+    for (final userData in _mockUsers.values) {
+      if (userData['uid'] == userId) {
+        return userData['businessProfile'] as Map<String, dynamic>?;
+      }
+    }
+    
+    return null;
+  }
+  
+  /// 사업자 프로필 업데이트
+  Future<bool> updateBusinessProfile(String userId, Map<String, dynamic> profileData) async {
+    debugPrint('Updating business profile for user: $userId');
+    debugPrint('Profile data: $profileData');
+    
+    // Find user by ID and update business profile
+    for (final entry in _mockUsers.entries) {
+      final userData = entry.value;
+      if (userData['uid'] == userId) {
+        userData['businessProfile'] = {
+          ...userData['businessProfile'] ?? {},
+          ...profileData,
+          'updatedAt': DateTime.now().toIso8601String(),
+        };
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  /// 사업장 목록 조회
+  Future<List<Map<String, dynamic>>> getBusinessLocations(String userId) async {
+    debugPrint('Getting business locations for user: $userId');
+    
+    final businessProfile = await getBusinessProfile(userId);
+    if (businessProfile != null) {
+      final locations = businessProfile['locations'] as List<dynamic>?;
+      return locations?.cast<Map<String, dynamic>>() ?? [];
+    }
+    
+    return [];
+  }
+  
+  /// 사업장 추가
+  Future<bool> addBusinessLocation(String userId, Map<String, dynamic> locationData) async {
+    debugPrint('Adding business location for user: $userId');
+    debugPrint('Location data: $locationData');
+    
+    final businessProfile = await getBusinessProfile(userId);
+    if (businessProfile != null) {
+      final locations = List<Map<String, dynamic>>.from(businessProfile['locations'] ?? []);
+      
+      // Generate new location ID
+      final newLocationId = 'location_${DateTime.now().millisecondsSinceEpoch}';
+      final newLocation = {
+        'id': newLocationId,
+        'createdAt': DateTime.now().toIso8601String(),
+        ...locationData,
+      };
+      
+      locations.add(newLocation);
+      
+      return await updateBusinessProfile(userId, {
+        'locations': locations,
+      });
+    }
+    
+    return false;
+  }
+  
+  /// 사업장 수정
+  Future<bool> updateBusinessLocation(String userId, String locationId, Map<String, dynamic> locationData) async {
+    debugPrint('Updating business location: $locationId for user: $userId');
+    
+    final businessProfile = await getBusinessProfile(userId);
+    if (businessProfile != null) {
+      final locations = List<Map<String, dynamic>>.from(businessProfile['locations'] ?? []);
+      
+      final locationIndex = locations.indexWhere((loc) => loc['id'] == locationId);
+      if (locationIndex != -1) {
+        locations[locationIndex] = {
+          ...locations[locationIndex],
+          ...locationData,
+          'updatedAt': DateTime.now().toIso8601String(),
+        };
+        
+        return await updateBusinessProfile(userId, {
+          'locations': locations,
+        });
+      }
+    }
+    
+    return false;
+  }
+  
+  /// 사업장 삭제
+  Future<bool> deleteBusinessLocation(String userId, String locationId) async {
+    debugPrint('Deleting business location: $locationId for user: $userId');
+    
+    final businessProfile = await getBusinessProfile(userId);
+    if (businessProfile != null) {
+      final locations = List<Map<String, dynamic>>.from(businessProfile['locations'] ?? []);
+      
+      locations.removeWhere((loc) => loc['id'] == locationId);
+      
+      return await updateBusinessProfile(userId, {
+        'locations': locations,
+      });
+    }
+    
+    return false;
+  }
+  
+  // ==================== Verification Methods (Future Implementation) ====================
+  
+  /// 전화번호 인증 요청 (플레이스홀더)
+  Future<bool> requestPhoneVerification(String phoneNumber) async {
+    debugPrint('Requesting phone verification for: $phoneNumber');
+    // TODO: 실제 SMS 인증 로직 구현
+    return true;
+  }
+  
+  /// 전화번호 인증 확인 (플레이스홀더)
+  Future<bool> verifyPhoneNumber(String phoneNumber, String verificationCode) async {
+    debugPrint('Verifying phone number: $phoneNumber with code: $verificationCode');
+    // TODO: 실제 인증 코드 확인 로직 구현
+    return verificationCode == '123456'; // 테스트용 고정 코드
+  }
+  
+  /// 사업자등록번호 검증 (플레이스홀더)
+  Future<Map<String, dynamic>?> validateBusinessRegistrationNumber(String registrationNumber) async {
+    debugPrint('Validating business registration number: $registrationNumber');
+    
+    // TODO: 실제 사업자등록번호 검증 API 연동
+    // 현재는 테스트용 데이터 반환
+    if (registrationNumber.replaceAll(RegExp(r'[^0-9]'), '') == '2480102359') {
+      return {
+        'isValid': true,
+        'businessName': 'DOT 본사',
+        'representativeName': '임태균',
+        'businessType': '소프트웨어 개발업',
+        'businessAddress': '서울시 강남구 테헤란로 123',
+        'establishedDate': '2023-01-01',
+      };
+    }
+    
+    return {'isValid': false, 'error': '등록되지 않은 사업자등록번호입니다.'};
+  }
+  
+  /// 서류 업로드 (플레이스홀더)
+  Future<String?> uploadDocument(String userId, String documentType, List<int> fileBytes) async {
+    debugPrint('Uploading document type: $documentType for user: $userId');
+    
+    // TODO: 실제 파일 업로드 로직 구현 (Firebase Storage)
+    // 현재는 테스트용 URL 반환
+    final mockUrl = 'https://storage.example.com/documents/${userId}_${documentType}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    
+    await logEvent(name: 'document_upload', parameters: {
+      'user_id': userId,
+      'document_type': documentType,
+      'file_size': fileBytes.length,
+    });
+    
+    return mockUrl;
+  }
 }
