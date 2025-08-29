@@ -320,19 +320,20 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           children: [
             Expanded(
               child: _buildStatCard(
-                title: 'Total Employees',
-                value: '156',
-                icon: Icons.people_outline,
+                title: 'Total Branches',
+                value: _getTotalBranches().toString(),
+                icon: Icons.business_outlined,
                 color: NeoBrutalTheme.primary,
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: _buildStatCard(
-                title: 'Present Today',
-                value: '142',
-                icon: Icons.check_circle_outline,
+                title: 'Active Employees',
+                value: 'X',
+                icon: Icons.people_outline,
                 color: NeoBrutalTheme.success,
+                isPlaceholder: true,
               ),
             ),
           ],
@@ -342,19 +343,21 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           children: [
             Expanded(
               child: _buildStatCard(
-                title: 'On Leave',
-                value: '8',
-                icon: Icons.event_busy,
+                title: 'Present Today',
+                value: 'X',
+                icon: Icons.check_circle_outline,
                 color: NeoBrutalTheme.warning,
+                isPlaceholder: true,
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: _buildStatCard(
-                title: 'Late Arrivals',
-                value: '6',
-                icon: Icons.access_time,
-                color: NeoBrutalTheme.error,
+                title: 'Attendance Rate',
+                value: 'X%',
+                icon: Icons.analytics_outlined,
+                color: NeoBrutalTheme.accent,
+                isPlaceholder: true,
               ),
             ),
           ],
@@ -368,6 +371,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
     required String value,
     required IconData icon,
     required Color color,
+    bool isPlaceholder = false,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -397,12 +401,34 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            value,
-            style: NeoBrutalTheme.headline2.copyWith(
-              color: NeoBrutalTheme.fg,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: [
+              Text(
+                value,
+                style: NeoBrutalTheme.headline2.copyWith(
+                  color: isPlaceholder ? NeoBrutalTheme.gray400 : NeoBrutalTheme.fg,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (isPlaceholder) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: NeoBrutalTheme.warning.withOpacity(0.2),
+                    border: Border.all(color: NeoBrutalTheme.warning, width: 1),
+                  ),
+                  child: Text(
+                    '미구현',
+                    style: NeoBrutalTheme.caption.copyWith(
+                      color: NeoBrutalTheme.warning,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 4),
           Text(
@@ -559,35 +585,20 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           child: Column(
             children: [
               _buildActivityItem(
-                time: '09:15 AM',
-                title: 'John Doe checked in',
-                subtitle: 'Main Office',
+                time: 'X',
+                title: 'Real-time activities will appear here',
+                subtitle: 'Feature not yet implemented',
+                icon: Icons.info_outline,
+                color: NeoBrutalTheme.warning,
+                isPlaceholder: true,
+              ),
+              _buildDivider(),
+              _buildActivityItem(
+                time: DateTime.now().toString().substring(11, 16),
+                title: '${_getUserDisplayName()} logged in',
+                subtitle: _organizationData?['organizationName'] ?? 'Organization',
                 icon: Icons.login,
                 color: NeoBrutalTheme.success,
-              ),
-              _buildDivider(),
-              _buildActivityItem(
-                time: '09:03 AM',
-                title: 'Jane Smith checked in',
-                subtitle: 'Remote Location',
-                icon: Icons.login,
-                color: NeoBrutalTheme.success,
-              ),
-              _buildDivider(),
-              _buildActivityItem(
-                time: '08:45 AM',
-                title: 'New QR Code generated',
-                subtitle: 'For: Mike Johnson',
-                icon: Icons.qr_code,
-                color: NeoBrutalTheme.primary,
-              ),
-              _buildDivider(),
-              _buildActivityItem(
-                time: '08:30 AM',
-                title: 'System backup completed',
-                subtitle: 'Automatic backup',
-                icon: Icons.backup,
-                color: NeoBrutalTheme.secondary,
               ),
             ],
           ),
