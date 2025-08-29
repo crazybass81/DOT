@@ -75,9 +75,9 @@ abstract class RegisterModule {
   SecureStorageService secureStorageService(FlutterSecureStorage storage) =>
       SecureStorageService(storage);
 
-  @singleton
-  LocalStorageService localStorageService(SharedPreferences prefs) =>
-      LocalStorageService._(prefs);
+  @singleton  
+  Future<LocalStorageService> localStorageService() async =>
+      await LocalStorageService.initialize();
 
   @singleton
   LocationService get locationService => LocationService();
