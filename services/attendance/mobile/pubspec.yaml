@@ -78,6 +78,13 @@ dependencies:
   firebase_messaging: ^14.7.2
   cloud_functions: ^4.5.0
   
+  # AWS - Using Amplify for better Flutter integration
+  amplify_flutter: ^1.6.0
+  amplify_auth_cognito: ^1.6.0
+  amplify_datastore: ^1.6.0
+  amplify_api: ^1.6.0
+  amplify_storage_s3: ^1.6.0
+  
   # Other services
   geocoding: ^2.1.1
   flutter_local_notifications: ^17.2.3
