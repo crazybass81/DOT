@@ -25,6 +25,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // 앱 초기화
+  await AppInitializationService.initializeApp();
+
   runApp(
     const ProviderScope(
       child: DotAttendanceApp(),
