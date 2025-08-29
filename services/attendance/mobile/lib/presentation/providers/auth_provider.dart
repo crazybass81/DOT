@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/user/user.dart';
+import '../../domain/entities/user/user_role.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/auth/refresh_token_usecase.dart';
@@ -70,8 +71,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final adminUser = User(
           id: 'admin_001',
           email: 'admin@dot.com',
-          name: 'Master Admin',
-          role: 'MASTER_ADMIN',
+          firstName: 'Master',
+          lastName: 'Admin',
+          role: UserRole.admin,
           createdAt: DateTime.now(),
           isActive: true,
         );
