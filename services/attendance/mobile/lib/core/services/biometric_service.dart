@@ -46,7 +46,7 @@ class BiometricService {
       // Perform authentication
       final isAuthenticated = await _localAuth.authenticate(
         localizedReason: reason,
-        authMessages: [
+        authMessages: const [
           AndroidAuthMessages(
             signInTitle: 'DOT Attendance',
             biometricHint: 'Verify your identity',
