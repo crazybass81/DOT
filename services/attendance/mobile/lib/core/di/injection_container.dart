@@ -102,11 +102,16 @@ Future<void> configureDependencies() async {
 
   // Core Services
   // Register SecureStorageService first as it's needed by AuthLocalDataSource
-  debugPrint('Registering SecureStorageService...');
-  getIt.registerSingleton<SecureStorageService>(
-    SecureStorageService(getIt<FlutterSecureStorage>()),
-  );
-  debugPrint('SecureStorageService registered successfully');
+  try {
+    debugPrint('Registering SecureStorageService...');
+    final secureStorageService = SecureStorageService(getIt<FlutterSecureStorage>());
+    getIt.registerSingleton<SecureStorageService>(secureStorageService);
+    debugPrint('SecureStorageService registered successfully');
+  } catch (e, stackTrace) {
+    debugPrint('Failed to register SecureStorageService: $e');
+    debugPrint('Stack trace: $stackTrace');
+    rethrow;
+  }
   
   final localStorage = await LocalStorageService.initialize();
   getIt.registerSingleton<LocalStorageService>(localStorage);
