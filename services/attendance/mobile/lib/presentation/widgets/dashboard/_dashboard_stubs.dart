@@ -270,17 +270,19 @@ class AttendanceOverviewChart extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonLine(
-            style: SkeletonLineStyle(
-              height: 20,
-              width: 120,
+          Container(
+            height: 20,
+            width: 120,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(4),
             ),
           ),
           const SizedBox(height: NeoBrutalTheme.space4),
-          SkeletonLine(
-            style: SkeletonLineStyle(
-              height: 200,
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -667,10 +669,11 @@ class SystemWideStatsCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonLine(
-            style: SkeletonLineStyle(
-              height: 24,
-              width: 150,
+          Container(
+            height: 24,
+            width: 150,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(4),
             ),
           ),
