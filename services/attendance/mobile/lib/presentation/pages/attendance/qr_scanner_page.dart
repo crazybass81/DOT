@@ -420,16 +420,17 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
       body: Stack(
         children: [
           // QR Scanner
-          QRView(
-            key: qrKey,
-            onQRViewCreated: _onQRViewCreated,
-            overlay: QrScannerOverlayShape(
-              borderColor: Colors.transparent,
-              borderRadius: 0,
-              borderLength: 0,
-              borderWidth: 0,
-              cutOutSize: 250,
-            ),
+          MobileScanner(
+            controller: controller,
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              for (final barcode in barcodes) {
+                if (barcode.rawValue != null && !hasScanned) {
+                  _handleQrScanned(barcode.rawValue!);
+                  break;
+                }
+              }
+            },
           ),
           
           // Dark overlay except for scan area
