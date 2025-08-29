@@ -99,7 +99,7 @@ class AttendanceStatusCard extends ConsumerWidget {
           const SizedBox(height: NeoBrutalTheme.space4),
           
           // 근무 시간 정보
-          if (isCheckedIn) ..[
+          if (isCheckedIn) ...[
             Container(
               padding: const EdgeInsets.all(NeoBrutalTheme.space3),
               decoration: BoxDecoration(

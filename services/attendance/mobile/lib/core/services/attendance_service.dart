@@ -225,7 +225,8 @@ class AttendanceService {
         await _queueOfflineAttendance(queueEntry);
         
         // Show notification
-        await NotificationService.showNotification(
+        await NotificationService().showNotificationWithId(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
           title: 'Attendance Queued',
           body: 'Your attendance will be synced when connection is restored.',
         );
@@ -452,7 +453,8 @@ class AttendanceService {
           ? 'Checked In Successfully'
           : 'Checked Out Successfully';
       
-      await NotificationService.showNotification(
+      await NotificationService().showNotificationWithId(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         title: title,
         body: 'Your attendance has been recorded.',
       );

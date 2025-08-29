@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../constants/app_constants.dart';
@@ -208,10 +209,10 @@ class CameraService {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
-            toolbarColor: const Color(0xFF2E7D32),
+            toolbarColor: Color(0xFF2E7D32),
             toolbarWidgetColor: Colors.white,
             backgroundColor: Colors.black,
-            activeControlsWidgetColor: const Color(0xFF2E7D32),
+            activeControlsWidgetColor: Color(0xFF2E7D32),
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
             hideBottomControls: false,
