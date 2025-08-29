@@ -8,8 +8,22 @@ import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/auth/refresh_token_usecase.dart';
 import '../../domain/usecases/auth/verify_biometric_usecase.dart';
+import '../../core/services/firebase_service.dart';
 
 part 'auth_provider.freezed.dart';
+
+// Auth result model
+class AuthResult {
+  final bool success;
+  final String? error;
+  final Map<String, dynamic>? userData;
+  
+  const AuthResult({
+    required this.success,
+    this.error,
+    this.userData,
+  });
+}
 
 @freezed
 class AuthState with _$AuthState {
