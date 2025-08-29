@@ -370,6 +370,7 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
             controller: controller,
             obscureText: obscureText,
             validator: validator,
+            keyboardType: keyboardType,
             style: NeoBrutalTheme.body.copyWith(color: NeoBrutalTheme.fg),
             decoration: InputDecoration(
               hintText: hintText,
