@@ -209,7 +209,7 @@ class _AttendanceVerificationDialogState
             ],
           ),
           
-          if (!isValid && result.errorMessage != null) ..[
+          if (!isValid && result.errorMessage != null) ...[
             const SizedBox(height: NeoBrutalTheme.space2),
             Text(
               result.errorMessage!,
@@ -217,7 +217,7 @@ class _AttendanceVerificationDialogState
             ),
           ],
           
-          if (isValid) ..[
+          if (isValid) ...[
             const SizedBox(height: NeoBrutalTheme.space2),
             _buildVerificationDetails(result),
           ],
