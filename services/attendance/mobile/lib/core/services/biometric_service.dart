@@ -46,25 +46,6 @@ class BiometricService {
       // Perform authentication
       final isAuthenticated = await _localAuth.authenticate(
         localizedReason: reason,
-        authMessages: const [
-          AndroidAuthMessages(
-            signInTitle: 'DOT Attendance',
-            biometricHint: 'Verify your identity',
-            biometricNotRecognized: 'Biometric not recognized. Try again.',
-            biometricSuccess: 'Authentication successful',
-            cancelButton: 'Cancel',
-            deviceCredentialsRequiredTitle: 'Authentication Required',
-            deviceCredentialsSetupDescription: 'Please set up your device credentials',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in settings',
-          ),
-          IOSAuthMessages(
-            lockOut: 'Biometric authentication is locked. Please use PIN.',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in settings',
-            cancelButton: 'Cancel',
-          ),
-        ],
         options: AuthenticationOptions(
           biometricOnly: biometricOnly,
           stickyAuth: true,
