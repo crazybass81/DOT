@@ -97,10 +97,40 @@ class FirebaseService {
     debugPrint('Mock user database initialized with test account: archt723@gmail.com');
   }
   
-  // Mock sign in for testing
-  Future<User?> signInWithEmailPassword(String email, String password) async {
-    debugPrint('Mock sign in: $email');
-    // Return null to simulate no Firebase connection
+  // Email/Password authentication with mock database
+  Future<Map<String, dynamic>?> signInWithEmailPassword(String email, String password) async {
+    debugPrint('Attempting sign in: $email');
+    
+    // Check mock user database
+    if (_mockUsers.containsKey(email)) {
+      final userData = _mockUsers[email]!;
+      if (userData['password'] == password) {
+        debugPrint('Authentication successful for: $email');
+        
+        // Return user data (excluding password)
+        final userResult = Map<String, dynamic>.from(userData);
+        userResult.remove('password');
+        
+        await logEvent(name: 'user_login', parameters: {
+          'email': email,
+          'role': userData['role'],
+        });
+        
+        return userResult;
+      }
+    }
+    
+    debugPrint('Authentication failed for: $email');
+    return null;
+  }
+  
+  // Get user data by email
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    if (_mockUsers.containsKey(email)) {
+      final userData = Map<String, dynamic>.from(_mockUsers[email]!);
+      userData.remove('password'); // Never return password
+      return userData;
+    }
     return null;
   }
   

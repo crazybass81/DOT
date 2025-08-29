@@ -14,7 +14,7 @@ class MasterAdminLoginPage extends ConsumerStatefulWidget {
 
 class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _adminIdController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
