@@ -3,11 +3,18 @@ import 'package:flutter/foundation.dart';
 
 import '../../constants/app_constants.dart';
 import '../../storage/secure_storage_service.dart';
+import '../../di/injection_container.dart';
 
 class AuthInterceptor extends Interceptor {
-  final SecureStorageService _secureStorage;
+  SecureStorageService? _secureStorage;
 
-  AuthInterceptor(this._secureStorage);
+  AuthInterceptor([this._secureStorage]);
+  
+  // Lazy load the SecureStorageService to avoid circular dependency
+  SecureStorageService get secureStorage {
+    _secureStorage ??= getIt<SecureStorageService>();
+    return _secureStorage!;
+  }
 
   @override
   void onRequest(
@@ -21,7 +28,7 @@ class AuthInterceptor extends Interceptor {
       }
 
       // Get access token
-      final accessToken = await _secureStorage.getAccessToken();
+      final accessToken = await secureStorage.getAccessToken();
       
       if (accessToken != null && accessToken.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $accessToken';
@@ -70,7 +77,7 @@ class AuthInterceptor extends Interceptor {
 
   Future<bool> _refreshToken() async {
     try {
-      final refreshToken = await _secureStorage.getRefreshToken();
+      final refreshToken = await secureStorage.getRefreshToken();
       
       if (refreshToken == null || refreshToken.isEmpty) {
         return false;
@@ -90,11 +97,11 @@ class AuthInterceptor extends Interceptor {
         final newRefreshToken = data['refresh_token'] as String?;
 
         if (newAccessToken != null) {
-          await _secureStorage.storeAccessToken(newAccessToken);
+          await secureStorage.storeAccessToken(newAccessToken);
         }
         
         if (newRefreshToken != null) {
-          await _secureStorage.storeRefreshToken(newRefreshToken);
+          await secureStorage.storeRefreshToken(newRefreshToken);
         }
 
         return true;
@@ -108,7 +115,7 @@ class AuthInterceptor extends Interceptor {
 
   Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
     // Get new access token
-    final newAccessToken = await _secureStorage.getAccessToken();
+    final newAccessToken = await secureStorage.getAccessToken();
     
     if (newAccessToken != null) {
       requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
@@ -135,7 +142,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<void> _clearTokens() async {
-    await _secureStorage.deleteAccessToken();
-    await _secureStorage.deleteRefreshToken();
+    await secureStorage.deleteAccessToken();
+    await secureStorage.deleteRefreshToken();
   }
 }
