@@ -25,9 +25,12 @@ import '../../features/test/database_test_screen.dart';
 // Route names
 class RouteNames {
   static const String splash = '/';
+  static const String masterAdminLogin = '/master-admin-login';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
+  static const String qrLogin = '/qr-login'; // Deep link for QR code login
+  static const String userRegistration = '/user-registration'; // For first-time users
   
   static const String main = '/main';
   static const String dashboard = '/main/dashboard';
@@ -60,9 +63,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
       
-      // Redirect to login if not authenticated
+      // Handle QR deep link
+      if (state.location.startsWith(RouteNames.qrLogin)) {
+        // Extract token from query params
+        final token = state.queryParameters['token'];
+        if (token != null) {
+          // Process QR login token
+          // This will be handled by the QR login page
+          return null;
+        }
+      }
+      
+      // Redirect to master admin login if not authenticated
       if (!isAuthenticated && !_isAuthRoute(state.location)) {
-        return RouteNames.login;
+        return RouteNames.masterAdminLogin;
       }
       
       // Redirect to dashboard if authenticated and on auth route
@@ -80,6 +94,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       
       // Auth routes
+      GoRoute(
+        path: RouteNames.masterAdminLogin,
+        builder: (context, state) => const MasterAdminLoginPage(),
+      ),
       GoRoute(
         path: RouteNames.login,
         builder: (context, state) => const LoginPage(),
