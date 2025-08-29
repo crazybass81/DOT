@@ -17,6 +17,12 @@ class NeoBrutalTheme {
   static const Color warning = Color(0xFFFFAB00);
   static const Color info = Color(0xFF2962FF);
   
+  // 추가 색상 (호환성)
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF000000);
+  static const Color primary = hi;
+  static const Color secondary = pastelMint;
+  
   // 파스텔 (사용 제한 10%)
   static const Color pastelMint = Color(0xFF6EE7B7);
   static const Color pastelPink = Color(0xFFF472B6);
