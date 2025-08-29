@@ -30,6 +30,19 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  try {
+    // Initialize Firebase with hybrid architecture
+    await FirebaseConfig.initialize();
+    
+    // Initialize hybrid database service
+    await HybridDatabaseService.initialize();
+    
+    debugPrint('✅ Firebase and Hybrid Database initialized successfully');
+  } catch (e, stackTrace) {
+    debugPrint('❌ Firebase initialization failed: $e');
+    // Continue app launch even if Firebase fails (offline mode)
+  }
+
   runApp(
     const ProviderScope(
       child: DotAttendanceApp(),
