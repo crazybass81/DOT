@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:skeletons/skeletons.dart';
+// import 'package:skeletons/skeletons.dart'; // Removed due to compatibility
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../common/neo_brutal_card.dart';
 
