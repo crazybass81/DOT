@@ -613,6 +613,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
     required String subtitle,
     required IconData icon,
     required Color color,
+    bool isPlaceholder = false,
   }) {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -637,12 +638,35 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: NeoBrutalTheme.body.copyWith(
-                    color: NeoBrutalTheme.fg,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: NeoBrutalTheme.body.copyWith(
+                          color: isPlaceholder ? NeoBrutalTheme.gray400 : NeoBrutalTheme.fg,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: isPlaceholder ? FontStyle.italic : FontStyle.normal,
+                        ),
+                      ),
+                    ),
+                    if (isPlaceholder)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: NeoBrutalTheme.warning.withOpacity(0.2),
+                          border: Border.all(color: NeoBrutalTheme.warning, width: 1),
+                        ),
+                        child: Text(
+                          '미구현',
+                          style: NeoBrutalTheme.caption.copyWith(
+                            color: NeoBrutalTheme.warning,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 Text(
                   subtitle,
