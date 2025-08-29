@@ -21,7 +21,7 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
 
   @override
   void dispose() {
-    _adminIdController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -114,18 +114,19 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Admin ID Field
+                        // Email Field
                         _buildTextField(
-                          controller: _adminIdController,
-                          label: 'Admin ID',
-                          hintText: 'Enter master admin ID',
-                          icon: Icons.badge,
+                          controller: _emailController,
+                          label: 'Email Address',
+                          hintText: 'Enter your email address',
+                          icon: Icons.email,
+                          keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Admin ID is required';
+                              return 'Email address is required';
                             }
-                            if (value.length < 4) {
-                              return 'Admin ID must be at least 4 characters';
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                              return 'Please enter a valid email address';
                             }
                             return null;
                           },
