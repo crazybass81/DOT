@@ -56,6 +56,49 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Login as master admin
+  Future<bool> loginAsAdmin({
+    required String adminId,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // For demo purposes, we'll use hardcoded credentials
+      // In production, this would be an API call
+      if (adminId == 'admin' && password == 'admin1234') {
+        final adminUser = User(
+          id: 'admin_001',
+          email: 'admin@dot.com',
+          name: 'Master Admin',
+          role: 'MASTER_ADMIN',
+          createdAt: DateTime.now(),
+          isActive: true,
+        );
+        
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: adminUser,
+          error: null,
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Invalid admin credentials',
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
   /// Login with email and password
   Future<bool> login({
     required String email,
