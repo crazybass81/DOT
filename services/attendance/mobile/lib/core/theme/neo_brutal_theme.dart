@@ -126,6 +126,42 @@ class NeoBrutalTheme {
     fontWeight: FontWeight.w400,
     color: fg,
   );
+  
+  // Additional text styles for compatibility
+  static const TextStyle headline2 = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 32,
+    height: 40 / 32,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
+  
+  static const TextStyle headline3 = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 26,
+    height: 32 / 26,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
+  
+  static const TextStyle headline4 = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 20,
+    height: 26 / 20,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
+  
+  static const TextStyle button = TextStyle(
+    fontFamily: 'Orbitron',
+    fontSize: 16,
+    height: 22 / 16,
+    fontWeight: FontWeight.w600,
+    color: fg,
+  );
+  
+  // Spacing
+  static const double space1 = 4.0;
 
   // 라이트 테마
   static ThemeData get lightTheme => ThemeData(
