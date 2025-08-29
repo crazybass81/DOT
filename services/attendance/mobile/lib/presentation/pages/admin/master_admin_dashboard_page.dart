@@ -62,7 +62,12 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome Section
-              _buildWelcomeSection(user?.displayName ?? 'Master Admin'),
+              _buildWelcomeSection(_getUserDisplayName()),
+              
+              const SizedBox(height: 16),
+              
+              // Organization Info
+              _buildOrganizationInfo(),
               
               const SizedBox(height: 32),
               
@@ -140,7 +145,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
                           ),
                         ),
                         Text(
-                          'DOT Attendance System',
+                          _organizationData?['organizationName'] ?? 'DOT Attendance System',
                           style: NeoBrutalTheme.caption.copyWith(
                             color: NeoBrutalTheme.gray600,
                           ),
