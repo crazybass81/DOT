@@ -7,13 +7,13 @@ import '../../core/services/attendance_service.dart';
 import '../../domain/entities/attendance/attendance.dart';
 import '../../domain/entities/attendance/attendance_queue.dart';
 
+part 'attendance_provider.freezed.dart';
+
 enum AttendanceMethod {
   manual,
   qr,
   location,
 }
-
-part 'attendance_provider.freezed.dart';
 
 @freezed
 class AttendanceState with _$AttendanceState {

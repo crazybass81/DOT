@@ -22,7 +22,7 @@ import '../pages/reports/monthly_report_page.dart';
 import '../pages/reports/custom_report_page.dart';
 import '../widgets/common/main_navigation.dart';
 import '../providers/auth_provider.dart';
-import '../../features/test/database_test_screen.dart';
+// import '../../features/test/database_test_screen.dart';
 
 // Route names
 class RouteNames {
@@ -205,12 +205,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          GoRoute(
-            path: RouteNames.databaseTest,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DatabaseTestScreen(),
-            ),
-          ),
+          // Database test removed
+          // GoRoute(
+          //   path: RouteNames.databaseTest,
+          //   pageBuilder: (context, state) => const NoTransitionPage(
+          //     child: DatabaseTestScreen(),
+          //   ),
+          // ),
         ],
       ),
     ],
