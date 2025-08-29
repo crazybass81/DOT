@@ -19,13 +19,9 @@ class AppInitializationService {
     try {
       debugPrint('Starting app initialization... (attempt $_initializationAttempts)');
       
-      // Check if dependencies are already configured (hot reload scenario)
-      if (isDependenciesConfigured) {
-        debugPrint('Dependencies already configured, skipping DI setup');
-      } else {
-        // 1. Initialize dependency injection
-        await configureDependencies();
-      }
+      // 1. Initialize dependency injection
+      // configureDependencies() internally checks if already configured
+      await configureDependencies();
       
       // 2. Initialize notification service (safe to call multiple times)
       await NotificationService.initialize();
@@ -42,10 +38,10 @@ class AppInitializationService {
       
       // If this is a duplicate registration error and we haven't exceeded max attempts
       if (e.toString().contains('already registered') && _initializationAttempts < _maxRetryAttempts) {
-        debugPrint('Detected duplicate registration, resetting dependencies...');
+        debugPrint('Detected duplicate registration, will retry after reset...');
         resetDependencies();
         _isInitialized = false;
-        // Retry once after reset
+        // Retry initialization after reset
         await Future.delayed(const Duration(milliseconds: 100));
         return await initializeApp();
       }

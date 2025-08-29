@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// 네오브루탈리즘 디자인 시스템
 /// DOT ATTENDANCE의 시각적 아이덴티티를 정의하는 테마
@@ -67,119 +66,53 @@ class NeoBrutalTheme {
   ];
 
   // 타이포그래피
-  static TextStyle get display {
-    try {
-      return GoogleFonts.doHyeon(
-        fontSize: 28,
-        height: 34 / 28,
-        fontWeight: FontWeight.w700,
-        color: fg,
-      );
-    } catch (e) {
-      // Fallback to system font if Google Fonts fails
-      return const TextStyle(
-        fontSize: 28,
-        height: 34 / 28,
-        fontWeight: FontWeight.w700,
-        color: fg,
-      );
-    }
-  }
+  static const TextStyle display = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 28,
+    height: 34 / 28,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
 
-  static TextStyle get title {
-    try {
-      return GoogleFonts.doHyeon(
-        fontSize: 22,
-        height: 28 / 22,
-        fontWeight: FontWeight.w700,
-        color: fg,
-      );
-    } catch (e) {
-      // Fallback to system font if Google Fonts fails
-      return const TextStyle(
-        fontSize: 22,
-        height: 28 / 22,
-        fontWeight: FontWeight.w700,
-        color: fg,
-      );
-    }
-  }
+  static const TextStyle title = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 22,
+    height: 28 / 22,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
 
-  static TextStyle get heading {
-    try {
-      return GoogleFonts.orbit(
-        fontSize: 18,
-        height: 24 / 18,
-        fontWeight: FontWeight.w700,
-        color: fg,
-      );
-    } catch (e) {
-      // Fallback to system font if Google Fonts fails
-      return const TextStyle(
-        fontSize: 18,
-        height: 24 / 18,
-        fontWeight: FontWeight.w700,
-        color: fg,
-      );
-    }
-  }
+  static const TextStyle heading = TextStyle(
+    fontFamily: 'Orbitron',
+    fontSize: 18,
+    height: 24 / 18,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
 
-  static TextStyle get body {
-    try {
-      return GoogleFonts.orbit(
-        fontSize: 16,
-        height: 22 / 16,
-        fontWeight: FontWeight.w400,
-        color: fg,
-      );
-    } catch (e) {
-      // Fallback to system font if Google Fonts fails
-      return const TextStyle(
-        fontSize: 16,
-        height: 22 / 16,
-        fontWeight: FontWeight.w400,
-        color: fg,
-      );
-    }
-  }
+  static const TextStyle body = TextStyle(
+    fontFamily: 'Orbitron',
+    fontSize: 16,
+    height: 22 / 16,
+    fontWeight: FontWeight.w400,
+    color: fg,
+  );
 
-  static TextStyle get caption {
-    try {
-      return GoogleFonts.orbit(
-        fontSize: 13,
-        height: 18 / 13,
-        fontWeight: FontWeight.w400,
-        color: fg,
-      );
-    } catch (e) {
-      // Fallback to system font if Google Fonts fails
-      return const TextStyle(
-        fontSize: 13,
-        height: 18 / 13,
-        fontWeight: FontWeight.w400,
-        color: fg,
-      );
-    }
-  }
+  static const TextStyle caption = TextStyle(
+    fontFamily: 'Orbitron',
+    fontSize: 13,
+    height: 18 / 13,
+    fontWeight: FontWeight.w400,
+    color: fg,
+  );
 
-  static TextStyle get micro {
-    try {
-      return GoogleFonts.orbit(
-        fontSize: 11,
-        height: 16 / 11,
-        fontWeight: FontWeight.w400,
-        color: fg,
-      );
-    } catch (e) {
-      // Fallback to system font if Google Fonts fails
-      return const TextStyle(
-        fontSize: 11,
-        height: 16 / 11,
-        fontWeight: FontWeight.w400,
-        color: fg,
-      );
-    }
-  }
+  static const TextStyle micro = TextStyle(
+    fontFamily: 'Orbitron',
+    fontSize: 11,
+    height: 16 / 11,
+    fontWeight: FontWeight.w400,
+    color: fg,
+  );
 
   // 라이트 테마
   static ThemeData get lightTheme => ThemeData(

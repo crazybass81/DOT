@@ -54,16 +54,36 @@ Future<void> configureDependencies() async {
   // This replaces getIt.init() until build_runner issues are resolved
   
   // Check if already initialized to prevent duplicate registrations
-  // Check for SecureStorageService as it's a critical dependency
-  if (getIt.isRegistered<SecureStorageService>()) {
-    debugPrint('Dependencies already configured, skipping...');
-    return; // Already initialized
+  // Check if core dependencies are already registered
+  try {
+    // Try to get the services - if they exist, we're already configured
+    if (getIt.isRegistered<SharedPreferences>()) {
+      // Check if we have a complete registration by trying to get SecureStorageService
+      try {
+        getIt<SecureStorageService>();
+        debugPrint('Dependencies already fully configured, skipping...');
+        return; // Already initialized
+      } catch (e) {
+        // Partial registration detected - SharedPreferences exists but not SecureStorageService
+        debugPrint('Partial registration detected, resetting all dependencies...');
+        resetDependencies();
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    }
+  } catch (e) {
+    // No registration exists, proceed with initialization
+    debugPrint('No existing registration found, proceeding with initialization...');
   }
   
   // External dependencies
+  debugPrint('Starting dependency registration...');
+  
+  debugPrint('Registering SharedPreferences...');
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  debugPrint('SharedPreferences registered');
   
+  debugPrint('Registering FlutterSecureStorage...');
   const flutterSecureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(
       encryptedSharedPreferences: true,
@@ -73,12 +93,16 @@ Future<void> configureDependencies() async {
     ),
   );
   getIt.registerSingleton<FlutterSecureStorage>(flutterSecureStorage);
+  debugPrint('FlutterSecureStorage registered');
   
+  debugPrint('Registering Dio...');
   final dio = DioClient().dio;
   getIt.registerSingleton<Dio>(dio);
+  debugPrint('Dio registered');
 
   // Core Services
   // Register SecureStorageService first as it's needed by AuthLocalDataSource
+  debugPrint('Registering SecureStorageService...');
   getIt.registerSingleton<SecureStorageService>(
     SecureStorageService(getIt<FlutterSecureStorage>()),
   );
@@ -202,7 +226,9 @@ Future<void> configureDependencies() async {
 
 /// Reset all dependencies for hot reload or testing
 void resetDependencies() {
+  debugPrint('Resetting all dependencies...');
   getIt.reset();
+  debugPrint('Dependencies reset complete');
 }
 
 /// Check if dependencies are configured

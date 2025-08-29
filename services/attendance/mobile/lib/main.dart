@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/pages/dashboard/dashboard_page.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
-import 'config/firebase_config.dart';
-import 'services/hybrid_database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,19 +25,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  try {
-    // Initialize Firebase with hybrid architecture
-    await FirebaseConfig.initialize();
-    
-    // Initialize hybrid database service
-    await HybridDatabaseService.initialize();
-    
-    debugPrint('✅ Firebase and Hybrid Database initialized successfully');
-  } catch (e, stackTrace) {
-    debugPrint('❌ Firebase initialization failed: $e');
-    // Continue app launch even if Firebase fails (offline mode)
-  }
-
   runApp(
     const ProviderScope(
       child: DotAttendanceApp(),
@@ -54,22 +36,25 @@ class DotAttendanceApp extends ConsumerWidget {
   const DotAttendanceApp({super.key});
 
   static TextTheme _buildTextTheme(BuildContext context) {
-    try {
-      // Try to use Google Fonts
-      return GoogleFonts.doHyeonTextTheme(
-        Theme.of(context).textTheme,
-      ).apply(
-        bodyColor: NeoBrutalTheme.fg,
-        displayColor: NeoBrutalTheme.fg,
-      );
-    } catch (e) {
-      // Fallback to default text theme if Google Fonts fails
-      debugPrint('Google Fonts failed to load, using system fonts: $e');
-      return Theme.of(context).textTheme.apply(
-        bodyColor: NeoBrutalTheme.fg,
-        displayColor: NeoBrutalTheme.fg,
-      );
-    }
+    // Create a base text theme and then apply fonts
+    final baseTheme = Theme.of(context).textTheme;
+    return TextTheme(
+      displayLarge: baseTheme.displayLarge?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      displayMedium: baseTheme.displayMedium?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      displaySmall: baseTheme.displaySmall?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      headlineLarge: baseTheme.headlineLarge?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      headlineMedium: baseTheme.headlineMedium?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      headlineSmall: baseTheme.headlineSmall?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      titleLarge: baseTheme.titleLarge?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      titleMedium: baseTheme.titleMedium?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      titleSmall: baseTheme.titleSmall?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      bodyLarge: baseTheme.bodyLarge?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      bodyMedium: baseTheme.bodyMedium?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      bodySmall: baseTheme.bodySmall?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      labelLarge: baseTheme.labelLarge?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      labelMedium: baseTheme.labelMedium?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      labelSmall: baseTheme.labelSmall?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+    );
   }
 
   @override
