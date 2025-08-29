@@ -52,16 +52,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   
   return GoRouter(
-    initialLocation: RouteNames.splash,
+    initialLocation: RouteNames.masterAdminLogin,
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
-      
-      // Show splash while loading
-      if (isLoading && state.location == RouteNames.splash) {
-        return null;
-      }
       
       // Handle QR deep link
       if (state.location.startsWith(RouteNames.qrLogin)) {
@@ -74,13 +69,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         }
       }
       
-      // Redirect to master admin login if not authenticated
-      if (!isAuthenticated && !_isAuthRoute(state.location)) {
-        return RouteNames.masterAdminLogin;
+      // If not authenticated, always go to master admin login
+      if (!isAuthenticated) {
+        if (state.location != RouteNames.masterAdminLogin) {
+          return RouteNames.masterAdminLogin;
+        }
+        return null;
       }
       
-      // Redirect to dashboard if authenticated and on auth route
-      if (isAuthenticated && _isAuthRoute(state.location)) {
+      // If authenticated and on login page, go to dashboard
+      if (isAuthenticated && state.location == RouteNames.masterAdminLogin) {
         return RouteNames.dashboard;
       }
       
