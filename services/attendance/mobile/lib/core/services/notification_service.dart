@@ -333,7 +333,7 @@ class NotificationService {
     if (Platform.isAndroid) {
       final androidPlugin = _localNotifications.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
-      return await androidPlugin?.requestPermission() ?? false;
+      return await androidPlugin?.requestNotificationsPermission() ?? false;
     } else if (Platform.isIOS) {
       final iosPlugin = _localNotifications.resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin>();
