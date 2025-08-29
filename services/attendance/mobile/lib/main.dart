@@ -36,25 +36,24 @@ class DotAttendanceApp extends ConsumerWidget {
   const DotAttendanceApp({super.key});
 
   static TextTheme _buildTextTheme(BuildContext context) {
-    return Theme.of(context).textTheme.copyWith(
-      displayLarge: const TextStyle(fontFamily: 'DoHyeon'),
-      displayMedium: const TextStyle(fontFamily: 'DoHyeon'),
-      displaySmall: const TextStyle(fontFamily: 'DoHyeon'),
-      headlineLarge: const TextStyle(fontFamily: 'DoHyeon'),
-      headlineMedium: const TextStyle(fontFamily: 'DoHyeon'),
-      headlineSmall: const TextStyle(fontFamily: 'DoHyeon'),
-      titleLarge: const TextStyle(fontFamily: 'DoHyeon'),
-      titleMedium: const TextStyle(fontFamily: 'DoHyeon'),
-      titleSmall: const TextStyle(fontFamily: 'DoHyeon'),
-      bodyLarge: const TextStyle(fontFamily: 'Orbitron'),
-      bodyMedium: const TextStyle(fontFamily: 'Orbitron'),
-      bodySmall: const TextStyle(fontFamily: 'Orbitron'),
-      labelLarge: const TextStyle(fontFamily: 'Orbitron'),
-      labelMedium: const TextStyle(fontFamily: 'Orbitron'),
-      labelSmall: const TextStyle(fontFamily: 'Orbitron'),
-    ).apply(
-      bodyColor: NeoBrutalTheme.fg,
-      displayColor: NeoBrutalTheme.fg,
+    // Create a base text theme and then apply fonts
+    final baseTheme = Theme.of(context).textTheme;
+    return TextTheme(
+      displayLarge: baseTheme.displayLarge?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      displayMedium: baseTheme.displayMedium?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      displaySmall: baseTheme.displaySmall?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      headlineLarge: baseTheme.headlineLarge?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      headlineMedium: baseTheme.headlineMedium?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      headlineSmall: baseTheme.headlineSmall?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      titleLarge: baseTheme.titleLarge?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      titleMedium: baseTheme.titleMedium?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      titleSmall: baseTheme.titleSmall?.copyWith(fontFamily: 'DoHyeon', color: NeoBrutalTheme.fg),
+      bodyLarge: baseTheme.bodyLarge?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      bodyMedium: baseTheme.bodyMedium?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      bodySmall: baseTheme.bodySmall?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      labelLarge: baseTheme.labelLarge?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      labelMedium: baseTheme.labelMedium?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
+      labelSmall: baseTheme.labelSmall?.copyWith(fontFamily: 'Orbitron', color: NeoBrutalTheme.fg),
     );
   }
 
