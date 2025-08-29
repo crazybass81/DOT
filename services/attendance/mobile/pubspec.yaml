@@ -24,7 +24,7 @@ dependencies:
   google_fonts: ^6.1.0
   
   # Date & Time
-  intl: ^0.20.2
+  intl: ^0.19.0  # Downgraded for compatibility
   
   # QR Code (웹 호환)
   qr_flutter: ^4.1.0
@@ -81,7 +81,7 @@ dependencies:
   # AWS SDK - Using http client for DynamoDB
   http: ^1.1.0
   crypto: ^3.0.3
-  aws_signature_v4: ^0.5.0
+  # aws_signature_v4: ^0.5.0  # Temporarily disabled to resolve conflicts
   
   # Other services
   geocoding: ^2.1.1
