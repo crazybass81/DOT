@@ -127,10 +127,14 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     // Haptic feedback
     await HapticFeedback.selectionClick();
     
-    // Process QR code
+    // Process QR code - convert QrActionType to AttendanceActionType
+    final attendanceAction = widget.actionType == QrActionType.checkIn
+        ? AttendanceActionType.checkIn
+        : AttendanceActionType.checkOut;
+    
     await ref.read(attendanceProvider.notifier).processScannedQrCode(
       qrData: qrData,
-      actionType: widget.actionType,
+      actionType: attendanceAction,
     );
     
     // Show verification dialog
@@ -140,11 +144,16 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
   }
 
   void _showVerificationDialog() {
+    // Convert QrActionType to AttendanceActionType
+    final attendanceAction = widget.actionType == QrActionType.checkIn
+        ? AttendanceActionType.checkIn
+        : AttendanceActionType.checkOut;
+    
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AttendanceVerificationDialog(
-        actionType: widget.actionType,
+        actionType: attendanceAction,
         method: 'qr',
         qrCodeData: lastScannedCode,
         onConfirm: () {
