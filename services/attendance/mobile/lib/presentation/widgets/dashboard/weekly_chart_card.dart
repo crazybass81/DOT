@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:skeletons/skeletons.dart';
+// import 'package:skeletons/skeletons.dart'; // Removed due to compatibility
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../common/neo_brutal_card.dart';
 
@@ -218,18 +218,20 @@ class WeeklyChartCard extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                      height: 12,
-                      width: 80,
+                  Container(
+                    height: 12,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                      height: 16,
-                      width: 100,
+                  Container(
+                    height: 16,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -238,18 +240,20 @@ class WeeklyChartCard extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                      height: 12,
-                      width: 60,
+                  Container(
+                    height: 12,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                      height: 16,
-                      width: 80,
+                  Container(
+                    height: 16,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -283,10 +287,11 @@ class WeeklyChartCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    SkeletonLine(
-                      style: SkeletonLineStyle(
-                        height: 10,
-                        width: 16,
+                    Container(
+                      height: 10,
+                      width: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -317,10 +322,11 @@ class WeeklyChartCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    SkeletonLine(
-                      style: SkeletonLineStyle(
-                        height: 10,
-                        width: 30,
+                    Container(
+                      height: 10,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:skeletons/skeletons.dart';
+// import 'package:skeletons/skeletons.dart'; // Removed due to compatibility
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../common/neo_brutal_card.dart';
 import '../common/neo_brutal_button.dart';
@@ -270,17 +270,19 @@ class AttendanceOverviewChart extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonLine(
-            style: SkeletonLineStyle(
-              height: 20,
-              width: 120,
+          Container(
+            height: 20,
+            width: 120,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(4),
             ),
           ),
           const SizedBox(height: NeoBrutalTheme.space4),
-          SkeletonLine(
-            style: SkeletonLineStyle(
-              height: 200,
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -667,10 +669,11 @@ class SystemWideStatsCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonLine(
-            style: SkeletonLineStyle(
-              height: 24,
-              width: 150,
+          Container(
+            height: 24,
+            width: 150,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(4),
             ),
           ),
