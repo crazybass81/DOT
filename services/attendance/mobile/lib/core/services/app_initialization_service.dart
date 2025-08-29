@@ -45,8 +45,10 @@ class AppInitializationService {
         debugPrint('Detected duplicate registration, resetting dependencies...');
         resetDependencies();
         _isInitialized = false;
-        // Retry once after reset
+        // Re-configure dependencies after reset
         await Future.delayed(const Duration(milliseconds: 100));
+        await configureDependencies();
+        // Now try to initialize again
         return await initializeApp();
       }
       
