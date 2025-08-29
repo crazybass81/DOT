@@ -348,6 +348,7 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
+    TextInputType? keyboardType,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
