@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/services/firebase_service.dart';
 
 class MasterAdminDashboardPage extends ConsumerStatefulWidget {
   const MasterAdminDashboardPage({super.key});
@@ -12,9 +13,44 @@ class MasterAdminDashboardPage extends ConsumerStatefulWidget {
 }
 
 class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardPage> {
+  Map<String, dynamic>? _organizationData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrganizationData();
+  }
+
+  Future<void> _loadOrganizationData() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.email != null) {
+      final userData = await FirebaseService.instance.getUserByEmail(user.email!);
+      if (mounted) {
+        setState(() {
+          _organizationData = userData;
+          _isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: NeoBrutalTheme.bg,
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     
     return Scaffold(
       backgroundColor: NeoBrutalTheme.bg,
