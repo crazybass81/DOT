@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/pages/dashboard/dashboard_page.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
+import 'config/firebase_config.dart';
+import 'services/hybrid_database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
