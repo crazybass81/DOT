@@ -204,7 +204,7 @@ class AttendanceOverviewChart extends ConsumerWidget {
             ),
           ),
           
-          if (showDetailedStats) ..[
+          if (showDetailedStats) ...[
             const SizedBox(height: NeoBrutalTheme.space4),
             _buildDepartmentStats(departmentStats),
           ],
@@ -516,7 +516,7 @@ class SystemWideStatsCard extends ConsumerWidget {
               _buildMetricCard(
                 '시스템 가동률',
                 '${data['systemUptime']?.toStringAsFixed(2) ?? '0'}%',
-                Icons.server,
+                Icons.storage,
                 NeoBrutalTheme.success,
                 '${data['dataProcessed'] ?? '0'} 처리',
               ),
@@ -683,10 +683,13 @@ class SystemWideStatsCard extends ConsumerWidget {
             mainAxisSpacing: NeoBrutalTheme.space3,
             crossAxisSpacing: NeoBrutalTheme.space3,
             children: List.generate(4, (index) => 
-              SkeletonContainer.rounded(
+              Container(
                 width: double.infinity,
                 height: double.infinity,
-                borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusCard),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusCard),
+                ),
               ),
             ),
           ),

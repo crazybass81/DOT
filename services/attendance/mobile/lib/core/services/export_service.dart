@@ -73,13 +73,13 @@ class ExportService {
       
       // 헤더 정보
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-          .value = title;
+          .value = TextCellValue(title);
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-          .value = subtitle ?? '';
+          .value = TextCellValue(subtitle ?? '');
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-          .value = '생성일시: ${_dateFormat.format(now)}';
+          .value = TextCellValue('생성일시: ${_dateFormat.format(now)}');
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-          .value = ''; // 빈 행
+          .value = const TextCellValue(''); // 빈 행
       
       currentRow++;
 
@@ -308,7 +308,7 @@ class ExportService {
     
     // 섹션 헤더
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-        .value = sectionName;
+        .value = TextCellValue(sectionName);
     currentRow++;
 
     if (data is List && data.isNotEmpty) {
@@ -319,7 +319,7 @@ class ExportService {
         final headers = first.keys.toList();
         for (int i = 0; i < headers.length; i++) {
           sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: currentRow))
-              .value = headers[i].toString();
+              .value = TextCellValue(headers[i].toString());
         }
         currentRow++;
 
@@ -329,7 +329,7 @@ class ExportService {
             for (int i = 0; i < headers.length; i++) {
               final value = item[headers[i]]?.toString() ?? '';
               sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: currentRow))
-                  .value = value;
+                  .value = TextCellValue(value);
             }
             currentRow++;
           }
@@ -339,15 +339,15 @@ class ExportService {
       // 키-값 쌍으로 표시
       for (final entry in data.entries) {
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-            .value = entry.key.toString();
+            .value = TextCellValue(entry.key.toString());
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
-            .value = entry.value?.toString() ?? '';
+            .value = TextCellValue(entry.value?.toString() ?? '');
         currentRow++;
       }
     } else {
       // 단순 값
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow++))
-          .value = data?.toString() ?? '';
+          .value = TextCellValue(data?.toString() ?? '');
     }
 
     return currentRow;

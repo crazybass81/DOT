@@ -178,7 +178,7 @@ class NeoBrutalTheme {
         ),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: const CardThemeData(
       color: bg,
       elevation: 0,
       shape: RoundedRectangleBorder(
