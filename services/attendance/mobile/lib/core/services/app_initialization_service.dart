@@ -71,9 +71,15 @@ class AppInitializationService {
   }
 }
 
-/// Provider for app initialization
+/// Provider for app initialization with error handling
 final appInitializationProvider = FutureProvider<void>((ref) async {
-  await AppInitializationService.initializeApp();
+  try {
+    await AppInitializationService.initializeApp();
+  } catch (e) {
+    // Log the error but don't rethrow to prevent infinite loading states
+    debugPrint('App initialization provider failed: $e');
+    throw Exception('Failed to initialize app after multiple attempts: $e');
+  }
 });
 
 /// Provider to check if app is ready
@@ -82,5 +88,14 @@ final appReadyProvider = Provider<bool>((ref) {
   return initializationAsyncValue.maybeWhen(
     data: (_) => true,
     orElse: () => false,
+  );
+});
+
+/// Provider to get initialization error if any
+final appInitializationErrorProvider = Provider<String?>((ref) {
+  final initializationAsyncValue = ref.watch(appInitializationProvider);
+  return initializationAsyncValue.maybeWhen(
+    error: (error, _) => error.toString(),
+    orElse: () => null,
   );
 });
