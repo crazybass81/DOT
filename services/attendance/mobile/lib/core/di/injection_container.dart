@@ -12,6 +12,7 @@ import '../services/notification_service.dart';
 import '../services/biometric_service.dart';
 import '../services/camera_service.dart';
 import '../services/qr_service.dart';
+import '../services/attendance_service.dart';
 
 import '../../data/datasources/auth/auth_local_datasource.dart';
 import '../../data/datasources/auth/auth_remote_datasource.dart';
@@ -81,6 +82,15 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<BiometricService>(BiometricService());
   getIt.registerSingleton<CameraService>(CameraService());
   getIt.registerSingleton<QrService>(QrService());
+  getIt.registerSingleton<AttendanceService>(
+    AttendanceService(
+      getIt<LocationService>(),
+      getIt<QrService>(),
+      getIt<BiometricService>(),
+      getIt<NotificationService>(),
+      getIt<LocalStorageService>(),
+    ),
+  );
 
   // Data Sources
   getIt.registerSingleton<AuthLocalDataSource>(
