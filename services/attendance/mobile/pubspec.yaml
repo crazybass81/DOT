@@ -101,3 +101,13 @@ flutter:
     - assets/icons/
     - assets/animations/
     - assets/fonts/
+  
+  fonts:
+    - family: DoHyeon
+      fonts:
+        - asset: assets/fonts/DoHyeon-Regular.ttf
+          weight: 400
+    - family: Orbitron
+      fonts:
+        - asset: assets/fonts/Orbitron-Regular.ttf
+          weight: 400
