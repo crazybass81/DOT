@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/neo_brutal_theme.dart';
-import 'presentation/pages/dashboard/dashboard_page.dart';
+import 'presentation/router/app_router.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
 
@@ -59,7 +59,9 @@ class DotAttendanceApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
+    final router = ref.watch(appRouterProvider);
+    
+    return MaterialApp.router(
       title: 'DOT ATTENDANCE',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -84,26 +86,7 @@ class DotAttendanceApp extends ConsumerWidget {
           ),
         ),
       ),
-      home: const AppInitializationWrapper(),
-    );
-  }
-}
-
-/// Wrapper widget that ensures proper app initialization before showing main UI
-class AppInitializationWrapper extends ConsumerWidget {
-  const AppInitializationWrapper({super.key});
-  
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appInitialization = ref.watch(appInitializationProvider);
-    
-    return appInitialization.when(
-      data: (_) => const DashboardPage(),
-      loading: () => const AppLoadingScreen(),
-      error: (error, stackTrace) => AppErrorScreen(
-        error: error,
-        onRetry: () => ref.invalidate(appInitializationProvider),
-      ),
+      routerConfig: router,
     );
   }
 }
