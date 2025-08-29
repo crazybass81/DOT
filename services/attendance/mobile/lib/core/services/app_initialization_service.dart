@@ -38,13 +38,11 @@ class AppInitializationService {
       
       // If this is a duplicate registration error and we haven't exceeded max attempts
       if (e.toString().contains('already registered') && _initializationAttempts < _maxRetryAttempts) {
-        debugPrint('Detected duplicate registration, resetting dependencies...');
+        debugPrint('Detected duplicate registration, will retry after reset...');
         resetDependencies();
         _isInitialized = false;
-        // Re-configure dependencies after reset
+        // Retry initialization after reset
         await Future.delayed(const Duration(milliseconds: 100));
-        await configureDependencies();
-        // Now try to initialize again
         return await initializeApp();
       }
       
