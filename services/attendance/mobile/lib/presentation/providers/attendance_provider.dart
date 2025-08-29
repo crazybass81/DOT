@@ -279,14 +279,14 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   Future<void> checkIn() async {
     await markAttendance(
       actionType: AttendanceActionType.checkIn,
-      method: AttendanceMethod.manual,
+      method: 'manual',
     );
   }
   
   Future<void> checkOut() async {
     await markAttendance(
       actionType: AttendanceActionType.checkOut,
-      method: AttendanceMethod.manual,
+      method: 'manual',
     );
   }
   
