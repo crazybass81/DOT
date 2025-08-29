@@ -24,7 +24,7 @@ dependencies:
   google_fonts: ^6.1.0
   
   # Date & Time
-  intl: ^0.18.0
+  intl: ^0.20.2
   
   # QR Code (웹 호환)
   qr_flutter: ^4.1.0
@@ -77,10 +77,6 @@ dependencies:
   firebase_analytics: ^10.7.0
   firebase_messaging: ^14.7.2
   cloud_functions: ^4.5.0
-  
-  # AWS
-  aws_dynamodb_api: ^2.0.0
-  aws_common: ^0.6.0
   
   # Other services
   geocoding: ^2.1.1
