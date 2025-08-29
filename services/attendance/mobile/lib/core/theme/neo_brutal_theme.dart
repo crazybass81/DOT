@@ -67,47 +67,119 @@ class NeoBrutalTheme {
   ];
 
   // 타이포그래피
-  static TextStyle display = GoogleFonts.doHyeon(
-    fontSize: 28,
-    height: 34 / 28,
-    fontWeight: FontWeight.w700,
-    color: fg,
-  );
+  static TextStyle get display {
+    try {
+      return GoogleFonts.doHyeon(
+        fontSize: 28,
+        height: 34 / 28,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      );
+    } catch (e) {
+      // Fallback to system font if Google Fonts fails
+      return const TextStyle(
+        fontSize: 28,
+        height: 34 / 28,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      );
+    }
+  }
 
-  static TextStyle title = GoogleFonts.doHyeon(
-    fontSize: 22,
-    height: 28 / 22,
-    fontWeight: FontWeight.w700,
-    color: fg,
-  );
+  static TextStyle get title {
+    try {
+      return GoogleFonts.doHyeon(
+        fontSize: 22,
+        height: 28 / 22,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      );
+    } catch (e) {
+      // Fallback to system font if Google Fonts fails
+      return const TextStyle(
+        fontSize: 22,
+        height: 28 / 22,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      );
+    }
+  }
 
-  static TextStyle heading = GoogleFonts.orbit(
-    fontSize: 18,
-    height: 24 / 18,
-    fontWeight: FontWeight.w700,
-    color: fg,
-  );
+  static TextStyle get heading {
+    try {
+      return GoogleFonts.orbit(
+        fontSize: 18,
+        height: 24 / 18,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      );
+    } catch (e) {
+      // Fallback to system font if Google Fonts fails
+      return const TextStyle(
+        fontSize: 18,
+        height: 24 / 18,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      );
+    }
+  }
 
-  static TextStyle body = GoogleFonts.orbit(
-    fontSize: 16,
-    height: 22 / 16,
-    fontWeight: FontWeight.w400,
-    color: fg,
-  );
+  static TextStyle get body {
+    try {
+      return GoogleFonts.orbit(
+        fontSize: 16,
+        height: 22 / 16,
+        fontWeight: FontWeight.w400,
+        color: fg,
+      );
+    } catch (e) {
+      // Fallback to system font if Google Fonts fails
+      return const TextStyle(
+        fontSize: 16,
+        height: 22 / 16,
+        fontWeight: FontWeight.w400,
+        color: fg,
+      );
+    }
+  }
 
-  static TextStyle caption = GoogleFonts.orbit(
-    fontSize: 13,
-    height: 18 / 13,
-    fontWeight: FontWeight.w400,
-    color: fg,
-  );
+  static TextStyle get caption {
+    try {
+      return GoogleFonts.orbit(
+        fontSize: 13,
+        height: 18 / 13,
+        fontWeight: FontWeight.w400,
+        color: fg,
+      );
+    } catch (e) {
+      // Fallback to system font if Google Fonts fails
+      return const TextStyle(
+        fontSize: 13,
+        height: 18 / 13,
+        fontWeight: FontWeight.w400,
+        color: fg,
+      );
+    }
+  }
 
-  static TextStyle micro = GoogleFonts.orbit(
-    fontSize: 11,
-    height: 16 / 11,
-    fontWeight: FontWeight.w400,
-    color: fg,
-  );
+  static TextStyle get micro {
+    try {
+      return GoogleFonts.orbit(
+        fontSize: 11,
+        height: 16 / 11,
+        fontWeight: FontWeight.w400,
+        color: fg,
+      );
+    } catch (e) {
+      // Fallback to system font if Google Fonts fails
+      return const TextStyle(
+        fontSize: 11,
+        height: 16 / 11,
+        fontWeight: FontWeight.w400,
+        color: fg,
+      );
+    }
+  }
 
   // 라이트 테마
   static ThemeData get lightTheme => ThemeData(

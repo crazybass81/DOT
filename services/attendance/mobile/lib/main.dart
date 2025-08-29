@@ -36,6 +36,25 @@ void main() async {
 class DotAttendanceApp extends ConsumerWidget {
   const DotAttendanceApp({super.key});
 
+  static TextTheme _buildTextTheme(BuildContext context) {
+    try {
+      // Try to use Google Fonts
+      return GoogleFonts.doHyeonTextTheme(
+        Theme.of(context).textTheme,
+      ).apply(
+        bodyColor: NeoBrutalTheme.fg,
+        displayColor: NeoBrutalTheme.fg,
+      );
+    } catch (e) {
+      // Fallback to default text theme if Google Fonts fails
+      debugPrint('Google Fonts failed to load, using system fonts: $e');
+      return Theme.of(context).textTheme.apply(
+        bodyColor: NeoBrutalTheme.fg,
+        displayColor: NeoBrutalTheme.fg,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
@@ -48,12 +67,7 @@ class DotAttendanceApp extends ConsumerWidget {
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: NeoBrutalTheme.bg,
-        textTheme: GoogleFonts.doHyeonTextTheme(
-          Theme.of(context).textTheme,
-        ).apply(
-          bodyColor: NeoBrutalTheme.fg,
-          displayColor: NeoBrutalTheme.fg,
-        ),
+        textTheme: _buildTextTheme(context),
         appBarTheme: const AppBarTheme(
           backgroundColor: NeoBrutalTheme.bg,
           elevation: 0,
