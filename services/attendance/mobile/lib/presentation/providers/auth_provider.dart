@@ -247,6 +247,87 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void setLoading(bool isLoading) {
     state = state.copyWith(isLoading: isLoading);
   }
+  
+  /// Login with email and password using Firebase or hardcoded
+  Future<AuthResult> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // Check hardcoded admin first
+      if (email == 'masteradmin' && password == 'masteradmin1234') {
+        final adminUser = User(
+          id: 'hardcoded_admin',
+          email: 'masteradmin@dot.com',
+          firstName: 'Master',
+          lastName: 'Admin',
+          role: UserRole.admin,
+          createdAt: DateTime.now(),
+          isActive: true,
+        );
+        
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: adminUser,
+          error: null,
+        );
+        
+        return const AuthResult(success: true);
+      }
+      
+      // Use Firebase service for real users
+      final firebaseService = FirebaseService.instance;
+      final authResult = await firebaseService.signInWithEmailPassword(email, password);
+      
+      if (authResult != null) {
+        // Create User object from auth result
+        final user = User(
+          id: authResult['uid'],
+          email: authResult['email'],
+          firstName: authResult['firstName'],
+          lastName: authResult['lastName'],
+          role: authResult['role'] == 'admin' ? UserRole.admin : UserRole.user,
+          createdAt: DateTime.parse(authResult['createdAt']),
+          isActive: authResult['isActive'],
+        );
+        
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: user,
+          error: null,
+        );
+        
+        return AuthResult(
+          success: true,
+          userData: authResult,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Invalid email or password',
+        );
+        
+        return const AuthResult(
+          success: false,
+          error: 'Invalid email or password',
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      
+      return AuthResult(
+        success: false,
+        error: e.toString(),
+      );
+    }
+  }
 }
 
 // Providers
