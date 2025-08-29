@@ -11,6 +11,7 @@ import '../pages/admin/master_admin_dashboard_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
+import '../../domain/entities/attendance/qr_action_type.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/edit_profile_page.dart';
 import '../pages/settings/settings_page.dart';
@@ -143,7 +144,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'qr-scanner',
-                builder: (context, state) => const QrScannerPage(),
+                builder: (context, state) => const QrScannerPage(
+                  actionType: QrActionType.checkIn,
+                ),
               ),
               GoRoute(
                 path: 'location-check',
@@ -188,8 +191,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'monthly',
                 builder: (context, state) {
-                  final month = state.queryParameters['month'];
-                  final year = state.queryParameters['year'];
+                  final month = state.uri.queryParameters['month'];
+                  final year = state.uri.queryParameters['year'];
                   return MonthlyReportPage(
                     month: month != null ? int.tryParse(month) : null,
                     year: year != null ? int.tryParse(year) : null,
