@@ -69,10 +69,22 @@ dependencies:
   # Additional Animations
   flutter_staggered_animations: ^1.1.1
 
-  # Missing dependencies for services
+  # Firebase
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.15.0
+  cloud_firestore: ^4.13.0
+  firebase_storage: ^11.5.0
+  firebase_analytics: ^10.7.0
+  firebase_messaging: ^14.7.2
+  cloud_functions: ^4.5.0
+  
+  # AWS
+  aws_dynamodb_api: ^2.0.0
+  aws_common: ^0.6.0
+  
+  # Other services
   geocoding: ^2.1.1
   flutter_local_notifications: ^17.2.3
-  firebase_messaging: ^14.7.2
   
   timezone: ^0.9.2
   local_auth: ^2.1.6
