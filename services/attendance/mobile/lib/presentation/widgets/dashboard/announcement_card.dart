@@ -123,7 +123,7 @@ class AnnouncementCard extends ConsumerWidget {
                           color: NeoBrutalTheme.fg.withOpacity(0.6),
                         ),
                       ),
-                      if (announcement.isNew == true) ..[
+                      if (announcement.isNew == true) ...[
                         const SizedBox(width: NeoBrutalTheme.space2),
                         Container(
                           padding: const EdgeInsets.symmetric(

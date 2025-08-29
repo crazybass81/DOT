@@ -8,7 +8,7 @@ class RefreshTokenUseCase {
 
   RefreshTokenUseCase(this.repository);
 
-  Future<Either<Failure, User>> call(String refreshToken) async {
-    return await repository.refreshToken(refreshToken);
+  Future<Either<Failure, User>> call() async {
+    return await repository.refreshToken();
   }
 }
