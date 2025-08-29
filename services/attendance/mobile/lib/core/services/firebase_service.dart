@@ -69,11 +69,51 @@ class FirebaseService {
       'password': '1q2w3e2w1q!', // In production, this would be hashed
       'firstName': 'Master',
       'lastName': 'Admin',
-      'role': 'masterAdmin',
+      'role': 'admin',
       'organizationId': 'org_001',
       'organizationName': 'DOT 본사',
       'createdAt': DateTime.now().toIso8601String(),
       'isActive': true,
+      
+      // Direct fields for dashboard compatibility
+      'representativeName': '임태균',
+      'representativePhone': '01093177090',
+      'businessRegistrationNumber': '248-01-02359',
+      'phoneVerified': false,
+      'identityVerified': false,
+      'businessNumberVerified': false,
+      'businessRegistrationUploaded': false,
+      
+      // Simple branches array for dashboard compatibility
+      'branches': [
+        {
+          'id': 'branch_001',
+          'name': '강남본사',
+          'address': '서울시 강남구 테헤란로 123',
+          'phone': '02-1234-5678',
+          'isHeadOffice': true,
+          'manager': '임태균',
+          'employeeCount': 5,
+        },
+        {
+          'id': 'branch_002', 
+          'name': '강남지점',
+          'address': '서울시 강남구 역삼동 456',
+          'phone': '02-5678-9012',
+          'isHeadOffice': false,
+          'manager': null,
+          'employeeCount': 3,
+        },
+        {
+          'id': 'branch_003',
+          'name': '홍대지점',
+          'address': '서울시 마포구 홍익로 789',
+          'phone': '02-3456-7890',
+          'isHeadOffice': false,
+          'manager': null,
+          'employeeCount': 2,
+        }
+      ],
       
       // Extended business profile information
       'businessProfile': {
