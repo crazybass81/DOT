@@ -205,12 +205,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 bool _isAuthRoute(String location) {
   const authRoutes = [
+    RouteNames.masterAdminLogin,
     RouteNames.login,
     RouteNames.forgotPassword,
     RouteNames.biometricSetup,
     RouteNames.splash,
+    RouteNames.qrLogin,
+    RouteNames.userRegistration,
   ];
-  return authRoutes.contains(location);
+  return authRoutes.any((route) => location.startsWith(route));
 }
 
 // Splash Page
