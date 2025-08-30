@@ -637,13 +637,13 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('QR 코드 생성기 사용법'),
+                  title: const Text('로그인 QR 코드 생성기'),
                   content: const Text(
-                    '1. QR 코드 유형 선택 (출근/퇴근)\n'
-                    '2. 위치 선택 또는 직접 입력\n'
-                    '3. 필요시 추가 정보 입력\n'
-                    '4. QR 코드 생성 버튼 클릭\n'
-                    '5. 생성된 QR 코드를 공유/저장/복사',
+                    '1. 위치 선택 또는 직접 입력\n'
+                    '2. 필요시 추가 정보 입력\n'
+                    '3. QR 코드 생성 버튼 클릭\n'
+                    '4. 생성된 QR 코드를 공유/저장/복사\n'
+                    '5. 직원들이 QR을 스캔하여 로그인',
                   ),
                   actions: [
                     TextButton(
