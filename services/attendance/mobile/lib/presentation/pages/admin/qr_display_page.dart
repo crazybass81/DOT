@@ -159,9 +159,7 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
     return Container(
       padding: const EdgeInsets.all(NeoBrutalTheme.space4),
       decoration: BoxDecoration(
-        color: widget.actionType == QrActionType.checkIn 
-            ? NeoBrutalTheme.success 
-            : NeoBrutalTheme.warning,
+        color: NeoBrutalTheme.primary,
         border: Border.all(
           color: NeoBrutalTheme.fg,
           width: NeoBrutalTheme.borderThick,
@@ -177,30 +175,22 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
       child: Column(
         children: [
           Icon(
-            widget.actionType == QrActionType.checkIn 
-                ? Icons.login 
-                : Icons.logout,
+            Icons.qr_code_2,
             size: 48,
-            color: widget.actionType == QrActionType.checkIn 
-                ? NeoBrutalTheme.successInk 
-                : NeoBrutalTheme.warningInk,
+            color: NeoBrutalTheme.bg,
           ),
           const SizedBox(height: NeoBrutalTheme.space2),
           Text(
-            widget.actionType == QrActionType.checkIn ? '출근' : '퇴근',
+            '로그인 QR',
             style: NeoBrutalTheme.h1.copyWith(
-              color: widget.actionType == QrActionType.checkIn 
-                  ? NeoBrutalTheme.successInk 
-                  : NeoBrutalTheme.warningInk,
+              color: NeoBrutalTheme.bg,
             ),
           ),
           const SizedBox(height: NeoBrutalTheme.space1),
           Text(
             widget.locationName,
             style: NeoBrutalTheme.h3.copyWith(
-              color: widget.actionType == QrActionType.checkIn 
-                  ? NeoBrutalTheme.successInk 
-                  : NeoBrutalTheme.warningInk,
+              color: NeoBrutalTheme.bg,
             ),
           ),
         ],
@@ -338,7 +328,7 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
           Text(
             '1. 휴대폰으로 DOT 출근부 앱을 열어주세요\n'
             '2. QR 코드 스캔 메뉴를 선택하세요\n'
-            '3. 위 QR 코드를 스캔하여 ${widget.actionType == QrActionType.checkIn ? "출근" : "퇴근"} 처리하세요\n'
+            '3. 위 QR 코드를 스캔하여 로그인하세요\n'
             '4. QR 코드는 5분마다 자동 갱신됩니다',
             style: NeoBrutalTheme.body.copyWith(
               color: NeoBrutalTheme.loInk,
