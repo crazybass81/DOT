@@ -8,6 +8,7 @@ import '../pages/auth/forgot_password_page.dart';
 import '../pages/auth/biometric_setup_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
 import '../pages/admin/master_admin_dashboard_page.dart';
+import '../pages/admin/qr_generator_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
@@ -29,6 +30,7 @@ class RouteNames {
   static const String splash = '/';
   static const String masterAdminLogin = '/master-admin-login';
   static const String masterAdminDashboard = '/admin/dashboard';
+  static const String qrGenerator = '/admin/qr-generator';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
@@ -117,6 +119,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.masterAdminDashboard,
         builder: (context, state) => const MasterAdminDashboardPage(),
+      ),
+      
+      // QR Code Generator
+      GoRoute(
+        path: RouteNames.qrGenerator,
+        builder: (context, state) => const QrGeneratorPage(),
       ),
       
       // Main app with bottom navigation
