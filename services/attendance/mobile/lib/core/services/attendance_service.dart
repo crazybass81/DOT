@@ -196,6 +196,28 @@ class AttendanceService {
     }
   }
 
+  /// Check in for work
+  Future<bool> checkIn({
+    String? notes,
+  }) async {
+    return markAttendance(
+      actionType: AttendanceActionType.checkIn,
+      method: 'manual',
+      notes: notes,
+    );
+  }
+
+  /// Check out from work
+  Future<bool> checkOut({
+    String? notes,
+  }) async {
+    return markAttendance(
+      actionType: AttendanceActionType.checkOut,
+      method: 'manual',
+      notes: notes,
+    );
+  }
+
   /// Mark attendance (online or queue offline)
   Future<bool> markAttendance({
     required AttendanceActionType actionType,
