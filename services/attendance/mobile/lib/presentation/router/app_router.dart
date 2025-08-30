@@ -31,6 +31,7 @@ class RouteNames {
   static const String masterAdminLogin = '/master-admin-login';
   static const String masterAdminDashboard = '/admin/dashboard';
   static const String qrGenerator = '/admin/qr-generator';
+  static const String qrDisplay = '/admin/qr-display';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
