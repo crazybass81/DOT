@@ -133,16 +133,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.qrDisplay,
         builder: (context, state) {
-          final actionTypeStr = state.uri.queryParameters['actionType'] ?? 'checkIn';
           final locationId = state.uri.queryParameters['locationId'] ?? 'main_office';
           final locationName = state.uri.queryParameters['locationName'] ?? '본사';
-          
-          final actionType = actionTypeStr == 'checkOut' 
-              ? QrActionType.checkOut 
-              : QrActionType.checkIn;
               
           return QrDisplayPage(
-            actionType: actionType,
             locationId: locationId,
             locationName: locationName,
           );
