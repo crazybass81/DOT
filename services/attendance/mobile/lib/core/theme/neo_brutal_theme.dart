@@ -13,8 +13,10 @@ class NeoBrutalTheme {
   
   // 상태 색상
   static const Color success = Color(0xFF00C853);
+  static const Color successInk = Color(0xFFFFFFFF);
   static const Color error = Color(0xFFD32F2F);
   static const Color warning = Color(0xFFFFAB00);
+  static const Color warningInk = Color(0xFFFFFFFF);
   static const Color info = Color(0xFF2962FF);
   
   // 추가 색상 (호환성)
@@ -23,6 +25,9 @@ class NeoBrutalTheme {
   static const Color primary = hi;
   static const Color secondary = pastelMint;
   static const Color accent = pastelPink;
+  static const Color lo = muted;
+  static const Color loInk = gray600;
+  static const Color shadow = Color(0xFF000000);
   
   // Gray scale
   static const Color gray200 = Color(0xFFEEEEEE);
