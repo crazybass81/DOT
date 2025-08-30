@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../../router/app_router.dart';
+import '../../../domain/entities/attendance/qr_action_type.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/services/firebase_service.dart';
 
@@ -465,17 +466,17 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           children: [
             _buildActionCard(
               title: 'Generate QR Code',
-              subtitle: 'Create login QR for employees',
+              subtitle: 'Create attendance QR codes',
               icon: Icons.qr_code,
               color: NeoBrutalTheme.primary,
               onTap: () => context.push(RouteNames.qrGenerator),
             ),
             _buildActionCard(
-              title: 'Manage Users',
-              subtitle: 'Add or edit employees',
-              icon: Icons.person_add,
-              color: NeoBrutalTheme.secondary,
-              onTap: () => context.push('/admin/users'),
+              title: 'QR Display',
+              subtitle: 'Live attendance display',
+              icon: Icons.tv,
+              color: NeoBrutalTheme.success,
+              onTap: () => _showQrDisplayOptions(),
             ),
             _buildActionCard(
               title: 'View Reports',
@@ -792,6 +793,92 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
     return user?.firstName != null && user?.lastName != null
         ? '${user?.firstName} ${user?.lastName}'
         : user?.email ?? 'Master Admin';
+  }
+
+  void _showQrDisplayOptions() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'QR 디스플레이 선택',
+          style: NeoBrutalTheme.h3,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '어떤 유형의 QR 코드를 표시하시겠습니까?',
+              style: NeoBrutalTheme.body,
+            ),
+            const SizedBox(height: 16),
+            
+            // Check-in option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: NeoBrutalTheme.success,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.login,
+                  color: Colors.white,
+                ),
+              ),
+              title: const Text('출근용 QR 코드'),
+              subtitle: const Text('직원들이 출근할 때 사용'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _navigateToQrDisplay(QrActionType.checkIn);
+              },
+            ),
+            
+            const Divider(),
+            
+            // Check-out option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: NeoBrutalTheme.warning,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.logout,
+                  color: Colors.white,
+                ),
+              ),
+              title: const Text('퇴근용 QR 코드'),
+              subtitle: const Text('직원들이 퇴근할 때 사용'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _navigateToQrDisplay(QrActionType.checkOut);
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToQrDisplay(QrActionType actionType) {
+    final actionTypeStr = actionType == QrActionType.checkIn ? 'checkIn' : 'checkOut';
+    final locationId = 'main_office';
+    final locationName = _organizationData != null 
+        ? (_organizationData!['branches'] as List?)?.isNotEmpty == true
+            ? (_organizationData!['branches'][0]['name'] ?? '본사')
+            : '본사'
+        : '본사';
+        
+    context.push(
+      '${RouteNames.qrDisplay}?actionType=$actionTypeStr&locationId=$locationId&locationName=${Uri.encodeComponent(locationName)}'
+    );
   }
 
   int _getTotalBranches() {
