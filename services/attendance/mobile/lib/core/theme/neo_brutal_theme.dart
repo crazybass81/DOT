@@ -55,6 +55,7 @@ class NeoBrutalTheme {
   static const double space2 = 8.0;
   static const double space3 = 12.0;
   static const double space4 = 16.0;
+  static const double space5 = 20.0;
   static const double space6 = 24.0;
   static const double space8 = 32.0;
   static const double space10 = 40.0;
