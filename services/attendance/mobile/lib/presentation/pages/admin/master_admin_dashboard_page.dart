@@ -795,80 +795,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
         : user?.email ?? 'Master Admin';
   }
 
-  void _showQrDisplayOptions() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'QR 디스플레이 선택',
-          style: NeoBrutalTheme.h3,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '어떤 유형의 QR 코드를 표시하시겠습니까?',
-              style: NeoBrutalTheme.body,
-            ),
-            const SizedBox(height: 16),
-            
-            // Check-in option
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: NeoBrutalTheme.success,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.login,
-                  color: Colors.white,
-                ),
-              ),
-              title: const Text('출근용 QR 코드'),
-              subtitle: const Text('직원들이 출근할 때 사용'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _navigateToQrDisplay(QrActionType.checkIn);
-              },
-            ),
-            
-            const Divider(),
-            
-            // Check-out option
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: NeoBrutalTheme.warning,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.logout,
-                  color: Colors.white,
-                ),
-              ),
-              title: const Text('퇴근용 QR 코드'),
-              subtitle: const Text('직원들이 퇴근할 때 사용'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _navigateToQrDisplay(QrActionType.checkOut);
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('취소'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _navigateToQrDisplay(QrActionType actionType) {
-    final actionTypeStr = actionType == QrActionType.checkIn ? 'checkIn' : 'checkOut';
+  void _navigateToQrDisplay() {
     final locationId = 'main_office';
     final locationName = _organizationData != null 
         ? (_organizationData!['branches'] as List?)?.isNotEmpty == true
@@ -877,7 +804,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
         : '본사';
         
     context.go(
-      '${RouteNames.qrDisplay}?actionType=$actionTypeStr&locationId=$locationId&locationName=${Uri.encodeComponent(locationName)}'
+      '${RouteNames.qrDisplay}?locationId=$locationId&locationName=${Uri.encodeComponent(locationName)}'
     );
   }
 
