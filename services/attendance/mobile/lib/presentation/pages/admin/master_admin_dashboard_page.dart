@@ -465,18 +465,18 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           childAspectRatio: 1.2,
           children: [
             _buildActionCard(
-              title: 'Generate QR Code',
-              subtitle: 'Create attendance QR codes',
+              title: 'Login QR Generator',
+              subtitle: 'Create login QR codes',
               icon: Icons.qr_code,
               color: NeoBrutalTheme.primary,
               onTap: () => context.go(RouteNames.qrGenerator),
             ),
             _buildActionCard(
               title: 'QR Display',
-              subtitle: 'Live attendance display',
+              subtitle: 'Live login QR display',
               icon: Icons.tv,
               color: NeoBrutalTheme.success,
-              onTap: () => _showQrDisplayOptions(),
+              onTap: () => _navigateToQrDisplay(),
             ),
             _buildActionCard(
               title: 'View Reports',
