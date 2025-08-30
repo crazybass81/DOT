@@ -25,7 +25,6 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
   final _locationController = TextEditingController();
   final _extraDataController = TextEditingController();
   
-  QrActionType _selectedActionType = QrActionType.checkIn;
   String? _generatedQrData;
   Widget? _qrCodeWidget;
   bool _isGenerating = false;
@@ -68,9 +67,9 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
     });
 
     try {
-      // Generate QR code data
+      // Generate QR code data for login
       final qrData = _qrService.generateQrCodeData(
-        type: _selectedActionType.toString().split('.').last,
+        type: 'login',  // 로그인용 QR
         locationId: _selectedLocationId!,
         extraData: _extraDataController.text.trim().isNotEmpty 
             ? _extraDataController.text.trim() 
