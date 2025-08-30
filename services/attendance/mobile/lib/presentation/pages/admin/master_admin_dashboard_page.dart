@@ -469,7 +469,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
               subtitle: 'Create attendance QR codes',
               icon: Icons.qr_code,
               color: NeoBrutalTheme.primary,
-              onTap: () => context.push(RouteNames.qrGenerator),
+              onTap: () => context.go(RouteNames.qrGenerator),
             ),
             _buildActionCard(
               title: 'QR Display',
@@ -876,7 +876,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
             : '본사'
         : '본사';
         
-    context.push(
+    context.go(
       '${RouteNames.qrDisplay}?actionType=$actionTypeStr&locationId=$locationId&locationName=${Uri.encodeComponent(locationName)}'
     );
   }
