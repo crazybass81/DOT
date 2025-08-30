@@ -126,8 +126,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
       // Save to temporary file
       final directory = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final actionType = _selectedActionType.toString().split('.').last;
-      final fileName = 'qr_code_${actionType}_$timestamp.png';
+      final fileName = 'qr_code_login_$timestamp.png';
       final file = File('${directory.path}/$fileName');
       
       await file.writeAsBytes(imageBytes);
@@ -136,7 +135,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'DOT 출근부 QR 코드\n'
-             '유형: ${_selectedActionType == QrActionType.checkIn ? "출근" : "퇴근"}\n'
+             '유형: 로그인 QR\n'
              '위치: ${_locationController.text}\n'
              '생성시간: ${DateTime.now().toString().substring(0, 19)}',
         subject: 'DOT 출근부 QR 코드',
@@ -173,8 +172,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
       // Get downloads directory
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final actionType = _selectedActionType.toString().split('.').last;
-      final fileName = 'dot_qr_code_${actionType}_$timestamp.png';
+      final fileName = 'dot_qr_code_login_$timestamp.png';
       final file = File('${directory.path}/$fileName');
       
       await file.writeAsBytes(imageBytes);
@@ -525,7 +523,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('유형', _selectedActionType == QrActionType.checkIn ? '출근' : '퇴근'),
+                _buildInfoRow('유형', '로그인 QR'),
                 _buildInfoRow('위치', _locationController.text),
                 if (_extraDataController.text.trim().isNotEmpty)
                   _buildInfoRow('추가정보', _extraDataController.text.trim()),
@@ -684,10 +682,6 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
             
             const SizedBox(height: NeoBrutalTheme.space6),
             
-            // Action type selector
-            _buildActionTypeSelector(),
-            
-            const SizedBox(height: NeoBrutalTheme.space4),
             
             // Location selector
             _buildLocationSelector(),
