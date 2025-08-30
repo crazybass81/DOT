@@ -107,6 +107,89 @@ class QuickActionButtons extends ConsumerWidget {
     );
   }
 
+  Widget _buildPrimaryAttendanceButton(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+    IconData icon,
+    Color accentColor,
+    bool isDisabled,
+    bool isCheckOut,
+  ) {
+    final Color effectiveColor = isDisabled ? NeoBrutalTheme.muted : accentColor;
+    
+    return NeoBrutalCard(
+      onTap: isDisabled ? null : () async {
+        // Handle check-in or check-out
+        try {
+          if (isCheckOut) {
+            await ref.read(attendanceServiceProvider).checkOut();
+          } else {
+            await ref.read(attendanceServiceProvider).checkIn();
+          }
+          // Refresh the attendance data
+          ref.invalidate(todayAttendanceProvider);
+          
+          // Show success message
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(isCheckOut ? '퇴근 처리되었습니다' : '출근 처리되었습니다'),
+                backgroundColor: NeoBrutalTheme.success,
+              ),
+            );
+          }
+        } catch (e) {
+          // Show error message
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('오류가 발생했습니다: $e'),
+                backgroundColor: NeoBrutalTheme.error,
+              ),
+            );
+          }
+        }
+      },
+      backgroundColor: effectiveColor.withOpacity(0.1),
+      borderColor: effectiveColor,
+      padding: const EdgeInsets.symmetric(
+        vertical: NeoBrutalTheme.space5,
+        horizontal: NeoBrutalTheme.space4,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: effectiveColor,
+            size: 40,
+          ),
+          const SizedBox(height: NeoBrutalTheme.space3),
+          Text(
+            title,
+            style: NeoBrutalTheme.heading.copyWith(
+              color: effectiveColor,
+              fontSize: 20,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (isDisabled) ...[
+            const SizedBox(height: NeoBrutalTheme.space1),
+            Text(
+              isCheckOut && !isDisabled 
+                ? '출근 먼저 해주세요' 
+                : (title == '출근' ? '이미 출근했습니다' : '이미 퇴근했습니다'),
+              style: NeoBrutalTheme.micro.copyWith(
+                color: effectiveColor.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionButton(
     BuildContext context,
     String title,
@@ -125,14 +208,14 @@ class QuickActionButtons extends ConsumerWidget {
           Icon(
             icon,
             color: accentColor,
-            size: 28,
+            size: 24,
           ),
-          const SizedBox(height: NeoBrutalTheme.space2),
+          const SizedBox(height: NeoBrutalTheme.space1),
           Text(
             title,
-            style: NeoBrutalTheme.body.copyWith(
+            style: NeoBrutalTheme.caption.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 14,
+              fontSize: 12,
               color: accentColor,
             ),
             textAlign: TextAlign.center,
