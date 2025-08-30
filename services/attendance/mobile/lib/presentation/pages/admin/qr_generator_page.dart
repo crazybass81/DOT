@@ -673,7 +673,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
             ),
             const SizedBox(height: NeoBrutalTheme.space2),
             Text(
-              '직원들이 출근/퇴근 시 스캔할 수 있는 QR 코드를 생성합니다',
+              '직원들이 QR 스캔으로 빠르게 로그인할 수 있습니다',
               style: NeoBrutalTheme.body.copyWith(
                 color: NeoBrutalTheme.loInk,
               ),
