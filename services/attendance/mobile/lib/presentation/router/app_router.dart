@@ -9,6 +9,7 @@ import '../pages/auth/biometric_setup_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
 import '../pages/admin/master_admin_dashboard_page.dart';
 import '../pages/admin/qr_generator_page.dart';
+import '../pages/admin/qr_display_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
@@ -126,6 +127,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.qrGenerator,
         builder: (context, state) => const QrGeneratorPage(),
+      ),
+      
+      // QR Code Display
+      GoRoute(
+        path: RouteNames.qrDisplay,
+        builder: (context, state) {
+          final actionTypeStr = state.uri.queryParameters['actionType'] ?? 'checkIn';
+          final locationId = state.uri.queryParameters['locationId'] ?? 'main_office';
+          final locationName = state.uri.queryParameters['locationName'] ?? '본사';
+          
+          final actionType = actionTypeStr == 'checkOut' 
+              ? QrActionType.checkOut 
+              : QrActionType.checkIn;
+              
+          return QrDisplayPage(
+            actionType: actionType,
+            locationId: locationId,
+            locationName: locationName,
+          );
+        },
       ),
       
       // Main app with bottom navigation
