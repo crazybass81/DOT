@@ -164,7 +164,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'qr-scanner',
                 builder: (context, state) => const QrScannerPage(
-                  actionType: QrActionType.checkIn,
+                  actionType: QrActionType.login,
                 ),
               ),
               GoRoute(
