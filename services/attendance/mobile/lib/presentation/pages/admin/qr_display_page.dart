@@ -8,13 +8,11 @@ import '../../../core/theme/neo_brutal_theme.dart';
 import '../../../domain/entities/attendance/qr_action_type.dart';
 
 class QrDisplayPage extends ConsumerStatefulWidget {
-  final QrActionType actionType;
   final String locationId;
   final String locationName;
 
   const QrDisplayPage({
     super.key,
-    required this.actionType,
     required this.locationId,
     required this.locationName,
   });
@@ -88,7 +86,7 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
   Future<void> _generateQrCode() async {
     try {
       final qrData = _qrService.generateQrCodeData(
-        type: widget.actionType.toString().split('.').last,
+        type: 'login',  // 로그인용 QR
         locationId: widget.locationId,
         extraData: 'display_mode',
       );
