@@ -58,6 +58,7 @@ class NeoBrutalTheme {
   static const double space6 = 24.0;
   static const double space8 = 32.0;
   static const double space10 = 40.0;
+  static const double shadowOffset = 4.0;
 
   // 그림자
   static List<BoxShadow> get shadowElev1 => const [
@@ -165,6 +166,13 @@ class NeoBrutalTheme {
     fontWeight: FontWeight.w600,
     color: fg,
   );
+  
+  // Aliases for compatibility
+  static const TextStyle h1 = headline2;
+  static const TextStyle h2 = headline3;
+  static const TextStyle h3 = headline4;
+  static const TextStyle h4 = heading;
+  static const TextStyle small = caption;
   
   // Spacing
   static const double space1 = 4.0;
