@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
+import '../../router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/services/firebase_service.dart';
 
@@ -467,7 +468,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
               subtitle: 'Create login QR for employees',
               icon: Icons.qr_code,
               color: NeoBrutalTheme.primary,
-              onTap: () => context.push('/admin/qr-generator'),
+              onTap: () => context.push(RouteNames.qrGenerator),
             ),
             _buildActionCard(
               title: 'Manage Users',
