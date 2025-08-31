@@ -78,36 +78,52 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // For demo purposes, we'll use hardcoded credentials
-      // In production, this would be an API call
-      // PLAN-1 마스터 어드민 계정: masteradmin / Master@2024
-      if ((adminId == 'admin' && password == 'admin1234') ||
-          (adminId == 'masteradmin' && password == 'Master@2024')) {
-        final adminUser = User(
-          id: 'master_admin_001',
-          email: '$adminId@dotattendance.com',
-          firstName: 'Master',
-          lastName: 'Admin',
-          role: UserRole.masterAdmin,
-          createdAt: DateTime.now(),
-          isActive: true,
-        );
-        
-        state = state.copyWith(
-          isLoading: false,
-          isAuthenticated: true,
-          user: adminUser,
-          error: null,
-        );
-        return true;
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Invalid admin credentials',
-        );
-        return false;
+      // adminId가 이메일 형식이 아니면 @gmail.com을 추가
+      String email = adminId;
+      if (!adminId.contains('@')) {
+        // archt723 -> archt723@gmail.com
+        email = '$adminId@gmail.com';
       }
+
+      print('🔐 Master Admin 로그인 시도: $email');
+
+      // Supabase를 통한 실제 인증
+      final result = await _loginUseCase.call(LoginParams(
+        email: email,
+        password: password,
+      ));
+
+      return result.fold(
+        (failure) {
+          print('❌ Master Admin 로그인 실패: ${failure.message}');
+          state = state.copyWith(
+            isLoading: false,
+            error: failure.message,
+          );
+          return false;
+        },
+        (user) {
+          print('✅ Master Admin 로그인 성공: ${user.email}');
+          // 마스터 관리자 권한 확인
+          if (user.role != UserRole.masterAdmin && user.role != UserRole.admin) {
+            state = state.copyWith(
+              isLoading: false,
+              error: '관리자 권한이 필요합니다',
+            );
+            return false;
+          }
+          
+          state = state.copyWith(
+            isLoading: false,
+            isAuthenticated: true,
+            user: user,
+            error: null,
+          );
+          return true;
+        },
+      );
     } catch (e) {
+      print('❌ Master Admin 로그인 예외: $e');
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
