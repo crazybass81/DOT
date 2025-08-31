@@ -512,7 +512,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
                     children: [
                       Icon(Icons.download, size: 20),
                       SizedBox(width: NeoBrutalTheme.space1),
-                      Text('저장'),
+                      Text('갤러리 저장'),
                     ],
                   ),
                 ),
