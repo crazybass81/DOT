@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/services/qr_service.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
@@ -26,8 +27,11 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
   final _extraDataController = TextEditingController();
   
   String? _generatedQrData;
+  String? _generatedQrCode; // 저장된 QR 코드
   Widget? _qrCodeWidget;
   bool _isGenerating = false;
+  
+  final _supabase = Supabase.instance.client;
   
   // PLAN-1: 지점별 고정 QR 코드를 위한 지점 목록
   final List<Map<String, String>> _predefinedLocations = [
@@ -73,10 +77,46 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
         (loc) => loc['id'] == _selectedLocationId,
       );
       
+      // 고유한 QR 코드 생성
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final qrCode = '${selectedBranch['code']}_$timestamp';
+      
+      // Supabase에 QR 코드 저장 (새로 생성할 때마다 이전 것은 비활성화)
+      try {
+        // 1. 같은 위치의 기존 QR 코드 비활성화
+        await _supabase
+            .from('qr_codes')
+            .update({'is_active': false})
+            .eq('location_id', selectedBranch['id']!)
+            .eq('type', 'login')
+            .eq('is_active', true);
+        
+        // 2. 새 QR 코드 저장
+        await _supabase.from('qr_codes').insert({
+          'code': qrCode,
+          'type': 'login',
+          'location_id': selectedBranch['id']!,
+          'location_name': selectedBranch['name'],
+          'created_by': _supabase.auth.currentUser?.id,
+          'is_active': true,
+          'extra_data': {
+            'branch_code': selectedBranch['code'],
+            'additional_info': _extraDataController.text.trim(),
+          },
+          // expires_at을 null로 설정하여 영구 유효하게 만듦
+          'expires_at': null,
+        });
+        
+        _generatedQrCode = qrCode;
+      } catch (e) {
+        print('❌ Supabase 저장 실패: $e');
+        // Supabase 저장 실패해도 QR 코드는 생성
+      }
+      
       final qrData = _qrService.generateQrCodeData(
         type: 'login',  // 로그인용 QR
         locationId: selectedBranch['id']!,
-        extraData: selectedBranch['code'], // 지점별 고유 코드 포함
+        extraData: qrCode, // 저장된 QR 코드 포함
       );
 
       // Generate QR code widget
@@ -409,7 +449,9 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
                 if (_extraDataController.text.trim().isNotEmpty)
                   _buildInfoRow('추가정보', _extraDataController.text.trim()),
                 _buildInfoRow('생성시간', DateTime.now().toString().substring(0, 19)),
-                _buildInfoRow('유효기간', '5분'),
+                _buildInfoRow('유효기간', '영구 (새로 생성하기 전까지)'),
+                if (_generatedQrCode != null)
+                  _buildInfoRow('코드', _generatedQrCode!),
               ],
             ),
           ),
