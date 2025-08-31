@@ -37,6 +37,7 @@ class RouteNames {
   static const String masterAdminDashboard = '/admin/dashboard';
   static const String qrGenerator = '/admin/qr-generator';
   static const String qrDisplay = '/admin/qr-display';
+  static const String approvalManagement = '/admin/approval-management';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
@@ -183,6 +184,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             locationName: locationName,
           );
         },
+      ),
+      
+      // Approval Management
+      GoRoute(
+        path: RouteNames.approvalManagement,
+        builder: (context, state) => const ApprovalManagementPage(),
       ),
       
       // Main app with bottom navigation
