@@ -14,6 +14,7 @@ import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
 import '../pages/registration/employee_registration_page.dart';
+import '../pages/registration/approval_pending_page.dart';
 import '../../domain/entities/attendance/qr_action_type.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/edit_profile_page.dart';
@@ -41,6 +42,7 @@ class RouteNames {
   static const String qrLogin = '/qr-login'; // Deep link for QR code login
   static const String userRegistration = '/user-registration'; // For first-time users
   static const String employeeRegistration = '/employee-registration'; // Employee registration
+  static const String approvalPending = '/approval-pending'; // Approval pending page
   
   static const String main = '/main';
   static const String dashboard = '/main/dashboard';
