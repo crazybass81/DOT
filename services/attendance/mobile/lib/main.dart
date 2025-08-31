@@ -5,6 +5,7 @@ import 'package:app_links/app_links.dart';
 import 'dart:async';
 import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/router/app_router.dart';
+import 'presentation/providers/auth_provider.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
 
@@ -65,7 +66,7 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
 
     // Handle initial link if app was launched from a deep link
     try {
-      final initialLink = await _appLinks.getInitialAppLink();
+      final initialLink = await _appLinks.getInitialLink();
       if (initialLink != null) {
         _handleDeepLink(initialLink);
       }
