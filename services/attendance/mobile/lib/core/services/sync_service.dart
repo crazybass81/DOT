@@ -103,12 +103,19 @@ class SyncService {
       return items.map((item) {
         return AttendanceQueue(
           id: item['id'],
+          userId: item['userId'],
           actionType: _parseActionType(item['actionType']),
           timestamp: DateTime.parse(item['timestamp']),
-          data: Map<String, dynamic>.from(item['data'] ?? {}),
-          syncStatus: _parseSyncStatus(item['syncStatus']),
+          method: item['method'],
+          latitude: item['latitude'],
+          longitude: item['longitude'],
+          locationName: item['locationName'],
+          qrCodeData: item['qrCodeData'],
+          notes: item['notes'],
+          imageUrl: item['imageUrl'],
+          status: _parseQueueStatus(item['status']),
           retryCount: item['retryCount'] ?? 0,
-          errorMessage: item['errorMessage'],
+          lastError: item['lastError'],
         );
       }).toList();
     } catch (e) {
@@ -149,7 +156,7 @@ class SyncService {
     
     return {
       'pendingItems': queue.length,
-      'failedItems': queue.where((item) => item.syncStatus == QueueSyncStatus.failed).length,
+      'failedItems': queue.where((item) => item.status == QueueStatus.failed).length,
       'lastSyncTime': lastSync?.toIso8601String(),
       'nextSyncTime': lastSync != null 
           ? lastSync.add(syncInterval).toIso8601String()
