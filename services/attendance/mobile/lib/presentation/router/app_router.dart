@@ -126,6 +126,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.biometricSetup,
         builder: (context, state) => const BiometricSetupPage(),
       ),
+      GoRoute(
+        path: RouteNames.employeeRegistration,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          final locationId = state.uri.queryParameters['location'];
+          return EmployeeRegistrationPage(
+            qrToken: token,
+            locationId: locationId,
+          );
+        },
+      ),
       
       // Master Admin Dashboard
       GoRoute(
