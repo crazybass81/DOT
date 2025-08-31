@@ -201,10 +201,31 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
     }
 
     try {
+      // 저장 권한 확인
+      bool hasPermission = false;
+      
+      if (Platform.isAndroid) {
+        final deviceInfo = await Permission.storage.status;
+        if (!deviceInfo.isGranted) {
+          final result = await Permission.storage.request();
+          hasPermission = result.isGranted;
+        } else {
+          hasPermission = true;
+        }
+      } else {
+        // iOS는 권한이 필요 없음
+        hasPermission = true;
+      }
+      
+      if (!hasPermission) {
+        _showSnackBar('저장 권한이 필요합니다', isError: true);
+        return;
+      }
+
       // Generate QR code as image bytes
       final imageBytes = await _qrService.generateQrCodeBytes(
         data: _generatedQrData!,
-        size: 512.0,
+        size: 1024.0, // 고해상도로 저장
         foregroundColor: Colors.black,
         backgroundColor: Colors.white,
       );
@@ -214,16 +235,22 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
         return;
       }
 
-      // Get downloads directory
-      final directory = await getApplicationDocumentsDirectory();
+      // 갤러리에 저장
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'dot_qr_code_login_$timestamp.png';
-      final file = File('${directory.path}/$fileName');
+      final fileName = 'DOT_QR_${_locationController.text.replaceAll(' ', '_')}_$timestamp';
       
-      await file.writeAsBytes(imageBytes);
-
-      _showSnackBar('QR 코드가 저장되었습니다\n경로: ${file.path}', isError: false);
-      await HapticFeedback.lightImpact();
+      final result = await ImageGallerySaver.saveImage(
+        imageBytes,
+        quality: 100,
+        name: fileName,
+      );
+      
+      if (result['isSuccess'] == true) {
+        _showSnackBar('QR 코드가 갤러리에 저장되었습니다 ✅', isError: false);
+        await HapticFeedback.lightImpact();
+      } else {
+        _showSnackBar('갤러리 저장에 실패했습니다', isError: true);
+      }
       
     } catch (e) {
       _showSnackBar('QR 코드 저장 중 오류가 발생했습니다: $e', isError: true);
