@@ -29,9 +29,7 @@ mixin _$AttendanceState {
   DateTime? get lastSyncTime => throw _privateConstructorUsedError;
   bool get isSyncing => throw _privateConstructorUsedError;
 
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $AttendanceStateCopyWith<AttendanceState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -69,8 +67,6 @@ class _$AttendanceStateCopyWithImpl<$Res, $Val extends AttendanceState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -134,8 +130,6 @@ class _$AttendanceStateCopyWithImpl<$Res, $Val extends AttendanceState>
     ) as $Val);
   }
 
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AttendanceCopyWith<$Res>? get todayAttendance {
@@ -148,8 +142,6 @@ class _$AttendanceStateCopyWithImpl<$Res, $Val extends AttendanceState>
     });
   }
 
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AttendanceVerificationResultCopyWith<$Res>? get verificationResult {
@@ -199,8 +191,6 @@ class __$$AttendanceStateImplCopyWithImpl<$Res>
       _$AttendanceStateImpl _value, $Res Function(_$AttendanceStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -365,9 +355,7 @@ class _$AttendanceStateImpl implements _AttendanceState {
       lastSyncTime,
       isSyncing);
 
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$AttendanceStateImplCopyWith<_$AttendanceStateImpl> get copyWith =>
@@ -411,11 +399,8 @@ abstract class _AttendanceState implements AttendanceState {
   DateTime? get lastSyncTime;
   @override
   bool get isSyncing;
-
-  /// Create a copy of AttendanceState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$AttendanceStateImplCopyWith<_$AttendanceStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

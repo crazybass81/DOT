@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../../../domain/entities/attendance/attendance_queue.dart';
+import '../../../domain/entities/attendance/qr_action_type.dart';
 import '../../providers/attendance_provider.dart';
 import '../../widgets/attendance/attendance_verification_dialog.dart';
 import '../../widgets/attendance/attendance_queue_widget.dart';
@@ -14,7 +15,7 @@ import '../../widgets/common/neo_brutal_button.dart';
 import '../../widgets/common/neo_brutal_card.dart';
 
 class QrScannerPage extends ConsumerStatefulWidget {
-  final AttendanceActionType actionType;
+  final QrActionType actionType;
   
   const QrScannerPage({
     super.key,
@@ -110,14 +111,9 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     );
   }
 
-  void _onQRViewCreated(QRViewController qrController) {
+  void _onQRViewCreated(MobileScannerController qrController) {
     controller = qrController;
-    
-    controller!.scannedDataStream.listen((scanData) {
-      if (!hasScanned && scanData.code != null) {
-        _handleQrScanned(scanData.code!);
-      }
-    });
+    // Mobile scanner automatically starts scanning
   }
 
   Future<void> _handleQrScanned(String qrData) async {
@@ -131,10 +127,12 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     // Haptic feedback
     await HapticFeedback.selectionClick();
     
-    // Process QR code
+    // Process QR code - for login action
+    final attendanceAction = AttendanceActionType.checkIn; // Default to check-in for login
+    
     await ref.read(attendanceProvider.notifier).processScannedQrCode(
       qrData: qrData,
-      actionType: widget.actionType,
+      actionType: attendanceAction,
     );
     
     // Show verification dialog
@@ -144,11 +142,14 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
   }
 
   void _showVerificationDialog() {
+    // For login action
+    final attendanceAction = AttendanceActionType.checkIn; // Default to check-in for login
+    
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AttendanceVerificationDialog(
-        actionType: widget.actionType,
+        actionType: attendanceAction,
         method: 'qr',
         qrCodeData: lastScannedCode,
         onConfirm: () {
@@ -172,10 +173,9 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
 
   Future<void> _toggleFlash() async {
     if (controller != null) {
-      await controller!.toggleFlash();
-      final flashStatus = await controller!.getFlashStatus() ?? false;
+      await controller!.toggleTorch();
       setState(() {
-        isFlashOn = flashStatus;
+        isFlashOn = !isFlashOn;
       });
       await HapticFeedback.selectionClick();
     }
@@ -416,16 +416,17 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
       body: Stack(
         children: [
           // QR Scanner
-          QRView(
-            key: qrKey,
-            onQRViewCreated: _onQRViewCreated,
-            overlay: QrScannerOverlayShape(
-              borderColor: Colors.transparent,
-              borderRadius: 0,
-              borderLength: 0,
-              borderWidth: 0,
-              cutOutSize: 250,
-            ),
+          MobileScanner(
+            controller: controller,
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              for (final barcode in barcodes) {
+                if (barcode.rawValue != null && !hasScanned) {
+                  _handleQrScanned(barcode.rawValue!);
+                  break;
+                }
+              }
+            },
           ),
           
           // Dark overlay except for scan area

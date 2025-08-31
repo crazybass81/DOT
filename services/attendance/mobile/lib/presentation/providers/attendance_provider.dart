@@ -9,6 +9,12 @@ import '../../domain/entities/attendance/attendance_queue.dart';
 
 part 'attendance_provider.freezed.dart';
 
+enum AttendanceMethod {
+  manual,
+  qr,
+  location,
+}
+
 @freezed
 class AttendanceState with _$AttendanceState {
   const factory AttendanceState({
@@ -267,6 +273,31 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   void dispose() {
     _attendanceService.dispose();
     super.dispose();
+  }
+  
+  // Quick actions
+  Future<void> checkIn() async {
+    await markAttendance(
+      actionType: AttendanceActionType.checkIn,
+      method: 'manual',
+    );
+  }
+  
+  Future<void> checkOut() async {
+    await markAttendance(
+      actionType: AttendanceActionType.checkOut,
+      method: 'manual',
+    );
+  }
+  
+  Future<void> refreshAttendance() async {
+    await _loadOfflineQueue();
+    await syncOfflineQueue();
+  }
+  
+  Future<void> syncOfflineQueue() async {
+    // Sync offline queue implementation
+    await _loadOfflineQueue();
   }
 }
 

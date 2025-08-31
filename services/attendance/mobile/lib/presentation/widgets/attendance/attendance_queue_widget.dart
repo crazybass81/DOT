@@ -57,7 +57,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
             const SizedBox(height: NeoBrutalTheme.space4),
             
             // Queue Items
-            if (offlineQueue.isNotEmpty) ..[
+            if (offlineQueue.isNotEmpty) ...[
               Container(
                 constraints: const BoxConstraints(maxHeight: 300),
                 child: ListView.separated(
@@ -147,7 +147,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
             ],
           ),
           
-          if (lastSyncTime != null) ..[
+          if (lastSyncTime != null) ...[
             const SizedBox(height: NeoBrutalTheme.space2),
             Row(
               children: [
@@ -244,7 +244,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
           ),
           
           // Location if available
-          if (item.locationName != null) ..[
+          if (item.locationName != null) ...[
             const SizedBox(height: NeoBrutalTheme.space1),
             Row(
               children: [
@@ -266,7 +266,7 @@ class AttendanceQueueWidget extends ConsumerWidget {
           ],
           
           // Error message if failed
-          if (item.status == QueueStatus.failed && item.lastError != null) ..[
+          if (item.status == QueueStatus.failed && item.lastError != null) ...[
             const SizedBox(height: NeoBrutalTheme.space2),
             Container(
               padding: const EdgeInsets.all(NeoBrutalTheme.space2),

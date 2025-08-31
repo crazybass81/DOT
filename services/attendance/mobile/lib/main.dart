@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:app_links/app_links.dart';
+import 'dart:async';
 import 'core/theme/neo_brutal_theme.dart';
-import 'presentation/pages/dashboard/dashboard_page.dart';
+import 'presentation/router/app_router.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
 
@@ -25,6 +27,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // 앱 초기화
+  await AppInitializationService.initializeApp();
+
   runApp(
     const ProviderScope(
       child: DotAttendanceApp(),
@@ -32,8 +37,68 @@ void main() async {
   );
 }
 
-class DotAttendanceApp extends ConsumerWidget {
+class DotAttendanceApp extends ConsumerStatefulWidget {
   const DotAttendanceApp({super.key});
+
+  @override
+  ConsumerState<DotAttendanceApp> createState() => _DotAttendanceAppState();
+}
+
+class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
+  StreamSubscription? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initDeepLinks() async {
+    // Handle initial link if app was launched from a deep link
+    try {
+      final initialLink = await getInitialLink();
+      if (initialLink != null) {
+        _handleDeepLink(initialLink);
+      }
+    } on PlatformException {
+      // Handle exception
+    }
+
+    // Handle links when app is already running
+    _linkSubscription = linkStream.listen((String? link) {
+      if (link != null) {
+        _handleDeepLink(link);
+      }
+    });
+  }
+
+  void _handleDeepLink(String link) {
+    debugPrint('Received deep link: $link');
+    
+    // Parse the deep link
+    final uri = Uri.parse(link);
+    
+    // Check if it's a QR login link
+    if (uri.scheme == 'dot-attendance' || 
+        (uri.host == 'attendance.dot.com' && uri.path == '/qr-login')) {
+      
+      final token = uri.queryParameters['token'];
+      final action = uri.queryParameters['action'] ?? 'login';
+      
+      if (token != null) {
+        // Process QR token for auto-login
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(authProvider.notifier).loginWithQrToken(token, action);
+        });
+      }
+    }
+  }
 
   static TextTheme _buildTextTheme(BuildContext context) {
     // Create a base text theme and then apply fonts
@@ -58,8 +123,10 @@ class DotAttendanceApp extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
+  Widget build(BuildContext context) {
+    final router = ref.watch(appRouterProvider);
+    
+    return MaterialApp.router(
       title: 'DOT ATTENDANCE',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -84,26 +151,7 @@ class DotAttendanceApp extends ConsumerWidget {
           ),
         ),
       ),
-      home: const AppInitializationWrapper(),
-    );
-  }
-}
-
-/// Wrapper widget that ensures proper app initialization before showing main UI
-class AppInitializationWrapper extends ConsumerWidget {
-  const AppInitializationWrapper({super.key});
-  
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appInitialization = ref.watch(appInitializationProvider);
-    
-    return appInitialization.when(
-      data: (_) => const DashboardPage(),
-      loading: () => const AppLoadingScreen(),
-      error: (error, stackTrace) => AppErrorScreen(
-        error: error,
-        onRetry: () => ref.invalidate(appInitializationProvider),
-      ),
+      routerConfig: router,
     );
   }
 }

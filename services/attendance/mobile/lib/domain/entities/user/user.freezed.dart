@@ -30,12 +30,16 @@ mixin _$User {
   DateTime? get joiningDate => throw _privateConstructorUsedError;
   bool get isActive => throw _privateConstructorUsedError;
   bool get isBiometricEnabled => throw _privateConstructorUsedError;
+  BusinessProfile? get businessProfile =>
+      throw _privateConstructorUsedError; // 사업자 프로필 정보 (admin/masterAdmin만)
+  String? get organizationId =>
+      throw _privateConstructorUsedError; // 소속 조직 ID (호환성 유지)
+  String? get organizationName =>
+      throw _privateConstructorUsedError; // 소속 조직명 (호환성 유지)
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
-  /// Create a copy of User
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $UserCopyWith<User> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -59,8 +63,13 @@ abstract class $UserCopyWith<$Res> {
       DateTime? joiningDate,
       bool isActive,
       bool isBiometricEnabled,
+      BusinessProfile? businessProfile,
+      String? organizationId,
+      String? organizationName,
       DateTime? createdAt,
       DateTime? updatedAt});
+
+  $BusinessProfileCopyWith<$Res>? get businessProfile;
 }
 
 /// @nodoc
@@ -73,8 +82,6 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of User
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -92,6 +99,9 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? joiningDate = freezed,
     Object? isActive = null,
     Object? isBiometricEnabled = null,
+    Object? businessProfile = freezed,
+    Object? organizationId = freezed,
+    Object? organizationName = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -152,6 +162,18 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           ? _value.isBiometricEnabled
           : isBiometricEnabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      businessProfile: freezed == businessProfile
+          ? _value.businessProfile
+          : businessProfile // ignore: cast_nullable_to_non_nullable
+              as BusinessProfile?,
+      organizationId: freezed == organizationId
+          ? _value.organizationId
+          : organizationId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      organizationName: freezed == organizationName
+          ? _value.organizationName
+          : organizationName // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -161,6 +183,18 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $BusinessProfileCopyWith<$Res>? get businessProfile {
+    if (_value.businessProfile == null) {
+      return null;
+    }
+
+    return $BusinessProfileCopyWith<$Res>(_value.businessProfile!, (value) {
+      return _then(_value.copyWith(businessProfile: value) as $Val);
+    });
   }
 }
 
@@ -186,8 +220,14 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
       DateTime? joiningDate,
       bool isActive,
       bool isBiometricEnabled,
+      BusinessProfile? businessProfile,
+      String? organizationId,
+      String? organizationName,
       DateTime? createdAt,
       DateTime? updatedAt});
+
+  @override
+  $BusinessProfileCopyWith<$Res>? get businessProfile;
 }
 
 /// @nodoc
@@ -197,8 +237,6 @@ class __$$UserImplCopyWithImpl<$Res>
   __$$UserImplCopyWithImpl(_$UserImpl _value, $Res Function(_$UserImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of User
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -216,6 +254,9 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? joiningDate = freezed,
     Object? isActive = null,
     Object? isBiometricEnabled = null,
+    Object? businessProfile = freezed,
+    Object? organizationId = freezed,
+    Object? organizationName = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -276,6 +317,18 @@ class __$$UserImplCopyWithImpl<$Res>
           ? _value.isBiometricEnabled
           : isBiometricEnabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      businessProfile: freezed == businessProfile
+          ? _value.businessProfile
+          : businessProfile // ignore: cast_nullable_to_non_nullable
+              as BusinessProfile?,
+      organizationId: freezed == organizationId
+          ? _value.organizationId
+          : organizationId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      organizationName: freezed == organizationName
+          ? _value.organizationName
+          : organizationName // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -306,6 +359,9 @@ class _$UserImpl extends _User {
       this.joiningDate,
       this.isActive = true,
       this.isBiometricEnabled = false,
+      this.businessProfile,
+      this.organizationId,
+      this.organizationName,
       this.createdAt,
       this.updatedAt})
       : super._();
@@ -342,13 +398,20 @@ class _$UserImpl extends _User {
   @JsonKey()
   final bool isBiometricEnabled;
   @override
+  final BusinessProfile? businessProfile;
+// 사업자 프로필 정보 (admin/masterAdmin만)
+  @override
+  final String? organizationId;
+// 소속 조직 ID (호환성 유지)
+  @override
+  final String? organizationName;
+// 소속 조직명 (호환성 유지)
+  @override
   final DateTime? createdAt;
   @override
   final DateTime? updatedAt;
 
-  /// Create a copy of User
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$UserImplCopyWith<_$UserImpl> get copyWith =>
@@ -371,6 +434,9 @@ abstract class _User extends User {
       final DateTime? joiningDate,
       final bool isActive,
       final bool isBiometricEnabled,
+      final BusinessProfile? businessProfile,
+      final String? organizationId,
+      final String? organizationName,
       final DateTime? createdAt,
       final DateTime? updatedAt}) = _$UserImpl;
   const _User._() : super._();
@@ -404,14 +470,17 @@ abstract class _User extends User {
   @override
   bool get isBiometricEnabled;
   @override
+  BusinessProfile? get businessProfile;
+  @override // 사업자 프로필 정보 (admin/masterAdmin만)
+  String? get organizationId;
+  @override // 소속 조직 ID (호환성 유지)
+  String? get organizationName;
+  @override // 소속 조직명 (호환성 유지)
   DateTime? get createdAt;
   @override
   DateTime? get updatedAt;
-
-  /// Create a copy of User
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$UserImplCopyWith<_$UserImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -3,8 +3,6 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter/foundation.dart';
 
 import '../constants/app_constants.dart';
-import '../storage/secure_storage_service.dart';
-import '../di/injection_container.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
 
@@ -35,8 +33,8 @@ class DioClient {
   }
 
   void _addInterceptors() {
-    // Auth Interceptor - Add authentication headers
-    _dio.interceptors.add(AuthInterceptor(getIt<SecureStorageService>()));
+    // Auth Interceptor - Add authentication headers with lazy loading
+    _dio.interceptors.add(AuthInterceptor());
     
     // Error Interceptor - Handle errors globally
     _dio.interceptors.add(ErrorInterceptor());

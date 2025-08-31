@@ -3,12 +3,27 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/user/user.dart';
+import '../../domain/entities/user/user_role.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/auth/refresh_token_usecase.dart';
 import '../../domain/usecases/auth/verify_biometric_usecase.dart';
+import '../../core/services/firebase_service.dart';
 
 part 'auth_provider.freezed.dart';
+
+// Auth result model
+class AuthResult {
+  final bool success;
+  final String? error;
+  final Map<String, dynamic>? userData;
+  
+  const AuthResult({
+    required this.success,
+    this.error,
+    this.userData,
+  });
+}
 
 @freezed
 class AuthState with _$AuthState {
@@ -56,6 +71,50 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Login as master admin
+  Future<bool> loginAsAdmin({
+    required String adminId,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // For demo purposes, we'll use hardcoded credentials
+      // In production, this would be an API call
+      if (adminId == 'admin' && password == 'admin1234') {
+        final adminUser = User(
+          id: 'admin_001',
+          email: 'admin@dot.com',
+          firstName: 'Master',
+          lastName: 'Admin',
+          role: UserRole.admin,
+          createdAt: DateTime.now(),
+          isActive: true,
+        );
+        
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: adminUser,
+          error: null,
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Invalid admin credentials',
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
   /// Login with email and password
   Future<bool> login({
     required String email,
@@ -92,6 +151,45 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  /// Login with QR token
+  Future<bool> loginWithQrToken(String token, String action) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // TODO: Validate token with backend
+      // For now, we'll simulate a successful login
+      
+      // Parse token to get user info
+      // In production, this would be validated with the backend
+      final mockUser = User(
+        id: 'user_${token.substring(0, 6)}',
+        email: 'user@dot.com',
+        firstName: 'QR',
+        lastName: 'User',
+        role: UserRole.employee,
+        createdAt: DateTime.now(),
+        isActive: true,
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: mockUser,
+        error: null,
+      );
+
+      // Navigate to dashboard after successful login
+      // This will be handled by the router's redirect logic
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'QR token validation failed: ${e.toString()}',
       );
       return false;
     }
@@ -187,6 +285,87 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Set loading state
   void setLoading(bool isLoading) {
     state = state.copyWith(isLoading: isLoading);
+  }
+  
+  /// Login with email and password using Firebase or hardcoded
+  Future<AuthResult> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // Check hardcoded admin first
+      if (email == 'masteradmin' && password == 'masteradmin1234') {
+        final adminUser = User(
+          id: 'hardcoded_admin',
+          email: 'masteradmin@dot.com',
+          firstName: 'Master',
+          lastName: 'Admin',
+          role: UserRole.admin,
+          createdAt: DateTime.now(),
+          isActive: true,
+        );
+        
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: adminUser,
+          error: null,
+        );
+        
+        return const AuthResult(success: true);
+      }
+      
+      // Use Firebase service for real users
+      final firebaseService = FirebaseService.instance;
+      final authResult = await firebaseService.signInWithEmailPassword(email, password);
+      
+      if (authResult != null) {
+        // Create User object from auth result
+        final user = User(
+          id: authResult['uid'],
+          email: authResult['email'],
+          firstName: authResult['firstName'],
+          lastName: authResult['lastName'],
+          role: authResult['role'] == 'admin' ? UserRole.admin : UserRole.user,
+          createdAt: DateTime.parse(authResult['createdAt']),
+          isActive: authResult['isActive'],
+        );
+        
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: true,
+          user: user,
+          error: null,
+        );
+        
+        return AuthResult(
+          success: true,
+          userData: authResult,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Invalid email or password',
+        );
+        
+        return const AuthResult(
+          success: false,
+          error: 'Invalid email or password',
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      
+      return AuthResult(
+        success: false,
+        error: e.toString(),
+      );
+    }
   }
 }
 

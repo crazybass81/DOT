@@ -3,12 +3,17 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/auth/login_page.dart';
+import '../pages/auth/master_admin_login_page.dart';
 import '../pages/auth/forgot_password_page.dart';
 import '../pages/auth/biometric_setup_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
+import '../pages/admin/master_admin_dashboard_page.dart';
+import '../pages/admin/qr_generator_page.dart';
+import '../pages/admin/qr_display_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
+import '../../domain/entities/attendance/qr_action_type.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/edit_profile_page.dart';
 import '../pages/settings/settings_page.dart';
@@ -19,13 +24,21 @@ import '../pages/reports/monthly_report_page.dart';
 import '../pages/reports/custom_report_page.dart';
 import '../widgets/common/main_navigation.dart';
 import '../providers/auth_provider.dart';
+import '../../domain/entities/user/user_role.dart';
+// import '../../features/test/database_test_screen.dart';
 
 // Route names
 class RouteNames {
   static const String splash = '/';
+  static const String masterAdminLogin = '/master-admin-login';
+  static const String masterAdminDashboard = '/admin/dashboard';
+  static const String qrGenerator = '/admin/qr-generator';
+  static const String qrDisplay = '/admin/qr-display';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
+  static const String qrLogin = '/qr-login'; // Deep link for QR code login
+  static const String userRegistration = '/user-registration'; // For first-time users
   
   static const String main = '/main';
   static const String dashboard = '/main/dashboard';
@@ -40,31 +53,49 @@ class RouteNames {
   static const String reports = '/main/reports';
   static const String monthlyReport = '/main/reports/monthly';
   static const String customReport = '/main/reports/custom';
+  static const String databaseTest = '/main/database-test';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   
   return GoRouter(
-    initialLocation: RouteNames.splash,
+    initialLocation: RouteNames.masterAdminLogin,
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
       
-      // Show splash while loading
-      if (isLoading && state.location == RouteNames.splash) {
+      // Handle QR deep link
+      if (state.matchedLocation.startsWith(RouteNames.qrLogin)) {
+        // Extract token from query params
+        final token = state.uri.queryParameters['token'];
+        if (token != null) {
+          // Process QR login token
+          // This will be handled by the QR login page
+          return null;
+        }
+      }
+      
+      // If not authenticated, always go to master admin login
+      if (!isAuthenticated) {
+        if (state.matchedLocation != RouteNames.masterAdminLogin) {
+          return RouteNames.masterAdminLogin;
+        }
         return null;
       }
       
-      // Redirect to login if not authenticated
-      if (!isAuthenticated && !_isAuthRoute(state.location)) {
-        return RouteNames.login;
-      }
-      
-      // Redirect to dashboard if authenticated and on auth route
-      if (isAuthenticated && _isAuthRoute(state.location)) {
-        return RouteNames.dashboard;
+      // If authenticated and on login page, check user role
+      if (isAuthenticated && state.matchedLocation == RouteNames.masterAdminLogin) {
+        final userRole = authState.user?.role;
+        
+        // Route based on user role
+        if (userRole == UserRole.admin || userRole == UserRole.superAdmin) {
+          return RouteNames.masterAdminDashboard;
+        } else {
+          // Regular users go to the main dashboard
+          return RouteNames.dashboard;
+        }
       }
       
       return null;
@@ -78,6 +109,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       
       // Auth routes
       GoRoute(
+        path: RouteNames.masterAdminLogin,
+        builder: (context, state) => const MasterAdminLoginPage(),
+      ),
+      GoRoute(
         path: RouteNames.login,
         builder: (context, state) => const LoginPage(),
       ),
@@ -88,6 +123,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.biometricSetup,
         builder: (context, state) => const BiometricSetupPage(),
+      ),
+      
+      // Master Admin Dashboard
+      GoRoute(
+        path: RouteNames.masterAdminDashboard,
+        builder: (context, state) => const MasterAdminDashboardPage(),
+      ),
+      
+      // QR Code Generator
+      GoRoute(
+        path: RouteNames.qrGenerator,
+        builder: (context, state) => const QrGeneratorPage(),
+      ),
+      
+      // QR Code Display
+      GoRoute(
+        path: RouteNames.qrDisplay,
+        builder: (context, state) {
+          final locationId = state.uri.queryParameters['locationId'] ?? 'main_office';
+          final locationName = state.uri.queryParameters['locationName'] ?? '본사';
+              
+          return QrDisplayPage(
+            locationId: locationId,
+            locationName: locationName,
+          );
+        },
       ),
       
       // Main app with bottom navigation
@@ -110,7 +171,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'qr-scanner',
-                builder: (context, state) => const QrScannerPage(),
+                builder: (context, state) => const QrScannerPage(
+                  actionType: QrActionType.login,
+                ),
               ),
               GoRoute(
                 path: 'location-check',
@@ -155,8 +218,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'monthly',
                 builder: (context, state) {
-                  final month = state.queryParameters['month'];
-                  final year = state.queryParameters['year'];
+                  final month = state.uri.queryParameters['month'];
+                  final year = state.uri.queryParameters['year'];
                   return MonthlyReportPage(
                     month: month != null ? int.tryParse(month) : null,
                     year: year != null ? int.tryParse(year) : null,
@@ -169,6 +232,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Database test removed
+          // GoRoute(
+          //   path: RouteNames.databaseTest,
+          //   pageBuilder: (context, state) => const NoTransitionPage(
+          //     child: DatabaseTestScreen(),
+          //   ),
+          // ),
         ],
       ),
     ],
@@ -178,12 +248,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 bool _isAuthRoute(String location) {
   const authRoutes = [
+    RouteNames.masterAdminLogin,
     RouteNames.login,
     RouteNames.forgotPassword,
     RouteNames.biometricSetup,
     RouteNames.splash,
+    RouteNames.qrLogin,
+    RouteNames.userRegistration,
   ];
-  return authRoutes.contains(location);
+  return authRoutes.any((route) => location.startsWith(route));
 }
 
 // Splash Page

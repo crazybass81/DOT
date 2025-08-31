@@ -13,9 +13,28 @@ class NeoBrutalTheme {
   
   // 상태 색상
   static const Color success = Color(0xFF00C853);
+  static const Color successInk = Color(0xFFFFFFFF);
   static const Color error = Color(0xFFD32F2F);
   static const Color warning = Color(0xFFFFAB00);
+  static const Color warningInk = Color(0xFFFFFFFF);
   static const Color info = Color(0xFF2962FF);
+  
+  // 추가 색상 (호환성)
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF000000);
+  static const Color primary = hi;
+  static const Color secondary = pastelMint;
+  static const Color accent = pastelPink;
+  static const Color lo = muted;
+  static const Color loInk = gray600;
+  static const Color shadow = Color(0xFF000000);
+  
+  // Gray scale
+  static const Color gray200 = Color(0xFFEEEEEE);
+  static const Color gray300 = Color(0xFFE0E0E0);
+  static const Color gray400 = Color(0xFFBDBDBD);
+  static const Color gray500 = Color(0xFF9E9E9E);
+  static const Color gray600 = Color(0xFF757575);
   
   // 파스텔 (사용 제한 10%)
   static const Color pastelMint = Color(0xFF6EE7B7);
@@ -36,9 +55,11 @@ class NeoBrutalTheme {
   static const double space2 = 8.0;
   static const double space3 = 12.0;
   static const double space4 = 16.0;
+  static const double space5 = 20.0;
   static const double space6 = 24.0;
   static const double space8 = 32.0;
   static const double space10 = 40.0;
+  static const double shadowOffset = 4.0;
 
   // 그림자
   static List<BoxShadow> get shadowElev1 => const [
@@ -113,6 +134,49 @@ class NeoBrutalTheme {
     fontWeight: FontWeight.w400,
     color: fg,
   );
+  
+  // Additional text styles for compatibility
+  static const TextStyle headline2 = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 32,
+    height: 40 / 32,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
+  
+  static const TextStyle headline3 = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 26,
+    height: 32 / 26,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
+  
+  static const TextStyle headline4 = TextStyle(
+    fontFamily: 'DoHyeon',
+    fontSize: 20,
+    height: 26 / 20,
+    fontWeight: FontWeight.w700,
+    color: fg,
+  );
+  
+  static const TextStyle button = TextStyle(
+    fontFamily: 'Orbitron',
+    fontSize: 16,
+    height: 22 / 16,
+    fontWeight: FontWeight.w600,
+    color: fg,
+  );
+  
+  // Aliases for compatibility
+  static const TextStyle h1 = headline2;
+  static const TextStyle h2 = headline3;
+  static const TextStyle h3 = headline4;
+  static const TextStyle h4 = heading;
+  static const TextStyle small = caption;
+  
+  // Spacing
+  static const double space1 = 4.0;
 
   // 라이트 테마
   static ThemeData get lightTheme => ThemeData(

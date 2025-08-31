@@ -42,7 +42,6 @@ class AppTheme {
       primaryColor: primaryColor,
       primarySwatch: createMaterialColor(primaryColor),
       scaffoldBackgroundColor: backgroundColor,
-      backgroundColor: backgroundColor,
       cardColor: cardColor,
       
       colorScheme: const ColorScheme.light(
@@ -78,7 +77,7 @@ class AppTheme {
       ),
       
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardColor,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -226,7 +225,6 @@ class AppTheme {
       primaryColor: primaryColor,
       primarySwatch: createMaterialColor(primaryColor),
       scaffoldBackgroundColor: darkBackgroundColor,
-      backgroundColor: darkBackgroundColor,
       cardColor: darkCardColor,
       
       colorScheme: const ColorScheme.dark(
@@ -262,7 +260,7 @@ class AppTheme {
       ),
       
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: darkCardColor,
         elevation: 4,
         shape: RoundedRectangleBorder(

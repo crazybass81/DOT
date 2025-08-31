@@ -42,9 +42,7 @@ mixin _$Attendance {
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
-  /// Create a copy of Attendance
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $AttendanceCopyWith<Attendance> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -92,8 +90,6 @@ class _$AttendanceCopyWithImpl<$Res, $Val extends Attendance>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Attendance
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -266,8 +262,6 @@ class __$$AttendanceImplCopyWithImpl<$Res>
       _$AttendanceImpl _value, $Res Function(_$AttendanceImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Attendance
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -480,9 +474,7 @@ class _$AttendanceImpl extends _Attendance {
   @override
   final DateTime? updatedAt;
 
-  /// Create a copy of Attendance
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$AttendanceImplCopyWith<_$AttendanceImpl> get copyWith =>
@@ -540,8 +532,8 @@ abstract class _Attendance extends Attendance {
   @override
   double? get checkOutLongitude;
   @override
-  String? get checkInMethod; // manual, qr, location
-  @override
+  String? get checkInMethod;
+  @override // manual, qr, location
   String? get checkOutMethod;
   @override
   String? get checkInNotes;
@@ -565,11 +557,8 @@ abstract class _Attendance extends Attendance {
   DateTime? get createdAt;
   @override
   DateTime? get updatedAt;
-
-  /// Create a copy of Attendance
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$AttendanceImplCopyWith<_$AttendanceImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -587,9 +576,7 @@ mixin _$AttendanceStats {
   DateTime? get periodStart => throw _privateConstructorUsedError;
   DateTime? get periodEnd => throw _privateConstructorUsedError;
 
-  /// Create a copy of AttendanceStats
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $AttendanceStatsCopyWith<AttendanceStats> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -623,8 +610,6 @@ class _$AttendanceStatsCopyWithImpl<$Res, $Val extends AttendanceStats>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of AttendanceStats
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -713,8 +698,6 @@ class __$$AttendanceStatsImplCopyWithImpl<$Res>
       _$AttendanceStatsImpl _value, $Res Function(_$AttendanceStatsImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of AttendanceStats
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -811,9 +794,7 @@ class _$AttendanceStatsImpl extends _AttendanceStats {
   @override
   final DateTime? periodEnd;
 
-  /// Create a copy of AttendanceStats
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$AttendanceStatsImplCopyWith<_$AttendanceStatsImpl> get copyWith =>
@@ -855,11 +836,8 @@ abstract class _AttendanceStats extends AttendanceStats {
   DateTime? get periodStart;
   @override
   DateTime? get periodEnd;
-
-  /// Create a copy of AttendanceStats
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$AttendanceStatsImplCopyWith<_$AttendanceStatsImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -878,9 +856,7 @@ mixin _$AttendanceLocation {
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
-  /// Create a copy of AttendanceLocation
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $AttendanceLocationCopyWith<AttendanceLocation> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -915,8 +891,6 @@ class _$AttendanceLocationCopyWithImpl<$Res, $Val extends AttendanceLocation>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of AttendanceLocation
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1011,8 +985,6 @@ class __$$AttendanceLocationImplCopyWithImpl<$Res>
       $Res Function(_$AttendanceLocationImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of AttendanceLocation
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1118,9 +1090,7 @@ class _$AttendanceLocationImpl extends _AttendanceLocation {
   @override
   final DateTime? updatedAt;
 
-  /// Create a copy of AttendanceLocation
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$AttendanceLocationImplCopyWith<_$AttendanceLocationImpl> get copyWith =>
@@ -1165,11 +1135,8 @@ abstract class _AttendanceLocation extends AttendanceLocation {
   DateTime? get createdAt;
   @override
   DateTime? get updatedAt;
-
-  /// Create a copy of AttendanceLocation
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$AttendanceLocationImplCopyWith<_$AttendanceLocationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -32,9 +32,7 @@ mixin _$AttendanceQueue {
   int? get retryCount => throw _privateConstructorUsedError;
   String? get lastError => throw _privateConstructorUsedError;
 
-  /// Create a copy of AttendanceQueue
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $AttendanceQueueCopyWith<AttendanceQueue> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -73,8 +71,6 @@ class _$AttendanceQueueCopyWithImpl<$Res, $Val extends AttendanceQueue>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of AttendanceQueue
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -193,8 +189,6 @@ class __$$AttendanceQueueImplCopyWithImpl<$Res>
       _$AttendanceQueueImpl _value, $Res Function(_$AttendanceQueueImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of AttendanceQueue
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -333,9 +327,7 @@ class _$AttendanceQueueImpl extends _AttendanceQueue {
   @override
   final String? lastError;
 
-  /// Create a copy of AttendanceQueue
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$AttendanceQueueImplCopyWith<_$AttendanceQueueImpl> get copyWith =>
@@ -371,8 +363,8 @@ abstract class _AttendanceQueue extends AttendanceQueue {
   @override
   AttendanceActionType get actionType;
   @override
-  String get method; // qr, gps, manual
-  @override
+  String get method;
+  @override // qr, gps, manual
   double? get latitude;
   @override
   double? get longitude;
@@ -392,11 +384,8 @@ abstract class _AttendanceQueue extends AttendanceQueue {
   int? get retryCount;
   @override
   String? get lastError;
-
-  /// Create a copy of AttendanceQueue
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$AttendanceQueueImplCopyWith<_$AttendanceQueueImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -411,9 +400,7 @@ mixin _$AttendanceVerificationResult {
   double? get distance => throw _privateConstructorUsedError;
   Map<String, dynamic>? get qrData => throw _privateConstructorUsedError;
 
-  /// Create a copy of AttendanceVerificationResult
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $AttendanceVerificationResultCopyWith<AttendanceVerificationResult>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -447,8 +434,6 @@ class _$AttendanceVerificationResultCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of AttendanceVerificationResult
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -522,8 +507,6 @@ class __$$AttendanceVerificationResultImplCopyWithImpl<$Res>
       $Res Function(_$AttendanceVerificationResultImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of AttendanceVerificationResult
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -604,9 +587,7 @@ class _$AttendanceVerificationResultImpl extends _AttendanceVerificationResult {
     return EqualUnmodifiableMapView(value);
   }
 
-  /// Create a copy of AttendanceVerificationResult
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$AttendanceVerificationResultImplCopyWith<
@@ -641,11 +622,8 @@ abstract class _AttendanceVerificationResult
   double? get distance;
   @override
   Map<String, dynamic>? get qrData;
-
-  /// Create a copy of AttendanceVerificationResult
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$AttendanceVerificationResultImplCopyWith<
           _$AttendanceVerificationResultImpl>
       get copyWith => throw _privateConstructorUsedError;
