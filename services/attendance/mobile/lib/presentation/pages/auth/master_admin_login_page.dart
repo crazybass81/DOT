@@ -405,13 +405,13 @@ class _MasterAdminLoginPageState extends ConsumerState<MasterAdminLoginPage> {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
       
-      // Check credentials using Firebase service
-      final authResult = await ref.read(authProvider.notifier).loginWithEmail(
-        email: _emailController.text,
+      // 마스터 어드민 로그인 (PLAN-1 요구사항)
+      final loginSuccess = await ref.read(authProvider.notifier).loginAsAdmin(
+        adminId: _emailController.text.trim(),
         password: _passwordController.text,
       );
       
-      if (authResult.success) {
+      if (loginSuccess) {
         
         if (mounted) {
           // Navigate to admin dashboard

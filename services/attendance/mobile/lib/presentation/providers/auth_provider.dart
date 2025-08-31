@@ -81,13 +81,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       // For demo purposes, we'll use hardcoded credentials
       // In production, this would be an API call
-      if (adminId == 'admin' && password == 'admin1234') {
+      // PLAN-1 마스터 어드민 계정: masteradmin / Master@2024
+      if ((adminId == 'admin' && password == 'admin1234') ||
+          (adminId == 'masteradmin' && password == 'Master@2024')) {
         final adminUser = User(
-          id: 'admin_001',
-          email: 'admin@dot.com',
+          id: 'master_admin_001',
+          email: '$adminId@dotattendance.com',
           firstName: 'Master',
           lastName: 'Admin',
-          role: UserRole.admin,
+          role: UserRole.masterAdmin,
           createdAt: DateTime.now(),
           isActive: true,
         );
