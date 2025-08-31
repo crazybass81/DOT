@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../di/injection_container.dart';
 import 'notification_service.dart';
+import '../config/supabase_config.dart';
 
 /// Service responsible for proper app initialization order
 class AppInitializationService {
@@ -19,14 +21,22 @@ class AppInitializationService {
     try {
       debugPrint('Starting app initialization... (attempt $_initializationAttempts)');
       
-      // 1. Initialize dependency injection
+      // 1. Initialize Supabase first (required for Supabase services)
+      debugPrint('Initializing Supabase...');
+      await Supabase.initialize(
+        url: SupabaseConfig.supabaseUrl,
+        anonKey: SupabaseConfig.supabaseAnonKey,
+      );
+      debugPrint('Supabase initialized successfully');
+      
+      // 2. Initialize dependency injection
       // configureDependencies() internally checks if already configured
       await configureDependencies();
       
-      // 2. Initialize notification service (safe to call multiple times)
+      // 3. Initialize notification service (safe to call multiple times)
       await NotificationService.initialize();
       
-      // 3. Core services are initialized when needed through DI
+      // 4. Core services are initialized when needed through DI
       // AttendanceService will be initialized when first accessed
       
       _isInitialized = true;
