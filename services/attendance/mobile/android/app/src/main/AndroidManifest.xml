@@ -54,6 +54,24 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            
+            <!-- Deep linking for QR codes and URLs -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                
+                <!-- Handle dot-attendance:// scheme -->
+                <data android:scheme="dot-attendance"/>
+                
+                <!-- Handle https URLs -->
+                <data android:scheme="https"
+                      android:host="attendance.dot.com"/>
+                
+                <!-- Handle http URLs for development -->
+                <data android:scheme="http"
+                      android:host="attendance.dot.com"/>
+            </intent-filter>
         </activity>
         
         <!-- Notification service for local notifications -->
