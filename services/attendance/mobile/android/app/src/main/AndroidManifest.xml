@@ -56,21 +56,30 @@
             </intent-filter>
             
             <!-- Deep linking for QR codes and URLs -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 
                 <!-- Handle dot-attendance:// scheme -->
-                <data android:scheme="dot-attendance"/>
+                <data android:scheme="dotattendance"/>
+            </intent-filter>
+            
+            <!-- Separate intent filter for web URLs -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
                 
                 <!-- Handle https URLs -->
                 <data android:scheme="https"
-                      android:host="attendance.dot.com"/>
+                      android:host="attendance.dot.com"
+                      android:pathPrefix="/qr"/>
                 
                 <!-- Handle http URLs for development -->
                 <data android:scheme="http"
-                      android:host="attendance.dot.com"/>
+                      android:host="attendance.dot.com"
+                      android:pathPrefix="/qr"/>
             </intent-filter>
         </activity>
         
