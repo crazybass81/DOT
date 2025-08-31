@@ -148,8 +148,12 @@ Future<void> configureDependencies() async {
     ),
   );
   
+  // Firebase를 사용하는 RemoteDataSource로 변경
   getIt.registerSingleton<AuthRemoteDataSource>(
-    AuthRemoteDataSourceImpl(getIt<Dio>()),
+    FirebaseAuthRemoteDataSource(
+      FirebaseAuth.instance,
+      FirebaseFirestore.instance,
+    ),
   );
   
   getIt.registerSingleton<AttendanceLocalDataSource>(
