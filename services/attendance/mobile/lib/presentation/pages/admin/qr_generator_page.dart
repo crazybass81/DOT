@@ -116,7 +116,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
       }
       
       final qrData = _qrService.generateQrCodeData(
-        type: 'login',  // 로그인용 QR
+        type: 'attendance',  // 출퇴근용 QR
         locationId: selectedBranch['id']!,
         extraData: qrCode, // 저장된 QR 코드 포함
       );
