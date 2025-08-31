@@ -130,7 +130,35 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     // Haptic feedback
     await HapticFeedback.selectionClick();
     
-    // Determine attendance action based on QR action type
+    // Parse QR data to extract token and location
+    Uri? qrUri;
+    String? token;
+    String? locationId;
+    
+    try {
+      qrUri = Uri.parse(qrData);
+      token = qrUri.queryParameters['token'];
+      locationId = qrUri.queryParameters['location'];
+    } catch (e) {
+      debugPrint('Failed to parse QR data: $e');
+    }
+    
+    // Check if this is attendance QR
+    if (widget.actionType == QrActionType.attendance || 
+        (qrUri != null && (qrUri.host == 'checkin' || qrUri.queryParameters['type'] == 'attendance'))) {
+      
+      // Check if employee is registered
+      final isRegistered = await ref.read(employeeRegistrationProvider.notifier)
+          .checkRegistrationStatus();
+      
+      if (!isRegistered && mounted) {
+        // Not registered, navigate to registration page
+        context.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+        return;
+      }
+    }
+    
+    // Process as normal attendance check-in
     final attendanceAction = widget.actionType == QrActionType.attendance 
         ? AttendanceActionType.checkIn 
         : AttendanceActionType.checkIn; // Default to check-in
