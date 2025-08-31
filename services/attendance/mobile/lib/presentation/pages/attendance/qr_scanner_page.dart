@@ -147,12 +147,17 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     if (widget.actionType == QrActionType.attendance || 
         (qrUri != null && (qrUri.host == 'checkin' || qrUri.queryParameters['type'] == 'attendance'))) {
       
+      debugPrint('QR Scan - Checking registration status...');
+      
       // Check if employee is registered
       final isRegistered = await ref.read(employeeRegistrationProvider.notifier)
           .checkRegistrationStatus();
       
+      debugPrint('QR Scan - Registration status: $isRegistered');
+      
       if (!isRegistered && mounted) {
         // Not registered, navigate to registration page
+        debugPrint('QR Scan - Navigating to registration page with token: $token, location: $locationId');
         context.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
         return;
       }
