@@ -32,7 +32,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           _organizationData = {
             'name': user.firstName ?? 'Admin',
             'email': user.email,
-            'role': user.role.name,
+            'role': user.role.displayName,
             'organization': 'DOT',
           };
           _isLoading = false;
