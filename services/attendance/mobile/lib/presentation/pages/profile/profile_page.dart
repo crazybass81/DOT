@@ -49,11 +49,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _loadUserData() async {
     final user = ref.read(currentUserProvider);
-    if (user != null && user.email != null) {
-      final userData = await FirebaseService.instance.getUserByEmail(user.email!);
+    if (user != null) {
+      // For now, we'll use the user data we already have
+      // In the future, you can fetch additional profile data from Supabase
       if (mounted) {
         setState(() {
-          _userData = userData;
+          _userData = {
+            'name': '${user.firstName} ${user.lastName}'.trim(),
+            'email': user.email,
+            'role': user.role.name,
+            'representativeName': user.firstName,
+            'representativePhone': '',
+            'businessRegistrationNumber': '',
+            'branches': [],
+          };
           _isLoading = false;
         });
         _populateControllers();

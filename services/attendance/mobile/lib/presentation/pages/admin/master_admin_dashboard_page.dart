@@ -24,11 +24,17 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
 
   Future<void> _loadOrganizationData() async {
     final user = ref.read(currentUserProvider);
-    if (user != null && user.email != null) {
-      final userData = await FirebaseService.instance.getUserByEmail(user.email!);
+    if (user != null) {
+      // For now, we'll use the user data we already have
+      // In the future, you can fetch additional organization data from Supabase
       if (mounted) {
         setState(() {
-          _organizationData = userData;
+          _organizationData = {
+            'name': user.firstName ?? 'Admin',
+            'email': user.email,
+            'role': user.role.name,
+            'organization': 'DOT',
+          };
           _isLoading = false;
         });
       }
