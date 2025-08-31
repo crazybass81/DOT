@@ -128,9 +128,14 @@ class QrService {
       // Generate a simple token for the QR code
       final token = '${type}_${locationId}_$timestamp';
       
-      // Generate a simple HTTP URL with /qr path that Android will intercept
-      // This format works with ALL QR code scanners
-      final qrUrl = 'http://attendance.local/qr?token=$token&location=$locationId&type=$type';
+      // Generate the QR code URL
+      // Try multiple formats to find what works best
+      
+      // Option 1: Simple custom scheme (most reliable for deep linking)
+      final qrUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
+      
+      // Option 2: HTTP URL that can be intercepted by the app
+      // final qrUrl = 'http://attendance.local/qr?token=$token&location=$locationId&type=$type';
       
       debugPrint('Generated QR URL: $qrUrl');
       

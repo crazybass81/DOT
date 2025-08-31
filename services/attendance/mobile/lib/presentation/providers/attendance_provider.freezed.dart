@@ -27,7 +27,16 @@ mixin _$AttendanceState {
   String? get successMessage => throw _privateConstructorUsedError;
   List<AttendanceQueue> get offlineQueue => throw _privateConstructorUsedError;
   DateTime? get lastSyncTime => throw _privateConstructorUsedError;
-  bool get isSyncing => throw _privateConstructorUsedError;
+  bool get isSyncing => throw _privateConstructorUsedError; // PLAN-1: 근무 상태 관리
+  String get currentStatus =>
+      throw _privateConstructorUsedError; // NOT_WORKING, WORKING, ON_BREAK
+  int get workingMinutes => throw _privateConstructorUsedError;
+  int get breakMinutes => throw _privateConstructorUsedError;
+  DateTime? get checkInTime => throw _privateConstructorUsedError;
+  DateTime? get checkOutTime => throw _privateConstructorUsedError;
+  DateTime? get breakStartTime => throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get todayRecords =>
+      throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $AttendanceStateCopyWith<AttendanceState> get copyWith =>
@@ -51,7 +60,14 @@ abstract class $AttendanceStateCopyWith<$Res> {
       String? successMessage,
       List<AttendanceQueue> offlineQueue,
       DateTime? lastSyncTime,
-      bool isSyncing});
+      bool isSyncing,
+      String currentStatus,
+      int workingMinutes,
+      int breakMinutes,
+      DateTime? checkInTime,
+      DateTime? checkOutTime,
+      DateTime? breakStartTime,
+      List<Map<String, dynamic>> todayRecords});
 
   $AttendanceCopyWith<$Res>? get todayAttendance;
   $AttendanceVerificationResultCopyWith<$Res>? get verificationResult;
@@ -81,6 +97,13 @@ class _$AttendanceStateCopyWithImpl<$Res, $Val extends AttendanceState>
     Object? offlineQueue = null,
     Object? lastSyncTime = freezed,
     Object? isSyncing = null,
+    Object? currentStatus = null,
+    Object? workingMinutes = null,
+    Object? breakMinutes = null,
+    Object? checkInTime = freezed,
+    Object? checkOutTime = freezed,
+    Object? breakStartTime = freezed,
+    Object? todayRecords = null,
   }) {
     return _then(_value.copyWith(
       isLoading: null == isLoading
@@ -127,6 +150,34 @@ class _$AttendanceStateCopyWithImpl<$Res, $Val extends AttendanceState>
           ? _value.isSyncing
           : isSyncing // ignore: cast_nullable_to_non_nullable
               as bool,
+      currentStatus: null == currentStatus
+          ? _value.currentStatus
+          : currentStatus // ignore: cast_nullable_to_non_nullable
+              as String,
+      workingMinutes: null == workingMinutes
+          ? _value.workingMinutes
+          : workingMinutes // ignore: cast_nullable_to_non_nullable
+              as int,
+      breakMinutes: null == breakMinutes
+          ? _value.breakMinutes
+          : breakMinutes // ignore: cast_nullable_to_non_nullable
+              as int,
+      checkInTime: freezed == checkInTime
+          ? _value.checkInTime
+          : checkInTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      checkOutTime: freezed == checkOutTime
+          ? _value.checkOutTime
+          : checkOutTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      breakStartTime: freezed == breakStartTime
+          ? _value.breakStartTime
+          : breakStartTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      todayRecords: null == todayRecords
+          ? _value.todayRecords
+          : todayRecords // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
     ) as $Val);
   }
 
@@ -175,7 +226,14 @@ abstract class _$$AttendanceStateImplCopyWith<$Res>
       String? successMessage,
       List<AttendanceQueue> offlineQueue,
       DateTime? lastSyncTime,
-      bool isSyncing});
+      bool isSyncing,
+      String currentStatus,
+      int workingMinutes,
+      int breakMinutes,
+      DateTime? checkInTime,
+      DateTime? checkOutTime,
+      DateTime? breakStartTime,
+      List<Map<String, dynamic>> todayRecords});
 
   @override
   $AttendanceCopyWith<$Res>? get todayAttendance;
@@ -205,6 +263,13 @@ class __$$AttendanceStateImplCopyWithImpl<$Res>
     Object? offlineQueue = null,
     Object? lastSyncTime = freezed,
     Object? isSyncing = null,
+    Object? currentStatus = null,
+    Object? workingMinutes = null,
+    Object? breakMinutes = null,
+    Object? checkInTime = freezed,
+    Object? checkOutTime = freezed,
+    Object? breakStartTime = freezed,
+    Object? todayRecords = null,
   }) {
     return _then(_$AttendanceStateImpl(
       isLoading: null == isLoading
@@ -251,6 +316,34 @@ class __$$AttendanceStateImplCopyWithImpl<$Res>
           ? _value.isSyncing
           : isSyncing // ignore: cast_nullable_to_non_nullable
               as bool,
+      currentStatus: null == currentStatus
+          ? _value.currentStatus
+          : currentStatus // ignore: cast_nullable_to_non_nullable
+              as String,
+      workingMinutes: null == workingMinutes
+          ? _value.workingMinutes
+          : workingMinutes // ignore: cast_nullable_to_non_nullable
+              as int,
+      breakMinutes: null == breakMinutes
+          ? _value.breakMinutes
+          : breakMinutes // ignore: cast_nullable_to_non_nullable
+              as int,
+      checkInTime: freezed == checkInTime
+          ? _value.checkInTime
+          : checkInTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      checkOutTime: freezed == checkOutTime
+          ? _value.checkOutTime
+          : checkOutTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      breakStartTime: freezed == breakStartTime
+          ? _value.breakStartTime
+          : breakStartTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      todayRecords: null == todayRecords
+          ? _value._todayRecords
+          : todayRecords // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
     ));
   }
 }
@@ -269,8 +362,16 @@ class _$AttendanceStateImpl implements _AttendanceState {
       this.successMessage,
       final List<AttendanceQueue> offlineQueue = const [],
       this.lastSyncTime,
-      this.isSyncing = false})
-      : _offlineQueue = offlineQueue;
+      this.isSyncing = false,
+      this.currentStatus = 'NOT_WORKING',
+      this.workingMinutes = 0,
+      this.breakMinutes = 0,
+      this.checkInTime,
+      this.checkOutTime,
+      this.breakStartTime,
+      final List<Map<String, dynamic>> todayRecords = const []})
+      : _offlineQueue = offlineQueue,
+        _todayRecords = todayRecords;
 
   @override
   @JsonKey()
@@ -306,10 +407,35 @@ class _$AttendanceStateImpl implements _AttendanceState {
   @override
   @JsonKey()
   final bool isSyncing;
+// PLAN-1: 근무 상태 관리
+  @override
+  @JsonKey()
+  final String currentStatus;
+// NOT_WORKING, WORKING, ON_BREAK
+  @override
+  @JsonKey()
+  final int workingMinutes;
+  @override
+  @JsonKey()
+  final int breakMinutes;
+  @override
+  final DateTime? checkInTime;
+  @override
+  final DateTime? checkOutTime;
+  @override
+  final DateTime? breakStartTime;
+  final List<Map<String, dynamic>> _todayRecords;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get todayRecords {
+    if (_todayRecords is EqualUnmodifiableListView) return _todayRecords;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_todayRecords);
+  }
 
   @override
   String toString() {
-    return 'AttendanceState(isLoading: $isLoading, isScanning: $isScanning, isVerifying: $isVerifying, isMarkingAttendance: $isMarkingAttendance, todayAttendance: $todayAttendance, verificationResult: $verificationResult, error: $error, successMessage: $successMessage, offlineQueue: $offlineQueue, lastSyncTime: $lastSyncTime, isSyncing: $isSyncing)';
+    return 'AttendanceState(isLoading: $isLoading, isScanning: $isScanning, isVerifying: $isVerifying, isMarkingAttendance: $isMarkingAttendance, todayAttendance: $todayAttendance, verificationResult: $verificationResult, error: $error, successMessage: $successMessage, offlineQueue: $offlineQueue, lastSyncTime: $lastSyncTime, isSyncing: $isSyncing, currentStatus: $currentStatus, workingMinutes: $workingMinutes, breakMinutes: $breakMinutes, checkInTime: $checkInTime, checkOutTime: $checkOutTime, breakStartTime: $breakStartTime, todayRecords: $todayRecords)';
   }
 
   @override
@@ -337,7 +463,21 @@ class _$AttendanceStateImpl implements _AttendanceState {
             (identical(other.lastSyncTime, lastSyncTime) ||
                 other.lastSyncTime == lastSyncTime) &&
             (identical(other.isSyncing, isSyncing) ||
-                other.isSyncing == isSyncing));
+                other.isSyncing == isSyncing) &&
+            (identical(other.currentStatus, currentStatus) ||
+                other.currentStatus == currentStatus) &&
+            (identical(other.workingMinutes, workingMinutes) ||
+                other.workingMinutes == workingMinutes) &&
+            (identical(other.breakMinutes, breakMinutes) ||
+                other.breakMinutes == breakMinutes) &&
+            (identical(other.checkInTime, checkInTime) ||
+                other.checkInTime == checkInTime) &&
+            (identical(other.checkOutTime, checkOutTime) ||
+                other.checkOutTime == checkOutTime) &&
+            (identical(other.breakStartTime, breakStartTime) ||
+                other.breakStartTime == breakStartTime) &&
+            const DeepCollectionEquality()
+                .equals(other._todayRecords, _todayRecords));
   }
 
   @override
@@ -353,7 +493,14 @@ class _$AttendanceStateImpl implements _AttendanceState {
       successMessage,
       const DeepCollectionEquality().hash(_offlineQueue),
       lastSyncTime,
-      isSyncing);
+      isSyncing,
+      currentStatus,
+      workingMinutes,
+      breakMinutes,
+      checkInTime,
+      checkOutTime,
+      breakStartTime,
+      const DeepCollectionEquality().hash(_todayRecords));
 
   @JsonKey(ignore: true)
   @override
@@ -375,7 +522,14 @@ abstract class _AttendanceState implements AttendanceState {
       final String? successMessage,
       final List<AttendanceQueue> offlineQueue,
       final DateTime? lastSyncTime,
-      final bool isSyncing}) = _$AttendanceStateImpl;
+      final bool isSyncing,
+      final String currentStatus,
+      final int workingMinutes,
+      final int breakMinutes,
+      final DateTime? checkInTime,
+      final DateTime? checkOutTime,
+      final DateTime? breakStartTime,
+      final List<Map<String, dynamic>> todayRecords}) = _$AttendanceStateImpl;
 
   @override
   bool get isLoading;
@@ -399,6 +553,20 @@ abstract class _AttendanceState implements AttendanceState {
   DateTime? get lastSyncTime;
   @override
   bool get isSyncing;
+  @override // PLAN-1: 근무 상태 관리
+  String get currentStatus;
+  @override // NOT_WORKING, WORKING, ON_BREAK
+  int get workingMinutes;
+  @override
+  int get breakMinutes;
+  @override
+  DateTime? get checkInTime;
+  @override
+  DateTime? get checkOutTime;
+  @override
+  DateTime? get breakStartTime;
+  @override
+  List<Map<String, dynamic>> get todayRecords;
   @override
   @JsonKey(ignore: true)
   _$$AttendanceStateImplCopyWith<_$AttendanceStateImpl> get copyWith =>

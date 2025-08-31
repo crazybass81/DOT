@@ -29,14 +29,14 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
   Widget? _qrCodeWidget;
   bool _isGenerating = false;
   
-  // Predefined locations for quick selection
+  // PLAN-1: 지점별 고정 QR 코드를 위한 지점 목록
   final List<Map<String, String>> _predefinedLocations = [
-    {'id': 'main_office', 'name': '본사 - 강남'},
-    {'id': 'branch_1', 'name': '강남지점'},
-    {'id': 'branch_2', 'name': '홍대지점'},
-    {'id': 'branch_3', 'name': '신촌지점'},
-    {'id': 'meeting_room_1', 'name': '회의실 A'},
-    {'id': 'meeting_room_2', 'name': '회의실 B'},
+    {'id': 'main_office', 'name': '본사 - 강남', 'code': 'QR_MAIN_001'},
+    {'id': 'branch_gangnam', 'name': '강남지점', 'code': 'QR_GN_001'},
+    {'id': 'branch_hongdae', 'name': '홍대지점', 'code': 'QR_HD_001'},
+    {'id': 'branch_sinchon', 'name': '신촌지점', 'code': 'QR_SC_001'},
+    {'id': 'branch_jongro', 'name': '종로지점', 'code': 'QR_JR_001'},
+    {'id': 'branch_yeouido', 'name': '여의도지점', 'code': 'QR_YI_001'},
   ];
   
   String? _selectedLocationId;
@@ -67,13 +67,16 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
     });
 
     try {
-      // Generate QR code data for login
+      // PLAN-1: 지점별 고정 QR 코드 생성
+      // QR 데이터 형식: branchId + unique code + timestamp
+      final selectedBranch = _predefinedLocations.firstWhere(
+        (loc) => loc['id'] == _selectedLocationId,
+      );
+      
       final qrData = _qrService.generateQrCodeData(
         type: 'login',  // 로그인용 QR
-        locationId: _selectedLocationId!,
-        extraData: _extraDataController.text.trim().isNotEmpty 
-            ? _extraDataController.text.trim() 
-            : null,
+        locationId: selectedBranch['id']!,
+        extraData: selectedBranch['code'], // 지점별 고유 코드 포함
       );
 
       // Generate QR code widget

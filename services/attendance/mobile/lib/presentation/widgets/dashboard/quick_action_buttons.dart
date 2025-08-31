@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../common/neo_brutal_card.dart';
 import '../../providers/attendance_provider.dart';
+import '../../pages/attendance/attendance_history_page.dart';
+import '../attendance/checkout_dialog.dart';
 
 /// 사용자를 위한 빠른 액션 버튼들
 class QuickActionButtons extends ConsumerWidget {
@@ -89,7 +91,13 @@ class QuickActionButtons extends ConsumerWidget {
               Icons.history,
               NeoBrutalTheme.pastelPink,
               () {
-                // 근무 기록 페이지
+                // 근무 기록 페이지로 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AttendanceHistoryPage(),
+                  ),
+                );
               },
             ),
             _buildActionButton(
@@ -123,21 +131,27 @@ class QuickActionButtons extends ConsumerWidget {
         // Handle check-in or check-out
         try {
           if (isCheckOut) {
-            await ref.read(attendanceServiceProvider).checkOut();
+            // PLAN-1: 퇴근 확인 다이얼로그 표시
+            final result = await CheckoutDialog.show(context);
+            if (result == true) {
+              // 다이얼로그에서 퇴근 처리됨
+              ref.invalidate(todayAttendanceProvider);
+            }
           } else {
-            await ref.read(attendanceServiceProvider).checkIn();
-          }
-          // Refresh the attendance data
-          ref.invalidate(todayAttendanceProvider);
-          
-          // Show success message
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(isCheckOut ? '퇴근 처리되었습니다' : '출근 처리되었습니다'),
-                backgroundColor: NeoBrutalTheme.success,
-              ),
-            );
+            // 출근 처리
+            await ref.read(attendanceProvider.notifier).autoCheckIn();
+            // Refresh the attendance data
+            ref.invalidate(todayAttendanceProvider);
+            
+            // Show success message
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('출근 처리되었습니다'),
+                  backgroundColor: NeoBrutalTheme.success,
+                ),
+              );
+            }
           }
         } catch (e) {
           // Show error message

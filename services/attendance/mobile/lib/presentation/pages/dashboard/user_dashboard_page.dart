@@ -7,11 +7,15 @@ import '../../widgets/dashboard/attendance_status_card.dart';
 import '../../widgets/dashboard/weekly_chart_card.dart';
 import '../../widgets/dashboard/announcement_card.dart';
 import '../../widgets/dashboard/quick_action_buttons.dart';
+import '../../widgets/dashboard/current_status_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../../core/services/app_initialization_service.dart';
 import 'package:flutter/foundation.dart';
 import '../../providers/announcement_provider.dart';
+import '../../widgets/attendance/time_counter_widget.dart';
+import '../../widgets/attendance/break_control_widget.dart';
+import '../../widgets/attendance/checkout_dialog.dart';
 
 /// USER 역할 대시보드
 /// 직원들이 사용하는 메인 화면으로 출근/퇴근, 휴게시간 관리 등의 기능을 제공
@@ -42,6 +46,12 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
       
       // Then initialize attendance provider
       await ref.read(attendanceInitializationProvider.future);
+      
+      // PLAN-1: 자동 출근 처리
+      final attendanceState = ref.read(attendanceProvider);
+      if (attendanceState.currentStatus == 'NOT_WORKING') {
+        await ref.read(attendanceProvider.notifier).autoCheckIn();
+      }
       
       // Load other data
       await _refreshData();
@@ -132,6 +142,14 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
             children: [
               // 인사말 및 날짜
               _buildGreetingSection(authState),
+              const SizedBox(height: NeoBrutalTheme.space6),
+
+              // PLAN-1: 현재 상태 카드 (실시간 시간 카운터 포함)
+              const CurrentStatusCard(),
+              const SizedBox(height: NeoBrutalTheme.space6),
+
+              // PLAN-1: 휴게 컨트롤 위젯
+              const BreakControlWidget(),
               const SizedBox(height: NeoBrutalTheme.space6),
 
               // 오늘 출근 상태 카드 (하이라이트)
