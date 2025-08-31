@@ -29,6 +29,14 @@ class AttendanceState with _$AttendanceState {
     @Default([]) List<AttendanceQueue> offlineQueue,
     DateTime? lastSyncTime,
     @Default(false) bool isSyncing,
+    // PLAN-1: 근무 상태 관리
+    @Default('NOT_WORKING') String currentStatus, // NOT_WORKING, WORKING, ON_BREAK
+    @Default(0) int workingMinutes,
+    @Default(0) int breakMinutes,
+    DateTime? checkInTime,
+    DateTime? checkOutTime,
+    DateTime? breakStartTime,
+    @Default([]) List<Map<String, dynamic>> todayRecords,
   }) = _AttendanceState;
 }
 
