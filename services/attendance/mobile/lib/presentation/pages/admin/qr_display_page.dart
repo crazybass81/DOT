@@ -438,4 +438,27 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
+  
+  Future<void> _checkForUpdatedQrCode() async {
+    if (_currentQrCodeId == null) {
+      _generateQrCode();
+      return;
+    }
+    
+    try {
+      // 현재 QR 코드가 여전히 활성인지 확인
+      final response = await _supabase
+          .from('qr_codes')
+          .select('is_active')
+          .eq('id', _currentQrCodeId!)
+          .single();
+      
+      if (response['is_active'] == false) {
+        // 비활성화되면 새 QR 코드 가져오기
+        _generateQrCode();
+      }
+    } catch (e) {
+      print('⚠️ QR 코드 상태 확인 실패: $e');
+    }
+  }
 }
