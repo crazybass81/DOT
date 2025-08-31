@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/services/qr_service.dart';
@@ -235,22 +235,21 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
         return;
       }
 
-      // 갤러리에 저장
+      // 임시 파일로 저장
+      final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'DOT_QR_${_locationController.text.replaceAll(' ', '_')}_$timestamp';
+      final fileName = 'DOT_QR_${_locationController.text.replaceAll(' ', '_')}_$timestamp.png';
+      final tempFile = File('${tempDir.path}/$fileName');
+      await tempFile.writeAsBytes(imageBytes);
       
-      final result = await ImageGallerySaver.saveImage(
-        imageBytes,
-        quality: 100,
-        name: fileName,
-      );
+      // 갤러리에 저장
+      await Gal.putImage(tempFile.path, album: 'DOT QR Codes');
       
-      if (result['isSuccess'] == true) {
-        _showSnackBar('QR 코드가 갤러리에 저장되었습니다 ✅', isError: false);
-        await HapticFeedback.lightImpact();
-      } else {
-        _showSnackBar('갤러리 저장에 실패했습니다', isError: true);
-      }
+      // 임시 파일 삭제
+      await tempFile.delete();
+      
+      _showSnackBar('QR 코드가 갤러리에 저장되었습니다 ✅', isError: false);
+      await HapticFeedback.lightImpact();
       
     } catch (e) {
       _showSnackBar('QR 코드 저장 중 오류가 발생했습니다: $e', isError: true);
