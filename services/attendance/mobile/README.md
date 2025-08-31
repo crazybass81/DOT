@@ -1,8 +1,8 @@
-# DOT Attendance Mobile App
+# DOT 출근부 - 모바일 앱
 
 ## 📱 Overview
 
-Flutter 기반 근태관리 모바일 애플리케이션으로 직원들이 손쉽게 출퇴근을 체크할 수 있는 앱입니다.
+QR 코드 기반 스마트 출퇴근 관리 시스템의 Flutter 모바일 애플리케이션입니다. Supabase 백엔드를 사용하여 실시간 데이터 동기화와 안전한 인증을 제공합니다.
 
 ## ✨ Features
 
@@ -22,11 +22,18 @@ Flutter 기반 근태관리 모바일 애플리케이션으로 직원들이 손�
 ## 🛠 Tech Stack
 
 ### Framework
-- **Flutter**: 3.10.0+
-- **Dart**: 3.0.0+
+- **Flutter**: 3.35.2+
+- **Dart**: 3.9.0+
 
 ### State Management
 - **Riverpod**: 2.4.9
+
+### Backend
+- **Supabase**: 백엔드 서비스
+  - PostgreSQL 데이터베이스
+  - 인증 시스템
+  - 실시간 구독
+  - Row Level Security (RLS)
 
 ### Core Libraries
 - **go_router**: 라우팅 및 네비게이션
@@ -35,6 +42,7 @@ Flutter 기반 근태관리 모바일 애플리케이션으로 직원들이 손�
 - **geolocator**: GPS 위치 서비스
 - **local_auth**: 생체 인증
 - **flutter_secure_storage**: 안전한 데이터 저장
+- **supabase_flutter**: Supabase 클라이언트
 
 ### UI/UX
 - **Neo Brutal Theme**: 독특한 네오브루탈 디자인
@@ -70,11 +78,12 @@ lib/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK 3.10.0 이상
-- Dart SDK 3.0.0 이상
+- Flutter SDK 3.35.2 이상
+- Dart SDK 3.9.0 이상
 - Android Studio / VS Code
 - iOS: Xcode 14+ (Mac only)
 - Android: Android SDK 31+
+- Supabase 계정 및 프로젝트
 
 ### Installation
 
@@ -107,17 +116,20 @@ flutter run -d web
 
 ## 🔧 Configuration
 
-### Environment Variables
-`.env` 파일 생성:
-```env
-API_BASE_URL=https://api.dot-attendance.com
-GOOGLE_MAPS_API_KEY=your_key_here
+### Configuration
+`lib/core/config/supabase_config.dart` 파일 수정:
+```dart
+class SupabaseConfig {
+  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
+  static const String supabaseAnonKey = 'YOUR_ANON_KEY';
+}
 ```
 
-### Firebase Setup
-1. Firebase 프로젝트 생성
-2. `google-services.json` (Android) 추가
-3. `GoogleService-Info.plist` (iOS) 추가
+### Supabase Setup
+1. Supabase 프로젝트 생성
+2. `lib/core/config/supabase_config.dart`에 프로젝트 정보 입력
+3. `database_setup.sql` 실행하여 테이블 생성
+4. Authentication에서 사용자 계정 생성
 
 ## 📦 Build & Deploy
 
@@ -207,4 +219,4 @@ Proprietary - DOT Platform
 
 ---
 
-Last Updated: 2025-08-28
+Last Updated: 2025-08-31
