@@ -7,6 +7,7 @@ import '../../widgets/dashboard/attendance_status_card.dart';
 import '../../widgets/dashboard/weekly_chart_card.dart';
 import '../../widgets/dashboard/announcement_card.dart';
 import '../../widgets/dashboard/quick_action_buttons.dart';
+import '../../widgets/dashboard/current_status_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../../core/services/app_initialization_service.dart';

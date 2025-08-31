@@ -90,7 +90,13 @@ class QuickActionButtons extends ConsumerWidget {
               Icons.history,
               NeoBrutalTheme.pastelPink,
               () {
-                // 근무 기록 페이지
+                // 근무 기록 페이지로 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AttendanceHistoryPage(),
+                  ),
+                );
               },
             ),
             _buildActionButton(
