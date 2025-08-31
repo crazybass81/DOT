@@ -128,13 +128,18 @@ class QrService {
       // Generate a simple token for the QR code
       final token = '${type}_${locationId}_$timestamp';
       
-      // Try a simpler approach with just the custom scheme
-      // Format: dotattendance://login?token=XXX&location=XXX&type=XXX
-      final deepLinkUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
+      // Use a regular HTTP URL that redirects to the app
+      // This works with all QR code scanners
+      // You need to host the web_redirect.html file on a server
+      // For testing, you can use a local server or ngrok
+      final webUrl = 'http://192.168.1.100:8080/redirect?token=$token&location=$locationId&type=$type';
       
-      debugPrint('Generated QR URL: $deepLinkUrl');
+      // Alternative: Direct custom scheme (may not work with all QR scanners)
+      // final deepLinkUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
       
-      return deepLinkUrl;
+      debugPrint('Generated QR URL: $webUrl');
+      
+      return webUrl;
     } catch (e) {
       debugPrint('Failed to generate QR code data: $e');
       throw QrCodeException(message: 'Failed to generate QR code data: $e');
