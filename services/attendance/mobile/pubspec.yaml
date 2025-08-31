@@ -43,7 +43,8 @@ dependencies:
   excel: ^4.0.2
   path_provider: ^2.1.1
   share_plus: ^7.2.1
-  image_gallery_saver: ^2.0.3
+  # image_gallery_saver: ^2.0.3  # 호환성 문제로 임시 제거
+  gal: ^2.3.0  # 대체 패키지
   
   # Utils
   equatable: ^2.0.5
