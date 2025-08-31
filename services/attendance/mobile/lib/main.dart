@@ -107,16 +107,34 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
             final router = ref.read(appRouterProvider);
             
             // Check registration status
-            final isRegistered = await ref.read(employeeRegistrationProvider.notifier)
+            final status = await ref.read(employeeRegistrationProvider.notifier)
                 .checkRegistrationStatus();
             
-            if (isRegistered) {
-              // Already registered, go to attendance
-              ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
-              router.go(RouteNames.attendance);
-            } else {
-              // Not registered, go to registration page
-              router.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+            final employeeId = ref.read(employeeRegistrationProvider).employeeId;
+            
+            switch (status) {
+              case 'NOT_REGISTERED':
+                // Not registered, go to registration page
+                router.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+                break;
+                
+              case 'PENDING_APPROVAL':
+                // Pending approval, go to approval pending page
+                router.go('${RouteNames.approvalPending}?employeeId=$employeeId');
+                break;
+                
+              case 'APPROVED':
+                // Already registered and approved, go to attendance
+                ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
+                router.go(RouteNames.attendance);
+                break;
+                
+              case 'REJECTED':
+              case 'SUSPENDED':
+              default:
+                // For rejected or suspended, go to registration page
+                router.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+                break;
             }
           });
         }
