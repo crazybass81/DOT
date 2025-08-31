@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/services/qr_service.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
@@ -28,7 +29,10 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
   Timer? _refreshTimer;
   Widget? _currentQrCode;
   String? _currentQrData;
+  String? _currentQrCodeId;
   DateTime? _lastGeneratedTime;
+  
+  final _supabase = Supabase.instance.client;
   
   late AnimationController _pulseController;
   late AnimationController _fadeController;
@@ -437,5 +441,28 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
     _fadeController.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
+  }
+  
+  Future<void> _checkForUpdatedQrCode() async {
+    if (_currentQrCodeId == null) {
+      _generateQrCode();
+      return;
+    }
+    
+    try {
+      // 현재 QR 코드가 여전히 활성인지 확인
+      final response = await _supabase
+          .from('qr_codes')
+          .select('is_active')
+          .eq('id', _currentQrCodeId!)
+          .single();
+      
+      if (response['is_active'] == false) {
+        // 비활성화되면 새 QR 코드 가져오기
+        _generateQrCode();
+      }
+    } catch (e) {
+      print('⚠️ QR 코드 상태 확인 실패: $e');
+    }
   }
 }

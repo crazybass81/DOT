@@ -132,7 +132,9 @@ class QrService {
       // Try multiple formats to find what works best
       
       // Option 1: Simple custom scheme (most reliable for deep linking)
-      final qrUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
+      // 타입에 따라 다른 경로로 라우팅
+      final action = type == 'attendance' ? 'checkin' : 'login';
+      final qrUrl = 'dotattendance://$action?token=$token&location=$locationId&type=$type';
       
       // Option 2: HTTP URL that can be intercepted by the app
       // final qrUrl = 'http://attendance.local/qr?token=$token&location=$locationId&type=$type';

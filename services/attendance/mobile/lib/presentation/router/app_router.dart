@@ -90,7 +90,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final userRole = authState.user?.role;
         
         // Route based on user role
-        if (userRole == UserRole.admin || userRole == UserRole.superAdmin) {
+        if (userRole == UserRole.masterAdmin || userRole == UserRole.admin || userRole == UserRole.superAdmin) {
           return RouteNames.masterAdminDashboard;
         } else {
           // Regular users go to the main dashboard

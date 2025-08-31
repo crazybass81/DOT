@@ -769,25 +769,25 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           children: [
             _buildMetricCard(
               '총 매출',
-              _formatCurrency(performance.totalRevenue ?? 0),
+              _formatCurrency(performance['totalRevenue'] ?? 0),
               Icons.attach_money,
               NeoBrutalTheme.success,
             ),
             _buildMetricCard(
               '순이익',
-              _formatCurrency(performance.netProfit ?? 0),
+              _formatCurrency(performance['netProfit'] ?? 0),
               Icons.trending_up,
               NeoBrutalTheme.info,
             ),
             _buildMetricCard(
               '직원 만족도',
-              '${performance.employeeSatisfaction ?? 0}%',
+              '${performance['employeeSatisfaction'] ?? 0}%',
               Icons.sentiment_satisfied,
               NeoBrutalTheme.pastelMint,
             ),
             _buildMetricCard(
               '고객 만족도',
-              '${performance.customerSatisfaction ?? 0}%',
+              '${performance['customerSatisfaction'] ?? 0}%',
               Icons.star,
               NeoBrutalTheme.pastelPink,
             ),
