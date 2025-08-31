@@ -39,24 +39,21 @@ class QrService {
   /// Validate QR code data
   bool validateQrCode(String data) {
     try {
-      // Check if QR code has the correct prefix
-      if (!data.startsWith(AppConstants.qrCodePrefix)) {
-        return false;
+      // Check if it's a deep link URL
+      if (data.startsWith('dotattendance://')) {
+        final uri = Uri.tryParse(data);
+        if (uri != null && uri.queryParameters.containsKey('token')) {
+          return true;
+        }
+      }
+      
+      // Legacy format support (optional)
+      if (data.startsWith(AppConstants.qrCodePrefix)) {
+        final qrData = data.substring(AppConstants.qrCodePrefix.length);
+        return qrData.isNotEmpty;
       }
 
-      // Extract the actual data
-      final qrData = data.substring(AppConstants.qrCodePrefix.length);
-      
-      // Parse QR code data (assuming JSON format)
-      // You can customize this based on your QR code format
-      if (qrData.isEmpty) {
-        return false;
-      }
-
-      // Additional validation can be added here
-      // For example, checking timestamp, signature, etc.
-      
-      return true;
+      return false;
     } catch (e) {
       debugPrint('QR code validation failed: $e');
       return false;
@@ -70,27 +67,46 @@ class QrService {
         throw const InvalidQrCodeException(message: 'Invalid QR code format');
       }
 
-      final qrData = data.substring(AppConstants.qrCodePrefix.length);
+      // Parse deep link URL format
+      if (data.startsWith('dotattendance://')) {
+        final uri = Uri.parse(data);
+        final token = uri.queryParameters['token'];
+        final location = uri.queryParameters['location'];
+        final type = uri.queryParameters['type'] ?? 'login';
+        
+        if (token == null) {
+          throw const InvalidQrCodeException(message: 'Missing token in QR code');
+        }
+        
+        // Parse token to extract timestamp
+        final tokenParts = token.split('_');
+        final timestamp = tokenParts.length >= 3 ? int.tryParse(tokenParts.last) : null;
+        
+        return {
+          'type': type,
+          'timestamp': timestamp,
+          'location_id': location ?? '',
+          'token': token,
+        };
+      }
       
-      // Parse the data based on your format
-      // This is a simple example - customize based on your needs
-      final parts = qrData.split('|');
-      if (parts.length < 3) {
-        throw const InvalidQrCodeException(message: 'Invalid QR code data structure');
+      // Legacy format support
+      if (data.startsWith(AppConstants.qrCodePrefix)) {
+        final qrData = data.substring(AppConstants.qrCodePrefix.length);
+        final parts = qrData.split('|');
+        if (parts.length < 3) {
+          throw const InvalidQrCodeException(message: 'Invalid QR code data structure');
+        }
+
+        return {
+          'type': parts[0],
+          'timestamp': int.tryParse(parts[1]),
+          'location_id': parts[2],
+          'extra_data': parts.length > 3 ? parts.sublist(3).join('|') : null,
+        };
       }
 
-      final Map<String, dynamic> parsedData = {
-        'type': parts[0],
-        'timestamp': int.tryParse(parts[1]),
-        'location_id': parts[2],
-      };
-
-      // Add additional fields if available
-      if (parts.length > 3) {
-        parsedData['extra_data'] = parts.sublist(3).join('|');
-      }
-
-      return parsedData;
+      throw const InvalidQrCodeException(message: 'Unrecognized QR code format');
     } catch (e) {
       debugPrint('Failed to parse QR code: $e');
       if (e is InvalidQrCodeException) {
