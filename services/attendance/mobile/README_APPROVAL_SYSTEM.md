@@ -119,14 +119,18 @@ flutter run
 ### 신규 파일
 - `lib/presentation/pages/registration/employee_registration_page.dart`
 - `lib/presentation/pages/registration/approval_pending_page.dart`
+- `lib/presentation/pages/admin/approval_management_page.dart`
+- `lib/presentation/providers/approval_management_provider.dart`
 - `lib/presentation/widgets/common/neo_brutal_text_field.dart`
 - `supabase/migrations/002_employee_approval_system.sql`
 - `docs/EMPLOYEE_REGISTRATION_APPROVAL_SYSTEM.md`
+- `README_APPROVAL_SYSTEM.md`
 
 ### 수정 파일
 - `lib/presentation/providers/employee_registration_provider.dart`
 - `lib/presentation/pages/attendance/qr_scanner_page.dart`
-- `lib/presentation/router/app_router.dart`
+- `lib/presentation/pages/admin/master_admin_dashboard_page.dart` (승인 관리 버튼 추가)
+- `lib/presentation/router/app_router.dart` (승인 관리 라우트 추가)
 - `lib/main.dart`
 - `pubspec.yaml` (device_info_plus 추가)
 
