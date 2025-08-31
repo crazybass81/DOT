@@ -45,7 +45,8 @@ class DotAttendanceApp extends ConsumerStatefulWidget {
 }
 
 class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
-  StreamSubscription? _linkSubscription;
+  late AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
 
   @override
   void initState() {
@@ -60,29 +61,29 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
   }
 
   Future<void> _initDeepLinks() async {
+    _appLinks = AppLinks();
+
     // Handle initial link if app was launched from a deep link
     try {
-      final initialLink = await getInitialLink();
+      final initialLink = await _appLinks.getInitialAppLink();
       if (initialLink != null) {
         _handleDeepLink(initialLink);
       }
     } on PlatformException {
       // Handle exception
+      debugPrint('Failed to get initial link');
     }
 
     // Handle links when app is already running
-    _linkSubscription = linkStream.listen((String? link) {
-      if (link != null) {
-        _handleDeepLink(link);
+    _linkSubscription = _appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
       }
     });
   }
 
-  void _handleDeepLink(String link) {
-    debugPrint('Received deep link: $link');
-    
-    // Parse the deep link
-    final uri = Uri.parse(link);
+  void _handleDeepLink(Uri uri) {
+    debugPrint('Received deep link: $uri');
     
     // Check if it's a QR login link
     if (uri.scheme == 'dot-attendance' || 
