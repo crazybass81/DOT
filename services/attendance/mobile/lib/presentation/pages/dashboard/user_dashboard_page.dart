@@ -12,6 +12,9 @@ import '../../providers/attendance_provider.dart';
 import '../../../core/services/app_initialization_service.dart';
 import 'package:flutter/foundation.dart';
 import '../../providers/announcement_provider.dart';
+import '../../widgets/attendance/time_counter_widget.dart';
+import '../../widgets/attendance/break_control_widget.dart';
+import '../../widgets/attendance/checkout_dialog.dart';
 
 /// USER 역할 대시보드
 /// 직원들이 사용하는 메인 화면으로 출근/퇴근, 휴게시간 관리 등의 기능을 제공
@@ -42,6 +45,12 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
       
       // Then initialize attendance provider
       await ref.read(attendanceInitializationProvider.future);
+      
+      // PLAN-1: 자동 출근 처리
+      final attendanceState = ref.read(attendanceProvider);
+      if (attendanceState.currentStatus == 'NOT_WORKING') {
+        await ref.read(attendanceProvider.notifier).autoCheckIn();
+      }
       
       // Load other data
       await _refreshData();
