@@ -818,7 +818,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
     if (_organizationData != null && _organizationData!['branches'] != null) {
       return (_organizationData!['branches'] as List).length;
     }
-    return 0;
+    return 1; // Default to 1 branch for now
   }
 
   Widget _buildOrganizationInfo() {
