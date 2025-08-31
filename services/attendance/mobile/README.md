@@ -1,8 +1,8 @@
-# DOT Attendance Mobile App
+# DOT 출근부 - 모바일 앱
 
 ## 📱 Overview
 
-Flutter 기반 근태관리 모바일 애플리케이션으로 직원들이 손쉽게 출퇴근을 체크할 수 있는 앱입니다.
+QR 코드 기반 스마트 출퇴근 관리 시스템의 Flutter 모바일 애플리케이션입니다. Supabase 백엔드를 사용하여 실시간 데이터 동기화와 안전한 인증을 제공합니다.
 
 ## ✨ Features
 
