@@ -151,7 +151,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
                           ),
                         ),
                         Text(
-                          _organizationData?['organizationName'] ?? 'DOT Attendance System',
+                          _organizationData?['organization'] ?? 'DOT Attendance System',
                           style: NeoBrutalTheme.caption.copyWith(
                             color: NeoBrutalTheme.gray600,
                           ),
@@ -602,7 +602,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
               _buildActivityItem(
                 time: DateTime.now().toString().substring(11, 16),
                 title: '${_getUserDisplayName()} logged in',
-                subtitle: _organizationData?['organizationName'] ?? 'Organization',
+                subtitle: _organizationData?['organization'] ?? 'Organization',
                 icon: Icons.login,
                 color: NeoBrutalTheme.success,
               ),
@@ -789,14 +789,16 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
 
   String _getUserDisplayName() {
     final user = ref.read(currentUserProvider);
-    if (_organizationData != null) {
-      final firstName = _organizationData!['firstName'] ?? '';
-      final lastName = _organizationData!['lastName'] ?? '';
-      return '$firstName $lastName'.trim();
+    if (user != null) {
+      final firstName = user.firstName ?? '';
+      final lastName = user.lastName ?? '';
+      final fullName = '$firstName $lastName'.trim();
+      if (fullName.isNotEmpty) {
+        return fullName;
+      }
+      return user.email ?? 'Master Admin';
     }
-    return user?.firstName != null && user?.lastName != null
-        ? '${user?.firstName} ${user?.lastName}'
-        : user?.email ?? 'Master Admin';
+    return 'Master Admin';
   }
 
   void _navigateToQrDisplay() {
@@ -862,7 +864,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _organizationData!['organizationName'] ?? 'Unknown Organization',
+                      _organizationData!['organization'] ?? 'Unknown Organization',
                       style: NeoBrutalTheme.body.copyWith(
                         color: NeoBrutalTheme.fg,
                         fontWeight: FontWeight.bold,
