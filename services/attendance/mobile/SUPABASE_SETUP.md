@@ -67,22 +67,22 @@ CREATE TABLE breaks (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- QR 토큰 테이블
-CREATE TABLE qr_tokens (
-  id SERIAL PRIMARY KEY,
-  token TEXT UNIQUE NOT NULL,
-  action TEXT,
-  user_id UUID REFERENCES profiles(id),
-  expires_at TIMESTAMPTZ,
-  used_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- QR 토큰 테이블 (필요시 추가)
+-- CREATE TABLE qr_tokens (
+--   id SERIAL PRIMARY KEY,
+--   token TEXT UNIQUE NOT NULL,
+--   action TEXT,
+--   user_id UUID REFERENCES profiles(id),
+--   expires_at TIMESTAMPTZ,
+--   used_at TIMESTAMPTZ,
+--   created_at TIMESTAMPTZ DEFAULT NOW()
+-- );
 
 -- RLS (Row Level Security) 활성화
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
 ALTER TABLE breaks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE qr_tokens ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE qr_tokens ENABLE ROW LEVEL SECURITY;
 
 -- 정책 설정 (모든 사용자가 자신의 데이터만 접근)
 CREATE POLICY "Users can view own profile" ON profiles
