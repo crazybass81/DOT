@@ -294,10 +294,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
   }) async {
     // Use the existing login method that already uses Supabase
-    await login(email, password);
+    final success = await login(email: email, password: password);
     
     // Check the state after login
-    if (state.isAuthenticated && state.user != null) {
+    if (success && state.user != null) {
       return AuthResult(
         success: true,
         userData: {
@@ -306,7 +306,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'firstName': state.user!.firstName,
           'lastName': state.user!.lastName,
           'role': state.user!.role.name,
-          'createdAt': state.user!.createdAt.toIso8601String(),
+          'createdAt': state.user!.createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
           'isActive': state.user!.isActive,
         },
       );
