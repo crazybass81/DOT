@@ -466,7 +466,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 1.2,
+          childAspectRatio: 1.1,
           children: [
             _buildActionCard(
               title: 'Login QR Generator',
@@ -481,6 +481,13 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
               icon: Icons.tv,
               color: NeoBrutalTheme.success,
               onTap: () => _navigateToQrDisplay(),
+            ),
+            _buildActionCard(
+              title: 'Employee Approvals',
+              subtitle: 'Manage registrations',
+              icon: Icons.how_to_reg,
+              color: NeoBrutalTheme.warning,
+              onTap: () => context.go(RouteNames.approvalManagement),
             ),
             _buildActionCard(
               title: 'View Reports',
