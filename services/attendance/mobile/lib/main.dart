@@ -84,7 +84,7 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
     });
   }
 
-  void _handleDeepLink(Uri uri) {
+  void _handleDeepLink(Uri uri) async {
     debugPrint('Received deep link: $uri');
     debugPrint('Scheme: ${uri.scheme}, Host: ${uri.host}, Path: ${uri.path}');
     debugPrint('Query params: ${uri.queryParameters}');
@@ -101,13 +101,22 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
         debugPrint('Processing attendance QR: token=$token, location=$locationId');
         
         if (token != null) {
-          // Navigate to attendance page with QR data
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Check if employee is registered
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
             final router = ref.read(appRouterProvider);
-            // Store QR data temporarily for the attendance page to process
-            ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
-            // Navigate to attendance page
-            router.go(RouteNames.attendance);
+            
+            // Check registration status
+            final isRegistered = await ref.read(employeeRegistrationProvider.notifier)
+                .checkRegistrationStatus();
+            
+            if (isRegistered) {
+              // Already registered, go to attendance
+              ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
+              router.go(RouteNames.attendance);
+            } else {
+              // Not registered, go to registration page
+              router.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+            }
           });
         }
       } else {
