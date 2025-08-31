@@ -127,8 +127,10 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     // Haptic feedback
     await HapticFeedback.selectionClick();
     
-    // Process QR code - for login action
-    final attendanceAction = AttendanceActionType.checkIn; // Default to check-in for login
+    // Determine attendance action based on QR action type
+    final attendanceAction = widget.actionType == QrActionType.attendance 
+        ? AttendanceActionType.checkIn 
+        : AttendanceActionType.checkIn; // Default to check-in
     
     await ref.read(attendanceProvider.notifier).processScannedQrCode(
       qrData: qrData,
