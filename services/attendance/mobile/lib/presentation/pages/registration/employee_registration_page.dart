@@ -8,6 +8,7 @@ import '../../widgets/common/neo_brutal_button.dart';
 import '../../widgets/common/neo_brutal_card.dart';
 import '../../widgets/common/neo_brutal_text_field.dart';
 import '../../providers/employee_registration_provider.dart';
+import '../../router/app_router.dart';
 
 class EmployeeRegistrationPage extends ConsumerStatefulWidget {
   final String? qrToken;
@@ -72,10 +73,13 @@ class _EmployeeRegistrationPageState extends ConsumerState<EmployeeRegistrationP
       );
       
       if (success && mounted) {
+        // Get employee ID from state
+        final employeeId = ref.read(employeeRegistrationProvider).employeeId;
+        
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('직원 등록이 완료되었습니다!'),
+            content: const Text('직원 등록 요청이 완료되었습니다!'),
             backgroundColor: NeoBrutalTheme.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -88,8 +92,8 @@ class _EmployeeRegistrationPageState extends ConsumerState<EmployeeRegistrationP
           ),
         );
         
-        // Navigate to attendance page
-        context.go('/main/attendance');
+        // Navigate to approval pending page
+        context.go('${RouteNames.approvalPending}?employeeId=$employeeId');
       }
     } catch (e) {
       if (mounted) {
