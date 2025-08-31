@@ -104,7 +104,7 @@ class CheckoutDialog extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: NeoBrutalTheme.gray100,
+                      color: NeoBrutalTheme.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: NeoBrutalTheme.fg.withOpacity(0.2),
