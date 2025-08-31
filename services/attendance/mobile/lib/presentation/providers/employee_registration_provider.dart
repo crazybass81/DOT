@@ -25,8 +25,8 @@ class EmployeeRegistrationNotifier extends StateNotifier<EmployeeRegistrationSta
   
   EmployeeRegistrationNotifier(this._supabase) : super(const EmployeeRegistrationState());
 
-  /// Check if employee is already registered
-  Future<bool> checkRegistrationStatus({
+  /// Check employee registration and approval status
+  Future<String> checkRegistrationStatus({
     String? email,
     String? deviceId,
   }) async {
@@ -38,9 +38,9 @@ class EmployeeRegistrationNotifier extends StateNotifier<EmployeeRegistrationSta
         deviceId = await _getDeviceId();
       }
       
-      // Check registration status
+      // Check employee status using new function
       final response = await _supabase.rpc(
-        'check_employee_registration',
+        'check_employee_status',
         params: {
           'p_email': email,
           'p_device_id': deviceId,
@@ -49,24 +49,55 @@ class EmployeeRegistrationNotifier extends StateNotifier<EmployeeRegistrationSta
       
       if (response != null && (response as List).isNotEmpty) {
         final data = response[0];
+        final status = data['status'] ?? 'NOT_REGISTERED';
+        
         state = state.copyWith(
           isLoading: false,
-          isRegistered: data['is_registered'] ?? false,
+          isRegistered: status != 'NOT_REGISTERED',
           employeeId: data['employee_id'],
           organizationName: data['organization_name'],
           branchName: data['branch_name'],
+          approvalStatus: data['approval_status'],
+          rejectionReason: data['rejection_reason'],
         );
-        return data['is_registered'] ?? false;
+        
+        return status;
       }
       
       state = state.copyWith(isLoading: false, isRegistered: false);
-      return false;
+      return 'NOT_REGISTERED';
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: '등록 상태 확인 실패: ${e.toString()}',
+        error: '상태 확인 실패: ${e.toString()}',
       );
-      return false;
+      return 'ERROR';
+    }
+  }
+  
+  /// Check approval status for specific employee
+  Future<String> checkApprovalStatus(String? employeeId) async {
+    if (employeeId == null) return 'NOT_REGISTERED';
+    
+    try {
+      final response = await _supabase
+          .from('employees')
+          .select('approval_status, rejection_reason')
+          .eq('id', employeeId)
+          .single();
+      
+      if (response != null) {
+        state = state.copyWith(
+          approvalStatus: response['approval_status'],
+          rejectionReason: response['rejection_reason'],
+        );
+        return response['approval_status'] ?? 'PENDING';
+      }
+      
+      return 'NOT_FOUND';
+    } catch (e) {
+      state = state.copyWith(error: '승인 상태 확인 실패: ${e.toString()}');
+      return 'ERROR';
     }
   }
 
