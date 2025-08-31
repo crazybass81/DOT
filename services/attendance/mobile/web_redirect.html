@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DOT Attendance - Redirecting...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h1>DOT Attendance</h1>
+        <p>Opening the app...</p>
+        <p style="font-size: 0.9rem; opacity: 0.8;">If the app doesn't open automatically,<br>please make sure it's installed.</p>
+        
+        <a href="#" id="open-app" class="button">Open App Manually</a>
+    </div>
+
+    <script>
+        // Get query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const location = urlParams.get('location');
+        const type = urlParams.get('type') || 'login';
+        
+        // Build the deep link URL
+        const deepLink = `dotattendance://login?token=${token}&location=${location}&type=${type}`;
+        
+        // Try to open the app immediately
+        window.location.href = deepLink;
+        
+        // Fallback for manual opening
+        document.getElementById('open-app').href = deepLink;
+        
+        // If app is not installed, redirect to Play Store after 3 seconds
+        setTimeout(() => {
+            // Check if we're still on this page (app didn't open)
+            if (document.visibilityState === 'visible') {
+                // Optionally redirect to Play Store
+                // window.location.href = 'https://play.google.com/store/apps/details?id=com.dot.attendance';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
