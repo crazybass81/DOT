@@ -71,9 +71,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoading = authState.isLoading;
       final currentPath = state.matchedLocation;
       
-      // Allow access to employee registration without authentication
-      if (currentPath.startsWith(RouteNames.employeeRegistration)) {
-        return null; // Allow access to registration page
+      // Allow access to employee registration and approval pending without authentication
+      if (currentPath.startsWith(RouteNames.employeeRegistration) ||
+          currentPath.startsWith(RouteNames.approvalPending)) {
+        return null; // Allow access to registration and approval pages
       }
       
       // Handle QR deep link
@@ -144,6 +145,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return EmployeeRegistrationPage(
             qrToken: token,
             locationId: locationId,
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.approvalPending,
+        builder: (context, state) {
+          final employeeId = state.uri.queryParameters['employeeId'];
+          return ApprovalPendingPage(
+            employeeId: employeeId,
           );
         },
       ),
