@@ -245,14 +245,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
 
+    print('🔐 로그인 시도: ${_emailController.text.trim()}');
+    
     final success = await ref.read(authProvider.notifier).login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
       rememberMe: _rememberMe,
     );
 
+    print('🔐 로그인 결과: $success');
+    
     if (success && mounted) {
+      print('✅ 로그인 성공! 대시보드로 이동');
       context.go('/main/dashboard');
+    } else {
+      print('❌ 로그인 실패');
+      final error = ref.read(authProvider).error;
+      if (error != null) {
+        print('❌ 에러 메시지: $error');
+      }
     }
   }
 
