@@ -283,7 +283,15 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
             title: const Text('QR Code Scanner'),
             subtitle: const Text('Scan QR code for attendance'),
             onTap: () {
-              // Navigate to QR scanner
+              // Navigate to QR scanner for check-in
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const QrScannerPage(
+                    actionType: QrActionType.attendance,
+                  ),
+                ),
+              );
             },
           ),
         ),
