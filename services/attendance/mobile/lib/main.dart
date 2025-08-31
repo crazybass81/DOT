@@ -7,6 +7,7 @@ import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/router/app_router.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/attendance_provider.dart';
+import 'presentation/providers/employee_registration_provider.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
 
