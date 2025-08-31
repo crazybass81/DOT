@@ -156,6 +156,45 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Login with QR token
+  Future<bool> loginWithQrToken(String token, String action) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // TODO: Validate token with backend
+      // For now, we'll simulate a successful login
+      
+      // Parse token to get user info
+      // In production, this would be validated with the backend
+      final mockUser = User(
+        id: 'user_${token.substring(0, 6)}',
+        email: 'user@dot.com',
+        firstName: 'QR',
+        lastName: 'User',
+        role: UserRole.employee,
+        createdAt: DateTime.now(),
+        isActive: true,
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: mockUser,
+        error: null,
+      );
+
+      // Navigate to dashboard after successful login
+      // This will be handled by the router's redirect logic
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'QR token validation failed: ${e.toString()}',
+      );
+      return false;
+    }
+  }
+
   /// Login with biometric authentication
   Future<bool> loginWithBiometric({
     required String reason,
