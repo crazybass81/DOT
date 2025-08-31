@@ -17,13 +17,12 @@ import '../services/attendance_service.dart';
 
 import '../../data/datasources/auth/auth_local_datasource.dart';
 import '../../data/datasources/auth/auth_remote_datasource.dart';
-import '../../data/datasources/auth/firebase_auth_remote_datasource.dart';
+import '../../data/datasources/auth/supabase_auth_datasource.dart';
 import '../../data/datasources/attendance/attendance_local_datasource.dart';
 import '../../data/datasources/attendance/attendance_remote_datasource.dart';
 import '../../data/datasources/user/user_local_datasource.dart';
 import '../../data/datasources/user/user_remote_datasource.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/attendance_repository_impl.dart';
@@ -148,11 +147,10 @@ Future<void> configureDependencies() async {
     ),
   );
   
-  // Firebase를 사용하는 RemoteDataSource로 변경
+  // Supabase를 사용하는 RemoteDataSource로 변경
   getIt.registerSingleton<AuthRemoteDataSource>(
-    FirebaseAuthRemoteDataSource(
-      FirebaseAuth.instance,
-      FirebaseFirestore.instance,
+    SupabaseAuthDataSource(
+      Supabase.instance.client,
     ),
   );
   
