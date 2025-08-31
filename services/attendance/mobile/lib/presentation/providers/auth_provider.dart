@@ -171,7 +171,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: 'user@dot.com',
         firstName: 'QR',
         lastName: 'User',
-        role: UserRole.employee,
+        role: UserRole.user,
         createdAt: DateTime.now(),
         isActive: true,
       );
