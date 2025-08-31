@@ -1,4 +1,6 @@
-# 🚀 Supabase 5분 설정 가이드
+# 🚀 Supabase 설정 가이드
+
+DOT 출근부 앱을 위한 Supabase 백엔드 설정 가이드입니다.
 
 ## 1️⃣ Supabase 프로젝트 생성 (2분)
 
@@ -65,16 +67,16 @@ CREATE TABLE breaks (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- QR 토큰 테이블
-CREATE TABLE qr_tokens (
-  id SERIAL PRIMARY KEY,
-  token TEXT UNIQUE NOT NULL,
-  action TEXT,
-  user_id UUID REFERENCES profiles(id),
-  expires_at TIMESTAMPTZ,
-  used_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- QR 토큰 테이블 (필요시 추가)
+-- CREATE TABLE qr_tokens (
+--   id SERIAL PRIMARY KEY,
+--   token TEXT UNIQUE NOT NULL,
+--   action TEXT,
+--   user_id UUID REFERENCES profiles(id),
+--   expires_at TIMESTAMPTZ,
+--   used_at TIMESTAMPTZ,
+--   created_at TIMESTAMPTZ DEFAULT NOW()
+-- );
 
 -- RLS (Row Level Security) 활성화
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -126,30 +128,24 @@ CREATE POLICY "Master admin attendance access" ON attendance
 ## 5️⃣ 테스트 계정 생성 (30초)
 
 Authentication > Users 메뉴에서:
-1. "Invite user" 클릭
+1. "Add user" → "Create new user" 클릭
 2. 입력:
    - Email: `archt723@gmail.com`
    - Password: `1q2w3e2w1q!`
-3. "Send invitation" 클릭
+   - Auto Confirm User: ✅ 체크
+3. "Create user" 클릭
 
-또는 SQL Editor에서:
+프로필은 자동으로 생성됩니다 (트리거 설정됨).
 
-```sql
--- 테스트 계정 직접 생성 후 프로필 설정
-INSERT INTO auth.users (email, encrypted_password, email_confirmed_at)
-VALUES ('archt723@gmail.com', crypt('1q2w3e2w1q!', gen_salt('bf')), NOW())
-RETURNING id;
+## 6️⃣ Flutter 앱 설정
 
--- 위에서 반환된 ID를 사용해서 프로필 생성
-INSERT INTO profiles (id, email, name, role, department, employee_id)
-VALUES (
-  '반환된-UUID-여기에', 
-  'archt723@gmail.com',
-  'Master Admin',
-  'MASTER_ADMIN',
-  'Management',
-  'EMP001'
-);
+`lib/core/config/supabase_config.dart` 파일 수정:
+
+```dart
+class SupabaseConfig {
+  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
+  static const String supabaseAnonKey = 'YOUR_ANON_KEY';
+}
 ```
 
 ## 완료! 🎉
