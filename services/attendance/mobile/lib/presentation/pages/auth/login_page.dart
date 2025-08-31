@@ -247,6 +247,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     print('🔐 로그인 시도: ${_emailController.text.trim()}');
     
+    // 임시 테스트: Firebase 없이 바로 이동 (개발용)
+    if (_emailController.text.trim() == 'archt723@gmail.com' && 
+        _passwordController.text == '1q2w3e2w1q!') {
+      print('✅ 개발 모드: 테스트 로그인 성공!');
+      
+      // 임시 사용자 설정
+      final testUser = User(
+        id: 'test_master_admin',
+        email: 'archt723@gmail.com',
+        firstName: 'Master',
+        lastName: 'Admin',
+        role: UserRole.masterAdmin,
+        createdAt: DateTime.now(),
+        isActive: true,
+      );
+      
+      // 상태 직접 업데이트
+      ref.read(authProvider.notifier).setTestUser(testUser);
+      
+      if (mounted) {
+        context.go('/main/dashboard');
+      }
+      return;
+    }
+    
+    // 원래 Firebase 로그인 코드
     final success = await ref.read(authProvider.notifier).login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
