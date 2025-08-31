@@ -499,6 +499,99 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
     // Sync offline queue implementation
     await _loadOfflineQueue();
   }
+
+  // PLAN-1: 근태 이력 조회
+  Future<void> loadAttendanceHistory({
+    required String filter,
+    required DateTime date,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      // 선택된 필터와 날짜에 따라 데이터 로드
+      List<Map<String, dynamic>> records = [];
+      
+      if (filter == 'daily') {
+        // 일별 조회 - 특정 날짜의 기록
+        records = await _loadDailyRecords(date);
+      } else if (filter == 'weekly') {
+        // 주별 조회 - 해당 주의 모든 기록
+        records = await _loadWeeklyRecords(date);
+      } else if (filter == 'monthly') {
+        // 월별 조회 - 해당 월의 모든 기록
+        records = await _loadMonthlyRecords(date);
+      }
+      
+      state = state.copyWith(
+        todayRecords: records,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to load attendance history: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _loadDailyRecords(DateTime date) async {
+    // 로컬 스토리지나 API에서 특정 날짜 데이터 로드
+    // 현재는 더미 데이터 반환
+    if (date.day == DateTime.now().day && 
+        date.month == DateTime.now().month &&
+        date.year == DateTime.now().year) {
+      // 오늘 날짜인 경우 현재 상태 반환
+      if (state.checkInTime != null) {
+        return [{
+          'checkIn': state.checkInTime,
+          'checkOut': state.checkOutTime,
+          'workMinutes': state.workingMinutes,
+          'breakMinutes': state.breakMinutes,
+        }];
+      }
+    }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> _loadWeeklyRecords(DateTime date) async {
+    // 주별 데이터 로드 로직
+    List<Map<String, dynamic>> weekRecords = [];
+    
+    // 주의 시작일 계산 (월요일)
+    final weekStart = date.subtract(Duration(days: date.weekday - 1));
+    
+    // 7일간의 데이터 생성 (더미)
+    for (int i = 0; i < 7; i++) {
+      final currentDate = weekStart.add(Duration(days: i));
+      if (currentDate.isBefore(DateTime.now()) || 
+          currentDate.day == DateTime.now().day) {
+        // 과거 날짜나 오늘의 경우 더미 데이터 추가
+        final records = await _loadDailyRecords(currentDate);
+        weekRecords.addAll(records);
+      }
+    }
+    
+    return weekRecords;
+  }
+
+  Future<List<Map<String, dynamic>>> _loadMonthlyRecords(DateTime date) async {
+    // 월별 데이터 로드 로직
+    List<Map<String, dynamic>> monthRecords = [];
+    
+    // 해당 월의 모든 날짜에 대한 데이터 생성 (더미)
+    final daysInMonth = DateTime(date.year, date.month + 1, 0).day;
+    
+    for (int day = 1; day <= daysInMonth; day++) {
+      final currentDate = DateTime(date.year, date.month, day);
+      if (currentDate.isBefore(DateTime.now()) || 
+          currentDate.day == DateTime.now().day) {
+        final records = await _loadDailyRecords(currentDate);
+        monthRecords.addAll(records);
+      }
+    }
+    
+    return monthRecords;
+  }
 }
 
 // Providers

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../common/neo_brutal_card.dart';
 import '../../providers/attendance_provider.dart';
+import '../../pages/attendance/attendance_history_page.dart';
 
 /// 사용자를 위한 빠른 액션 버튼들
 class QuickActionButtons extends ConsumerWidget {
