@@ -287,7 +287,7 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const QrScannerPage(
+                  builder: (context) => QrScannerPage(
                     actionType: QrActionType.attendance,
                   ),
                 ),
