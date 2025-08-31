@@ -43,3 +43,26 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment and config files
+.env
+.env.*
+
+# Firebase (no longer used)
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Test files
+*.log
+test_*.html
+test_*.sh
+
+# Temporary files
+*.bak
+*.tmp
+*~
+
+# IDE files
+.vscode/
+.serena/
