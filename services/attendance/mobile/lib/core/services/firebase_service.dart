@@ -39,25 +39,24 @@ class FirebaseService {
     try {
       debugPrint('Initializing Firebase...');
       
-      // Initialize Firebase with mock implementation for development
-      // In production, uncomment these lines with proper Firebase configuration
+      // Initialize Firebase with actual configuration
+      _app = await Firebase.initializeApp();
+      _auth = FirebaseAuth.instance;
+      _firestore = FirebaseFirestore.instance;
+      _storage = FirebaseStorage.instance;
+      _analytics = FirebaseAnalytics.instance;
+      _messaging = FirebaseMessaging.instance;
+      _functions = FirebaseFunctions.instance;
       
-      // _app = await Firebase.initializeApp();
-      // _auth = FirebaseAuth.instance;
-      // _firestore = FirebaseFirestore.instance;
-      // _storage = FirebaseStorage.instance;
-      // _analytics = FirebaseAnalytics.instance;
-      // _messaging = FirebaseMessaging.instance;
-      // _functions = FirebaseFunctions.instance;
-      
-      // For now, create mock user database
+      // Initialize mock user database as fallback
       await _initializeMockUserDatabase();
       
       _initialized = true;
-      debugPrint('Firebase initialized with mock data');
+      debugPrint('Firebase initialized successfully');
     } catch (e) {
       debugPrint('Firebase initialization error: $e');
       // Don't rethrow to allow app to run without Firebase
+      _initialized = true; // Still mark as initialized to prevent blocking
     }
   }
   

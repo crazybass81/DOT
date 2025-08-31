@@ -122,7 +122,7 @@ class BreakControlWidget extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: NeoBrutalTheme.gray100,
+                color: NeoBrutalTheme.gray200,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
