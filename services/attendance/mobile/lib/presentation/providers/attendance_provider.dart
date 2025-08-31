@@ -182,6 +182,18 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
     state = state.copyWith(isScanning: false);
   }
 
+  /// Set QR data from deep link
+  void setQrData(String token, String locationId) {
+    // Store QR data for processing when attendance page opens
+    final qrData = 'dotattendance://checkin?token=$token&location=$locationId&type=attendance';
+    
+    // Process the QR code data
+    processScannedQrCode(
+      qrData: qrData,
+      actionType: AttendanceActionType.checkIn,
+    );
+  }
+
   /// Process scanned QR code
   Future<void> processScannedQrCode({
     required String qrData,
