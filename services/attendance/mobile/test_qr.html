@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QR Code Test for DOT Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .qr-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        canvas {
+            margin: 20px auto;
+            display: block;
+            border: 2px solid #333;
+            padding: 10px;
+            background: white;
+        }
+        .url-display {
+            background: #333;
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .test-links {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+        .test-links a {
+            display: block;
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #007bff;
+            border: 1px solid #007bff;
+            text-align: center;
+        }
+        .test-links a:hover {
+            background: #007bff;
+            color: white;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 DOT Attendance QR Code Tester</h1>
+        
+        <div class="instructions">
+            <h3>📱 Testing Instructions:</h3>
+            <ol>
+                <li>Make sure the DOT Attendance app is installed on your phone</li>
+                <li>Click one of the buttons below to generate a QR code</li>
+                <li>Scan the QR code with your phone's camera</li>
+                <li>The app should open automatically and log you in</li>
+            </ol>
+        </div>
+
+        <div class="qr-container">
+            <h2>Generate Test QR Codes</h2>
+            
+            <button onclick="generateQR('http')">Generate HTTP URL QR</button>
+            <button onclick="generateQR('custom')">Generate Custom Scheme QR</button>
+            <button onclick="generateQR('simple')">Generate Simple URL QR</button>
+            
+            <div class="url-display" id="urlDisplay">Click a button to generate QR code...</div>
+            
+            <canvas id="qrCanvas"></canvas>
+        </div>
+
+        <div class="test-links">
+            <h3>🔗 Direct Test Links (Click to test deep linking)</h3>
+            <a href="#" id="httpLink">HTTP Link (Not generated yet)</a>
+            <a href="#" id="customLink">Custom Scheme Link (Not generated yet)</a>
+            <a href="#" id="simpleLink">Simple Link (Not generated yet)</a>
+        </div>
+    </div>
+
+    <script>
+        function generateToken() {
+            const timestamp = Date.now();
+            const locationId = 'office_main';
+            return `login_${locationId}_${timestamp}`;
+        }
+
+        function generateQR(type) {
+            const canvas = document.getElementById('qrCanvas');
+            const urlDisplay = document.getElementById('urlDisplay');
+            const token = generateToken();
+            let url = '';
+
+            switch(type) {
+                case 'http':
+                    // Standard HTTP URL with /qr path
+                    url = `http://attendance.local/qr?token=${token}&location=office_main&type=login`;
+                    document.getElementById('httpLink').href = url;
+                    document.getElementById('httpLink').textContent = `HTTP: ${url}`;
+                    break;
+                
+                case 'custom':
+                    // Custom scheme URL
+                    url = `dotattendance://login?token=${token}&location=office_main&type=login`;
+                    document.getElementById('customLink').href = url;
+                    document.getElementById('customLink').textContent = `Custom: ${url}`;
+                    break;
+                
+                case 'simple':
+                    // Simple HTTP URL
+                    url = `http://192.168.1.100:8080/qr?token=${token}`;
+                    document.getElementById('simpleLink').href = url;
+                    document.getElementById('simpleLink').textContent = `Simple: ${url}`;
+                    break;
+            }
+
+            urlDisplay.textContent = url;
+            
+            // Generate QR code
+            QRCode.toCanvas(canvas, url, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            }, function (error) {
+                if (error) {
+                    console.error(error);
+                    alert('Error generating QR code: ' + error);
+                } else {
+                    console.log('QR code generated successfully!');
+                }
+            });
+        }
+
+        // Generate initial QR code
+        window.onload = function() {
+            generateQR('http');
+        };
+    </script>
+</body>
+</html>
