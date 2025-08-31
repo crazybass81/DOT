@@ -1,7 +1,5 @@
 /// Supabase 설정 파일
-/// 프로젝트 생성 후 여기에 URL과 Key를 넣어주세요
 class SupabaseConfig {
-  // TODO: Supabase Dashboard > Settings > API에서 복사
-  static const String supabaseUrl = 'YOUR_SUPABASE_URL'; // https://xxxxx.supabase.co
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'; // eyJhbGc...로 시작하는 긴 문자열
+  static const String supabaseUrl = 'https://mljyiuzetchtjudbcfvd.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sanlpdXpldGNodGp1ZGJjZnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDg3MDUsImV4cCI6MjA3MjIyNDcwNX0.8s8-zrgnztjabvrVE32J2ZRCiH5bVrypyHBJjHNzfjQ';
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../di/injection_container.dart';
 import 'notification_service.dart';
+import '../config/supabase_config.dart';
 
 /// Service responsible for proper app initialization order
 class AppInitializationService {
@@ -20,10 +21,13 @@ class AppInitializationService {
     try {
       debugPrint('Starting app initialization... (attempt $_initializationAttempts)');
       
-      // 1. Initialize Firebase first (required for Firebase services)
-      debugPrint('Initializing Firebase...');
-      await Firebase.initializeApp();
-      debugPrint('Firebase initialized successfully');
+      // 1. Initialize Supabase first (required for Supabase services)
+      debugPrint('Initializing Supabase...');
+      await Supabase.initialize(
+        url: SupabaseConfig.supabaseUrl,
+        anonKey: SupabaseConfig.supabaseAnonKey,
+      );
+      debugPrint('Supabase initialized successfully');
       
       // 2. Initialize dependency injection
       // configureDependencies() internally checks if already configured
