@@ -67,7 +67,7 @@ class BreakControlWidget extends ConsumerWidget {
                       await HapticFeedback.mediumImpact();
                       await ref.read(attendanceProvider.notifier).startBreak();
                     },
-              label: '휴게 시작',
+              text: '휴게 시작',
               color: NeoBrutalTheme.warning,
               icon: Icons.coffee,
               isLoading: attendanceState.isLoading,
@@ -81,7 +81,7 @@ class BreakControlWidget extends ConsumerWidget {
                       await HapticFeedback.mediumImpact();
                       await ref.read(attendanceProvider.notifier).endBreak();
                     },
-              label: '휴게 종료',
+              text: '휴게 종료',
               color: NeoBrutalTheme.success,
               icon: Icons.work_outline,
               isLoading: attendanceState.isLoading,
@@ -124,7 +124,7 @@ class BreakControlWidget extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: NeoBrutalTheme.bg2,
+                color: NeoBrutalTheme.gray100,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(

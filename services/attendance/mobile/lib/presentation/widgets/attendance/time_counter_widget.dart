@@ -185,7 +185,7 @@ class _TimeCounterWidgetState extends ConsumerState<TimeCounterWidget> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: NeoBrutalTheme.bg2,
+              color: NeoBrutalTheme.gray100,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: NeoBrutalTheme.fg.withOpacity(0.2),
