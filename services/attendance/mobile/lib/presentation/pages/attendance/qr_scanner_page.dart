@@ -240,6 +240,76 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
       lastScannedCode = null;
     });
   }
+  
+  void _showRejectionMessage() {
+    final rejectionReason = ref.read(employeeRegistrationProvider).rejectionReason;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: NeoBrutalTheme.bg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusCard),
+          side: const BorderSide(
+            color: NeoBrutalTheme.fg,
+            width: NeoBrutalTheme.borderThick,
+          ),
+        ),
+        title: const Text('등록 거부됨'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('관리자가 귀하의 등록을 거부했습니다.'),
+            if (rejectionReason != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                '사유: $rejectionReason',
+                style: const TextStyle(color: NeoBrutalTheme.error),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.go(RouteNames.employeeRegistration);
+            },
+            child: const Text('다시 등록'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showSuspendedMessage() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: NeoBrutalTheme.bg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusCard),
+          side: const BorderSide(
+            color: NeoBrutalTheme.fg,
+            width: NeoBrutalTheme.borderThick,
+          ),
+        ),
+        title: const Text('계정 정지'),
+        content: const Text('귀하의 계정이 정지되었습니다.\n관리자에게 문의하세요.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close scanner
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _toggleFlash() async {
     if (controller != null) {
