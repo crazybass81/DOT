@@ -55,26 +55,26 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             
-            <!-- Deep linking for QR codes and URLs -->
-            <intent-filter>
+            <!-- App Links for QR codes - standard HTTP/HTTPS URLs -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 
-                <!-- Handle dotattendance:// scheme -->
-                <data android:scheme="dotattendance"
-                      android:host="login"/>
+                <!-- Handle any HTTP/HTTPS URL with /qr path -->
+                <data android:scheme="http"/>
+                <data android:scheme="https"/>
+                <data android:host="*"/>
+                <data android:pathPrefix="/qr"/>
             </intent-filter>
             
-            <!-- Alternative custom scheme -->
+            <!-- Fallback: Custom scheme for direct deep linking -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 
-                <!-- Handle https URLs -->
-                <data android:scheme="https"
-                      android:host="dotattendance.page.link"/>
+                <data android:scheme="dotattendance"/>
             </intent-filter>
         </activity>
         

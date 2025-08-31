@@ -128,18 +128,13 @@ class QrService {
       // Generate a simple token for the QR code
       final token = '${type}_${locationId}_$timestamp';
       
-      // Use a regular HTTP URL that redirects to the app
-      // This works with all QR code scanners
-      // You need to host the web_redirect.html file on a server
-      // For testing, you can use a local server or ngrok
-      final webUrl = 'http://192.168.1.100:8080/redirect?token=$token&location=$locationId&type=$type';
+      // Generate a simple HTTP URL with /qr path that Android will intercept
+      // This format works with ALL QR code scanners
+      final qrUrl = 'http://attendance.local/qr?token=$token&location=$locationId&type=$type';
       
-      // Alternative: Direct custom scheme (may not work with all QR scanners)
-      // final deepLinkUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
+      debugPrint('Generated QR URL: $qrUrl');
       
-      debugPrint('Generated QR URL: $webUrl');
-      
-      return webUrl;
+      return qrUrl;
     } catch (e) {
       debugPrint('Failed to generate QR code data: $e');
       throw QrCodeException(message: 'Failed to generate QR code data: $e');
