@@ -49,6 +49,8 @@ class AttendanceQueue extends Equatable with _$AttendanceQueue {
 enum AttendanceActionType {
   checkIn,
   checkOut,
+  breakStart,
+  breakEnd,
 }
 
 enum QueueStatus {

@@ -196,18 +196,18 @@ class SyncService {
     }
   }
 
-  QueueSyncStatus _parseSyncStatus(String value) {
+  QueueStatus _parseQueueStatus(String value) {
     switch (value) {
-      case 'QueueSyncStatus.pending':
-        return QueueSyncStatus.pending;
-      case 'QueueSyncStatus.syncing':
-        return QueueSyncStatus.syncing;
-      case 'QueueSyncStatus.completed':
-        return QueueSyncStatus.completed;
-      case 'QueueSyncStatus.failed':
-        return QueueSyncStatus.failed;
+      case 'QueueStatus.pending':
+        return QueueStatus.pending;
+      case 'QueueStatus.syncing':
+        return QueueStatus.syncing;
+      case 'QueueStatus.synced':
+        return QueueStatus.synced;
+      case 'QueueStatus.failed':
+        return QueueStatus.failed;
       default:
-        return QueueSyncStatus.pending;
+        return QueueStatus.pending;
     }
   }
 }
