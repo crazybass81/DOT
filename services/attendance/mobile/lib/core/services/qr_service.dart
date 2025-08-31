@@ -128,9 +128,9 @@ class QrService {
       // Generate a simple token for the QR code
       final token = '${type}_${locationId}_$timestamp';
       
-      // Use a standard HTTPS URL that will redirect to the app
-      // This is more compatible with QR code scanners
-      final deepLinkUrl = 'https://dotattendance.page.link/?link=https://dotattendance.com/login?token=$token%26location=$locationId%26type=$type&apn=com.dot.attendance';
+      // Try a simpler approach with just the custom scheme
+      // Format: dotattendance://login?token=XXX&location=XXX&type=XXX
+      final deepLinkUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
       
       debugPrint('Generated QR URL: $deepLinkUrl');
       
