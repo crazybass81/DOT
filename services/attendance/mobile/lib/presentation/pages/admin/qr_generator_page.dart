@@ -90,13 +90,13 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
             .from('qr_codes')
             .update({'is_active': false})
             .eq('location_id', selectedBranch['id']!)
-            .eq('type', 'login')
+            .eq('type', 'attendance')
             .eq('is_active', true);
         
         // 2. 새 QR 코드 저장
         await _supabase.from('qr_codes').insert({
           'code': qrCode,
-          'type': 'login',
+          'type': 'attendance',
           'location_id': selectedBranch['id']!,
           'location_name': selectedBranch['name'],
           'created_by': _supabase.auth.currentUser?.id,
@@ -472,7 +472,7 @@ class _QrGeneratorPageState extends ConsumerState<QrGeneratorPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('유형', '로그인 QR'),
+                _buildInfoRow('유형', '출퇴근 체크 QR'),
                 _buildInfoRow('위치', _locationController.text),
                 if (_extraDataController.text.trim().isNotEmpty)
                   _buildInfoRow('추가정보', _extraDataController.text.trim()),
