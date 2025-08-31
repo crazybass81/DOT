@@ -131,21 +131,27 @@ class QuickActionButtons extends ConsumerWidget {
         // Handle check-in or check-out
         try {
           if (isCheckOut) {
-            await ref.read(attendanceServiceProvider).checkOut();
+            // PLAN-1: 퇴근 확인 다이얼로그 표시
+            final result = await CheckoutDialog.show(context);
+            if (result == true) {
+              // 다이얼로그에서 퇴근 처리됨
+              ref.invalidate(todayAttendanceProvider);
+            }
           } else {
-            await ref.read(attendanceServiceProvider).checkIn();
-          }
-          // Refresh the attendance data
-          ref.invalidate(todayAttendanceProvider);
-          
-          // Show success message
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(isCheckOut ? '퇴근 처리되었습니다' : '출근 처리되었습니다'),
-                backgroundColor: NeoBrutalTheme.success,
-              ),
-            );
+            // 출근 처리
+            await ref.read(attendanceProvider.notifier).autoCheckIn();
+            // Refresh the attendance data
+            ref.invalidate(todayAttendanceProvider);
+            
+            // Show success message
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('출근 처리되었습니다'),
+                  backgroundColor: NeoBrutalTheme.success,
+                ),
+              );
+            }
           }
         } catch (e) {
           // Show error message
