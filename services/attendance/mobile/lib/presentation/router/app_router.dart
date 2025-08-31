@@ -67,9 +67,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
+      final currentPath = state.matchedLocation;
+      
+      // Allow access to employee registration without authentication
+      if (currentPath.startsWith(RouteNames.employeeRegistration)) {
+        return null; // Allow access to registration page
+      }
       
       // Handle QR deep link
-      if (state.matchedLocation.startsWith(RouteNames.qrLogin)) {
+      if (currentPath.startsWith(RouteNames.qrLogin)) {
         // Extract token from query params
         final token = state.uri.queryParameters['token'];
         if (token != null) {
@@ -79,14 +85,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         }
       }
       
-      // Allow access to employee registration without authentication
-      if (state.matchedLocation == RouteNames.employeeRegistration) {
-        return null; // Allow access to registration page
-      }
-      
       // If not authenticated, always go to master admin login
       if (!isAuthenticated) {
-        if (state.matchedLocation != RouteNames.masterAdminLogin) {
+        // Skip redirect for auth routes and registration
+        if (currentPath != RouteNames.masterAdminLogin && 
+            !currentPath.startsWith(RouteNames.employeeRegistration)) {
           return RouteNames.masterAdminLogin;
         }
         return null;
