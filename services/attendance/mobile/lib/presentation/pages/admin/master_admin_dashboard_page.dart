@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/neo_brutal_theme.dart';
 import '../../router/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../../core/services/firebase_service.dart';
 
 class MasterAdminDashboardPage extends ConsumerStatefulWidget {
   const MasterAdminDashboardPage({super.key});
