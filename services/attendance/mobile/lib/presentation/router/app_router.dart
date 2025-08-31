@@ -10,6 +10,7 @@ import '../pages/dashboard/dashboard_page.dart';
 import '../pages/admin/master_admin_dashboard_page.dart';
 import '../pages/admin/qr_generator_page.dart';
 import '../pages/admin/qr_display_page.dart';
+import '../pages/admin/approval_management_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
