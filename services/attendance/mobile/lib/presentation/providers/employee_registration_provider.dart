@@ -14,6 +14,8 @@ class EmployeeRegistrationState with _$EmployeeRegistrationState {
     String? employeeId,
     String? organizationName,
     String? branchName,
+    String? approvalStatus, // PENDING, APPROVED, REJECTED, SUSPENDED
+    String? rejectionReason,
     String? error,
   }) = _EmployeeRegistrationState;
 }
