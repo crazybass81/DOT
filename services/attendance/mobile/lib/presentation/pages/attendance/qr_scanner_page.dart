@@ -147,19 +147,49 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     if (widget.actionType == QrActionType.attendance || 
         (qrUri != null && (qrUri.host == 'checkin' || qrUri.queryParameters['type'] == 'attendance'))) {
       
-      debugPrint('QR Scan - Checking registration status...');
+      debugPrint('QR Scan - Checking registration and approval status...');
       
-      // Check if employee is registered
-      final isRegistered = await ref.read(employeeRegistrationProvider.notifier)
+      // Check employee status
+      final status = await ref.read(employeeRegistrationProvider.notifier)
           .checkRegistrationStatus();
       
-      debugPrint('QR Scan - Registration status: $isRegistered');
+      debugPrint('QR Scan - Employee status: $status');
       
-      if (!isRegistered && mounted) {
-        // Not registered, navigate to registration page
-        debugPrint('QR Scan - Navigating to registration page with token: $token, location: $locationId');
-        context.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
-        return;
+      final employeeId = ref.read(employeeRegistrationProvider).employeeId;
+      
+      if (mounted) {
+        switch (status) {
+          case 'NOT_REGISTERED':
+            // Not registered, navigate to registration page
+            debugPrint('QR Scan - Navigating to registration page');
+            context.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+            return;
+            
+          case 'PENDING_APPROVAL':
+            // Registration pending approval
+            debugPrint('QR Scan - Navigating to approval pending page');
+            context.go('${RouteNames.approvalPending}?employeeId=$employeeId');
+            return;
+            
+          case 'REJECTED':
+            // Registration rejected, show message and redirect to registration
+            _showRejectionMessage();
+            return;
+            
+          case 'SUSPENDED':
+            // Account suspended
+            _showSuspendedMessage();
+            return;
+            
+          case 'APPROVED':
+            // Approved, continue with normal attendance flow
+            debugPrint('QR Scan - Employee approved, processing attendance');
+            break;
+            
+          default:
+            debugPrint('QR Scan - Unknown status: $status');
+            break;
+        }
       }
     }
     
