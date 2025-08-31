@@ -9,10 +9,13 @@ import '../../../core/theme/neo_brutal_theme.dart';
 import '../../../domain/entities/attendance/attendance_queue.dart';
 import '../../../domain/entities/attendance/qr_action_type.dart';
 import '../../providers/attendance_provider.dart';
+import '../../providers/employee_registration_provider.dart';
 import '../../widgets/attendance/attendance_verification_dialog.dart';
 import '../../widgets/attendance/attendance_queue_widget.dart';
 import '../../widgets/common/neo_brutal_button.dart';
 import '../../widgets/common/neo_brutal_card.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/app_router.dart';
 
 class QrScannerPage extends ConsumerStatefulWidget {
   final QrActionType actionType;
