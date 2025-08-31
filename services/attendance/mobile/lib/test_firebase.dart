@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,11 +9,9 @@ void main() async {
   print('🚀 Firebase 연결 테스트 시작...\n');
   
   try {
-    // 1. Firebase 초기화
+    // 1. Firebase 초기화 (Android는 google-services.json 자동 사용)
     print('1️⃣ Firebase 초기화 중...');
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await Firebase.initializeApp();
     print('✅ Firebase 초기화 성공!\n');
     
     // 2. Authentication 테스트
