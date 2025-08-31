@@ -8,7 +8,6 @@ import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/auth/refresh_token_usecase.dart';
 import '../../domain/usecases/auth/verify_biometric_usecase.dart';
-import '../../core/services/firebase_service.dart';
 
 part 'auth_provider.freezed.dart';
 
