@@ -298,6 +298,198 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
     );
   }
   
+  // PLAN-1: 자동 출근 처리
+  Future<void> autoCheckIn() async {
+    if (state.currentStatus != 'NOT_WORKING') {
+      return; // 이미 출근한 경우 무시
+    }
+    
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final now = DateTime.now();
+      
+      // 출근 처리
+      state = state.copyWith(
+        currentStatus: 'WORKING',
+        checkInTime: now,
+        workingMinutes: 0,
+        breakMinutes: 0,
+        isLoading: false,
+        successMessage: '출근 처리되었습니다!',
+      );
+      
+      // 출근 기록 추가
+      final record = {
+        'type': 'CHECK_IN',
+        'time': now.toIso8601String(),
+        'status': 'WORKING',
+      };
+      
+      state = state.copyWith(
+        todayRecords: [...state.todayRecords, record],
+      );
+      
+      // 백엔드 동기화
+      await markAttendance(
+        actionType: AttendanceActionType.checkIn,
+        method: 'auto',
+      );
+      
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: '자동 출근 처리 실패: $e',
+      );
+    }
+  }
+  
+  // PLAN-1: 휴게 시작
+  Future<void> startBreak() async {
+    if (state.currentStatus != 'WORKING') {
+      return; // 근무중이 아니면 무시
+    }
+    
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final now = DateTime.now();
+      
+      state = state.copyWith(
+        currentStatus: 'ON_BREAK',
+        breakStartTime: now,
+        isLoading: false,
+        successMessage: '휴게를 시작합니다',
+      );
+      
+      // 휴게 기록 추가
+      final record = {
+        'type': 'BREAK_START',
+        'time': now.toIso8601String(),
+        'status': 'ON_BREAK',
+      };
+      
+      state = state.copyWith(
+        todayRecords: [...state.todayRecords, record],
+      );
+      
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: '휴게 시작 실패: $e',
+      );
+    }
+  }
+  
+  // PLAN-1: 휴게 종료
+  Future<void> endBreak() async {
+    if (state.currentStatus != 'ON_BREAK') {
+      return; // 휴게중이 아니면 무시
+    }
+    
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final now = DateTime.now();
+      
+      // 휴게 시간 계산
+      if (state.breakStartTime != null) {
+        final breakDuration = now.difference(state.breakStartTime!).inMinutes;
+        state = state.copyWith(
+          breakMinutes: state.breakMinutes + breakDuration,
+        );
+      }
+      
+      state = state.copyWith(
+        currentStatus: 'WORKING',
+        breakStartTime: null,
+        isLoading: false,
+        successMessage: '휴게를 종료하고 근무를 재개합니다',
+      );
+      
+      // 휴게 종료 기록 추가
+      final record = {
+        'type': 'BREAK_END',
+        'time': now.toIso8601String(),
+        'status': 'WORKING',
+      };
+      
+      state = state.copyWith(
+        todayRecords: [...state.todayRecords, record],
+      );
+      
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: '휴게 종료 실패: $e',
+      );
+    }
+  }
+  
+  // PLAN-1: 퇴근 처리
+  Future<void> performCheckOut() async {
+    if (state.currentStatus == 'NOT_WORKING') {
+      return; // 출근하지 않은 경우 무시
+    }
+    
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final now = DateTime.now();
+      
+      // 총 근무 시간 계산
+      int totalWorkMinutes = 0;
+      if (state.checkInTime != null) {
+        totalWorkMinutes = now.difference(state.checkInTime!).inMinutes;
+      }
+      
+      // 실제 근무 시간 = 총 근무 시간 - 휴게 시간
+      final actualWorkMinutes = totalWorkMinutes - state.breakMinutes;
+      
+      state = state.copyWith(
+        currentStatus: 'NOT_WORKING',
+        checkOutTime: now,
+        workingMinutes: actualWorkMinutes,
+        isLoading: false,
+        successMessage: '퇴근 처리되었습니다. 오늘도 수고하셨습니다!',
+      );
+      
+      // 퇴근 기록 추가
+      final record = {
+        'type': 'CHECK_OUT',
+        'time': now.toIso8601String(),
+        'status': 'COMPLETED',
+        'totalWorkMinutes': totalWorkMinutes,
+        'totalBreakMinutes': state.breakMinutes,
+        'actualWorkMinutes': actualWorkMinutes,
+      };
+      
+      state = state.copyWith(
+        todayRecords: [...state.todayRecords, record],
+      );
+      
+      // 백엔드 동기화
+      await markAttendance(
+        actionType: AttendanceActionType.checkOut,
+        method: 'manual',
+      );
+      
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: '퇴근 처리 실패: $e',
+      );
+    }
+  }
+  
+  // 시간 업데이트 (TimeCounterWidget에서 호출)
+  void updateTimeCounters(int workMinutes, int breakMinutes) {
+    state = state.copyWith(
+      workingMinutes: workMinutes,
+      breakMinutes: breakMinutes,
+    );
+  }
+  
   Future<void> refreshAttendance() async {
     await _loadOfflineQueue();
     await syncOfflineQueue();
