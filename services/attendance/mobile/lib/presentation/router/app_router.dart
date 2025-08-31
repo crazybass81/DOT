@@ -24,6 +24,7 @@ import '../pages/reports/monthly_report_page.dart';
 import '../pages/reports/custom_report_page.dart';
 import '../widgets/common/main_navigation.dart';
 import '../providers/auth_provider.dart';
+import '../../domain/entities/user/user_role.dart';
 // import '../../features/test/database_test_screen.dart';
 
 // Route names
@@ -86,8 +87,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       
       // If authenticated and on login page, check user role
       if (isAuthenticated && state.matchedLocation == RouteNames.masterAdminLogin) {
-        // Check if user is admin - always go to master admin dashboard for now
-        return RouteNames.masterAdminDashboard;
+        final userRole = authState.user?.role;
+        
+        // Route based on user role
+        if (userRole == UserRole.admin || userRole == UserRole.superAdmin) {
+          return RouteNames.masterAdminDashboard;
+        } else {
+          // Regular users go to the main dashboard
+          return RouteNames.dashboard;
+        }
       }
       
       return null;
