@@ -4,17 +4,22 @@
 
 ### 1. Using Custom Scheme (Recommended for Mobile)
 ```
-dot-attendance://qr-login?token=TEST123456&action=login
+dotattendance://login?token=TEST123456&action=login
 ```
 
 ### 2. Using HTTPS URL
 ```
-https://attendance.dot.com/qr-login?token=TEST123456&action=login
+https://attendance.dot.com/qr?token=TEST123456&action=login
 ```
 
 ### 3. Using HTTP URL (Development)
 ```
-http://attendance.dot.com/qr-login?token=TEST123456&action=login
+http://attendance.dot.com/qr?token=TEST123456&action=login
+```
+
+### 4. Simple Test URL (Most Compatible)
+```
+dotattendance://login?token=TEST123456
 ```
 
 ## How to Test

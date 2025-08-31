@@ -87,17 +87,20 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
     debugPrint('Received deep link: $uri');
     
     // Check if it's a QR login link
-    if (uri.scheme == 'dot-attendance' || 
-        (uri.host == 'attendance.dot.com' && uri.path == '/qr-login')) {
+    if (uri.scheme == 'dotattendance' || 
+        (uri.host == 'attendance.dot.com' && uri.path.startsWith('/qr'))) {
       
       final token = uri.queryParameters['token'];
       final action = uri.queryParameters['action'] ?? 'login';
       
       if (token != null) {
+        debugPrint('Processing QR token: $token');
         // Process QR token for auto-login
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ref.read(authProvider.notifier).loginWithQrToken(token, action);
         });
+      } else {
+        debugPrint('No token found in deep link');
       }
     }
   }
