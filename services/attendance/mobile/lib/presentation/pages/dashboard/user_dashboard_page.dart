@@ -144,6 +144,14 @@ class _UserDashboardPageState extends ConsumerState<UserDashboardPage> {
               _buildGreetingSection(authState),
               const SizedBox(height: NeoBrutalTheme.space6),
 
+              // PLAN-1: 현재 상태 카드 (실시간 시간 카운터 포함)
+              const CurrentStatusCard(),
+              const SizedBox(height: NeoBrutalTheme.space6),
+
+              // PLAN-1: 휴게 컨트롤 위젯
+              const BreakControlWidget(),
+              const SizedBox(height: NeoBrutalTheme.space6),
+
               // 오늘 출근 상태 카드 (하이라이트)
               _buildAttendanceStatusSection(todayAttendance),
               const SizedBox(height: NeoBrutalTheme.space6),
