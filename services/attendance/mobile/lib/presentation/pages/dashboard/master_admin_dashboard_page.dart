@@ -787,7 +787,7 @@ class _MasterAdminDashboardPageState extends ConsumerState<MasterAdminDashboardP
             ),
             _buildMetricCard(
               '고객 만족도',
-              '${performance.customerSatisfaction ?? 0}%',
+              '${performance['customerSatisfaction'] ?? 0}%',
               Icons.star,
               NeoBrutalTheme.pastelPink,
             ),
