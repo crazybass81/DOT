@@ -68,8 +68,7 @@ class BreakControlWidget extends ConsumerWidget {
                       await ref.read(attendanceProvider.notifier).startBreak();
                     },
               text: '휴게 시작',
-              color: NeoBrutalTheme.warning,
-              icon: Icons.coffee,
+              backgroundColor: NeoBrutalTheme.warning,
               isLoading: attendanceState.isLoading,
             ),
           
@@ -82,8 +81,7 @@ class BreakControlWidget extends ConsumerWidget {
                       await ref.read(attendanceProvider.notifier).endBreak();
                     },
               text: '휴게 종료',
-              color: NeoBrutalTheme.success,
-              icon: Icons.work_outline,
+              backgroundColor: NeoBrutalTheme.success,
               isLoading: attendanceState.isLoading,
             ),
             const SizedBox(height: 12),
