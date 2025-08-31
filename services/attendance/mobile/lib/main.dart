@@ -91,21 +91,35 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
     // Handle both custom scheme and HTTP(S) URLs with /qr path
     if (uri.scheme == 'dotattendance' || uri.path.startsWith('/qr')) {
       final token = uri.queryParameters['token'];
-      final action = uri.queryParameters['action'] ?? 
-                     uri.queryParameters['type'] ?? 
-                     'login';
+      final type = uri.queryParameters['type'] ?? 'login';
+      final locationId = uri.queryParameters['location'];
       
-      if (token != null) {
-        debugPrint('Processing QR token: $token, action: $action');
-        // Process QR token for auto-login
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(authProvider.notifier).loginWithQrToken(token, action);
-        });
+      // Check if this is attendance QR or login QR
+      if (uri.host == 'checkin' || type == 'attendance') {
+        // Handle attendance check-in
+        debugPrint('Processing attendance QR: token=$token, location=$locationId');
+        
+        if (token != null) {
+          // Navigate to attendance page with QR data
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final router = ref.read(appRouterProvider);
+            // Store QR data temporarily for the attendance page to process
+            ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
+            // Navigate to attendance page
+            router.go(RouteNames.attendance);
+          });
+        }
       } else {
-        debugPrint('No token found in deep link');
+        // Handle login QR
+        if (token != null) {
+          debugPrint('Processing login QR token: $token');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(authProvider.notifier).loginWithQrToken(token, type);
+          });
+        }
       }
     } else {
-      debugPrint('Not a QR login link, ignoring');
+      debugPrint('Not a QR link, ignoring');
     }
   }
 
