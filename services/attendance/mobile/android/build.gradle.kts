@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.google.gms:google-services:4.4.0")
+        // Firebase 제거됨 - Supabase 사용
     }
 }
 
