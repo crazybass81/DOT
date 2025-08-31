@@ -28,7 +28,10 @@ class _QrDisplayPageState extends ConsumerState<QrDisplayPage>
   Timer? _refreshTimer;
   Widget? _currentQrCode;
   String? _currentQrData;
+  String? _currentQrCodeId;
   DateTime? _lastGeneratedTime;
+  
+  final _supabase = Supabase.instance.client;
   
   late AnimationController _pulseController;
   late AnimationController _fadeController;
