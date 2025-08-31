@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uni_links/uni_links.dart';
+import 'dart:async';
 import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/router/app_router.dart';
 import 'core/di/injection_container.dart';
