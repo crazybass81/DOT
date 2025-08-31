@@ -48,6 +48,39 @@ class LocalStorageService {
     }
   }
 
+  /// Save data with JSON encoding
+  Future<void> saveData(String key, dynamic value) async {
+    try {
+      final jsonString = jsonEncode(value);
+      await _prefs.setString(key, jsonString);
+    } catch (e) {
+      debugPrint('Failed to save data for key $key: $e');
+      throw StorageException(message: 'Failed to save data for key: $key');
+    }
+  }
+
+  /// Get data with JSON decoding
+  Future<dynamic> getData(String key) async {
+    try {
+      final jsonString = _prefs.getString(key);
+      if (jsonString == null) return null;
+      return jsonDecode(jsonString);
+    } catch (e) {
+      debugPrint('Failed to get data for key $key: $e');
+      return null;
+    }
+  }
+
+  /// Remove data for a key
+  Future<void> removeData(String key) async {
+    try {
+      await _prefs.remove(key);
+    } catch (e) {
+      debugPrint('Failed to remove data for key $key: $e');
+      throw StorageException(message: 'Failed to remove data for key: $key');
+    }
+  }
+
   // Theme settings
   Future<void> setThemeMode(String themeMode) async {
     try {

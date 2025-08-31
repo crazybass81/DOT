@@ -75,12 +75,19 @@ class SyncService {
   Future<void> saveOfflineQueue(List<AttendanceQueue> queue) async {
     final queueData = queue.map((item) => {
       'id': item.id,
+      'userId': item.userId,
       'actionType': item.actionType.toString(),
       'timestamp': item.timestamp.toIso8601String(),
-      'data': item.data,
-      'syncStatus': item.syncStatus.toString(),
-      'retryCount': item.retryCount,
-      'errorMessage': item.errorMessage,
+      'method': item.method,
+      'latitude': item.latitude,
+      'longitude': item.longitude,
+      'locationName': item.locationName,
+      'qrCodeData': item.qrCodeData,
+      'notes': item.notes,
+      'imageUrl': item.imageUrl,
+      'status': item.status.toString(),
+      'retryCount': item.retryCount ?? 0,
+      'lastError': item.lastError,
     }).toList();
     
     await _localStorage.saveData('offline_queue', queueData);
