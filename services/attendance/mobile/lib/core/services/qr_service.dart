@@ -108,14 +108,15 @@ class QrService {
   }) {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final parts = [type, timestamp.toString(), locationId];
       
-      if (extraData != null && extraData.isNotEmpty) {
-        parts.add(extraData);
-      }
-
-      final data = parts.join('|');
-      return '${AppConstants.qrCodePrefix}$data';
+      // Generate a simple token for the QR code
+      final token = '${type}_${locationId}_$timestamp';
+      
+      // Create deep link URL for QR code
+      // This URL will open the app when scanned
+      final deepLinkUrl = 'dotattendance://login?token=$token&location=$locationId&type=$type';
+      
+      return deepLinkUrl;
     } catch (e) {
       debugPrint('Failed to generate QR code data: $e');
       throw QrCodeException(message: 'Failed to generate QR code data: $e');
