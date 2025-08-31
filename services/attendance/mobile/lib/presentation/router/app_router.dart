@@ -79,6 +79,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         }
       }
       
+      // Allow access to employee registration without authentication
+      if (state.matchedLocation == RouteNames.employeeRegistration) {
+        return null; // Allow access to registration page
+      }
+      
       // If not authenticated, always go to master admin login
       if (!isAuthenticated) {
         if (state.matchedLocation != RouteNames.masterAdminLogin) {
@@ -268,6 +273,7 @@ bool _isAuthRoute(String location) {
     RouteNames.splash,
     RouteNames.qrLogin,
     RouteNames.userRegistration,
+    RouteNames.employeeRegistration,
   ];
   return authRoutes.any((route) => location.startsWith(route));
 }
