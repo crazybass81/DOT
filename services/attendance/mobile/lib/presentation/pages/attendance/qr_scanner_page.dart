@@ -144,8 +144,10 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
   }
 
   void _showVerificationDialog() {
-    // For login action
-    final attendanceAction = AttendanceActionType.checkIn; // Default to check-in for login
+    // Determine attendance action based on QR action type
+    final attendanceAction = widget.actionType == QrActionType.attendance 
+        ? AttendanceActionType.checkIn 
+        : AttendanceActionType.checkIn; // Default to check-in
     
     showDialog(
       context: context,
