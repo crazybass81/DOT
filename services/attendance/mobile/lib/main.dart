@@ -37,8 +37,68 @@ void main() async {
   );
 }
 
-class DotAttendanceApp extends ConsumerWidget {
+class DotAttendanceApp extends ConsumerStatefulWidget {
   const DotAttendanceApp({super.key});
+
+  @override
+  ConsumerState<DotAttendanceApp> createState() => _DotAttendanceAppState();
+}
+
+class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
+  StreamSubscription? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initDeepLinks() async {
+    // Handle initial link if app was launched from a deep link
+    try {
+      final initialLink = await getInitialLink();
+      if (initialLink != null) {
+        _handleDeepLink(initialLink);
+      }
+    } on PlatformException {
+      // Handle exception
+    }
+
+    // Handle links when app is already running
+    _linkSubscription = linkStream.listen((String? link) {
+      if (link != null) {
+        _handleDeepLink(link);
+      }
+    });
+  }
+
+  void _handleDeepLink(String link) {
+    debugPrint('Received deep link: $link');
+    
+    // Parse the deep link
+    final uri = Uri.parse(link);
+    
+    // Check if it's a QR login link
+    if (uri.scheme == 'dot-attendance' || 
+        (uri.host == 'attendance.dot.com' && uri.path == '/qr-login')) {
+      
+      final token = uri.queryParameters['token'];
+      final action = uri.queryParameters['action'] ?? 'login';
+      
+      if (token != null) {
+        // Process QR token for auto-login
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(authProvider.notifier).loginWithQrToken(token, action);
+        });
+      }
+    }
+  }
 
   static TextTheme _buildTextTheme(BuildContext context) {
     // Create a base text theme and then apply fonts
@@ -63,7 +123,7 @@ class DotAttendanceApp extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     
     return MaterialApp.router(
