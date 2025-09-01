@@ -158,8 +158,12 @@ Future<void> configureDependencies() async {
     AttendanceLocalDataSourceImpl(getIt<LocalStorageService>()),
   );
   
+  // Use Supabase for AttendanceRemoteDataSource
   getIt.registerSingleton<AttendanceRemoteDataSource>(
-    AttendanceRemoteDataSourceImpl(getIt<Dio>()),
+    SupabaseAttendanceDataSource(
+      Supabase.instance.client,
+      getIt<LocalStorageService>(),
+    ),
   );
   
   getIt.registerSingleton<UserLocalDataSource>(
