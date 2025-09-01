@@ -244,3 +244,143 @@ Deno.test("Attendance API - History", async (t) => {
     assertEquals(Array.isArray(data.data.records), true);
   });
 });
+
+Deno.test("Approval API - Employee Registration", async (t) => {
+  await t.step("should register new employee", async () => {
+    const response = await fetch(`${supabaseUrl}/functions/v1/employee-register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        name: "John Doe",
+        email: "john.doe@example.com",
+        phone: "+1234567890",
+        department: "Engineering",
+        position: "Software Developer",
+        deviceId: "device-unique-001",
+      }),
+    });
+
+    const data = await response.json();
+    
+    assertEquals(response.status, 201);
+    assertEquals(data.success, true);
+    assertExists(data.data.employeeId);
+    assertEquals(data.data.approvalStatus, "PENDING");
+  });
+
+  await t.step("should reject duplicate email registration", async () => {
+    const response = await fetch(`${supabaseUrl}/functions/v1/employee-register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        name: "Jane Doe",
+        email: "john.doe@example.com", // Same email as above
+        phone: "+9876543210",
+        department: "Marketing",
+        position: "Manager",
+        deviceId: "device-unique-002",
+      }),
+    });
+
+    const data = await response.json();
+    
+    assertEquals(response.status, 400);
+    assertEquals(data.success, false);
+    assertEquals(data.error, "Email already registered");
+  });
+});
+
+Deno.test("Approval API - Employee Approval", async (t) => {
+  await t.step("should approve pending employee", async () => {
+    const response = await fetch(`${supabaseUrl}/functions/v1/employee-approve`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        employeeId: "pending-employee-008",
+        approvedBy: "master-admin-001",
+      }),
+    });
+
+    const data = await response.json();
+    
+    assertEquals(response.status, 200);
+    assertEquals(data.success, true);
+    assertEquals(data.data.approvalStatus, "APPROVED");
+    assertExists(data.data.approvedAt);
+  });
+
+  await t.step("should reject if not master admin", async () => {
+    const response = await fetch(`${supabaseUrl}/functions/v1/employee-approve`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        employeeId: "pending-employee-009",
+        approvedBy: "regular-employee-001",
+      }),
+    });
+
+    const data = await response.json();
+    
+    assertEquals(response.status, 403);
+    assertEquals(data.success, false);
+    assertEquals(data.error, "Only master admin can approve employees");
+  });
+});
+
+Deno.test("Approval API - Employee Rejection", async (t) => {
+  await t.step("should reject pending employee with reason", async () => {
+    const response = await fetch(`${supabaseUrl}/functions/v1/employee-reject`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        employeeId: "pending-employee-010",
+        rejectedBy: "master-admin-001",
+        rejectionReason: "Invalid documentation provided",
+      }),
+    });
+
+    const data = await response.json();
+    
+    assertEquals(response.status, 200);
+    assertEquals(data.success, true);
+    assertEquals(data.data.approvalStatus, "REJECTED");
+    assertEquals(data.data.rejectionReason, "Invalid documentation provided");
+  });
+});
+
+Deno.test("Approval API - Pending Employees", async (t) => {
+  await t.step("should return list of pending employees", async () => {
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/employee-pending?adminId=master-admin-001&page=1&limit=10`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+    
+    assertEquals(response.status, 200);
+    assertEquals(data.success, true);
+    assertExists(data.data);
+    assertExists(data.pagination);
+    assertEquals(Array.isArray(data.data), true);
+  });
+});
