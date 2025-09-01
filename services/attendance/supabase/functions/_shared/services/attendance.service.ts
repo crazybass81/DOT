@@ -246,24 +246,64 @@ export class AttendanceService implements IAttendanceService {
     return data;
   }
 
-  async getAttendanceHistory(
-    employeeId: string, 
-    startDate: string, 
-    endDate: string
-  ): Promise<Attendance[]> {
-    const { data, error } = await this.supabase
-      .from("attendance")
-      .select("*")
-      .eq("employee_id", employeeId)
-      .gte("date", startDate)
-      .lte("date", endDate)
-      .order("date", { ascending: false });
+  async getAttendanceHistory(params: {
+    employeeId?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    page: number;
+    limit: number;
+  }): Promise<{ data: any[]; totalRecords: number }> {
+    const { employeeId, startDate, endDate, page, limit } = params;
+    const offset = (page - 1) * limit;
 
-    if (error) {
-      throw new Error(`Failed to get attendance history: ${error.message}`);
+    let query = this.supabase
+      .from("attendance")
+      .select("*", { count: "exact" });
+
+    // Apply filters
+    if (employeeId) {
+      query = query.eq("employee_id", employeeId);
     }
 
-    return data || [];
+    if (startDate) {
+      query = query.gte("date", startDate);
+    }
+
+    if (endDate) {
+      query = query.lte("date", endDate);
+    }
+
+    // Apply pagination and ordering
+    query = query
+      .order("date", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    // Get break details for each attendance record
+    const attendanceWithBreaks = await Promise.all(
+      (data || []).map(async (attendance) => {
+        const { data: breaks } = await this.supabase
+          .from("breaks")
+          .select("*")
+          .eq("attendance_id", attendance.id)
+          .order("start_time", { ascending: true });
+
+        return {
+          ...attendance,
+          breaks: breaks || [],
+        };
+      })
+    );
+
+    return {
+      data: attendanceWithBreaks,
+      totalRecords: count || 0,
+    };
   }
 
   async getAttendanceStatus(employeeId: string): Promise<{
