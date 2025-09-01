@@ -7,6 +7,7 @@ import 'core/theme/neo_brutal_theme.dart';
 import 'presentation/router/app_router.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/attendance_provider.dart';
+import 'presentation/providers/employee_registration_provider.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/app_initialization_service.dart';
 
@@ -84,7 +85,7 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
     });
   }
 
-  void _handleDeepLink(Uri uri) {
+  void _handleDeepLink(Uri uri) async {
     debugPrint('Received deep link: $uri');
     debugPrint('Scheme: ${uri.scheme}, Host: ${uri.host}, Path: ${uri.path}');
     debugPrint('Query params: ${uri.queryParameters}');
@@ -101,13 +102,40 @@ class _DotAttendanceAppState extends ConsumerState<DotAttendanceApp> {
         debugPrint('Processing attendance QR: token=$token, location=$locationId');
         
         if (token != null) {
-          // Navigate to attendance page with QR data
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Check if employee is registered
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
             final router = ref.read(appRouterProvider);
-            // Store QR data temporarily for the attendance page to process
-            ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
-            // Navigate to attendance page
-            router.go(RouteNames.attendance);
+            
+            // Check registration status
+            final status = await ref.read(employeeRegistrationProvider.notifier)
+                .checkRegistrationStatus();
+            
+            final employeeId = ref.read(employeeRegistrationProvider).employeeId;
+            
+            switch (status) {
+              case 'NOT_REGISTERED':
+                // Not registered, go to registration page
+                router.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+                break;
+                
+              case 'PENDING_APPROVAL':
+                // Pending approval, go to approval pending page
+                router.go('${RouteNames.approvalPending}?employeeId=$employeeId');
+                break;
+                
+              case 'APPROVED':
+                // Already registered and approved, go to attendance
+                ref.read(attendanceProvider.notifier).setQrData(token, locationId ?? '');
+                router.go(RouteNames.attendance);
+                break;
+                
+              case 'REJECTED':
+              case 'SUSPENDED':
+              default:
+                // For rejected or suspended, go to registration page
+                router.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+                break;
+            }
           });
         }
       } else {

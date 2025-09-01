@@ -10,9 +10,12 @@ import '../pages/dashboard/dashboard_page.dart';
 import '../pages/admin/master_admin_dashboard_page.dart';
 import '../pages/admin/qr_generator_page.dart';
 import '../pages/admin/qr_display_page.dart';
+import '../pages/admin/approval_management_page.dart';
 import '../pages/attendance/attendance_page.dart';
 import '../pages/attendance/qr_scanner_page.dart';
 import '../pages/attendance/location_check_page.dart';
+import '../pages/registration/employee_registration_page.dart';
+import '../pages/registration/approval_pending_page.dart';
 import '../../domain/entities/attendance/qr_action_type.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/edit_profile_page.dart';
@@ -34,11 +37,14 @@ class RouteNames {
   static const String masterAdminDashboard = '/admin/dashboard';
   static const String qrGenerator = '/admin/qr-generator';
   static const String qrDisplay = '/admin/qr-display';
+  static const String approvalManagement = '/admin/approval-management';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String biometricSetup = '/biometric-setup';
   static const String qrLogin = '/qr-login'; // Deep link for QR code login
   static const String userRegistration = '/user-registration'; // For first-time users
+  static const String employeeRegistration = '/employee-registration'; // Employee registration
+  static const String approvalPending = '/approval-pending'; // Approval pending page
   
   static const String main = '/main';
   static const String dashboard = '/main/dashboard';
@@ -65,9 +71,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
+      final currentPath = state.matchedLocation;
+      
+      // Allow access to employee registration and approval pending without authentication
+      if (currentPath.startsWith(RouteNames.employeeRegistration) ||
+          currentPath.startsWith(RouteNames.approvalPending)) {
+        return null; // Allow access to registration and approval pages
+      }
       
       // Handle QR deep link
-      if (state.matchedLocation.startsWith(RouteNames.qrLogin)) {
+      if (currentPath.startsWith(RouteNames.qrLogin)) {
         // Extract token from query params
         final token = state.uri.queryParameters['token'];
         if (token != null) {
@@ -79,7 +92,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       
       // If not authenticated, always go to master admin login
       if (!isAuthenticated) {
-        if (state.matchedLocation != RouteNames.masterAdminLogin) {
+        // Skip redirect for auth routes and registration
+        if (currentPath != RouteNames.masterAdminLogin && 
+            !currentPath.startsWith(RouteNames.employeeRegistration)) {
           return RouteNames.masterAdminLogin;
         }
         return null;
@@ -124,6 +139,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.biometricSetup,
         builder: (context, state) => const BiometricSetupPage(),
       ),
+      GoRoute(
+        path: RouteNames.employeeRegistration,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          final locationId = state.uri.queryParameters['location'];
+          return EmployeeRegistrationPage(
+            qrToken: token,
+            locationId: locationId,
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.approvalPending,
+        builder: (context, state) {
+          final employeeId = state.uri.queryParameters['employeeId'];
+          return ApprovalPendingPage(
+            employeeId: employeeId,
+          );
+        },
+      ),
       
       // Master Admin Dashboard
       GoRoute(
@@ -149,6 +184,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             locationName: locationName,
           );
         },
+      ),
+      
+      // Approval Management
+      GoRoute(
+        path: RouteNames.approvalManagement,
+        builder: (context, state) => const ApprovalManagementPage(),
       ),
       
       // Main app with bottom navigation
@@ -255,6 +296,7 @@ bool _isAuthRoute(String location) {
     RouteNames.splash,
     RouteNames.qrLogin,
     RouteNames.userRegistration,
+    RouteNames.employeeRegistration,
   ];
   return authRoutes.any((route) => location.startsWith(route));
 }

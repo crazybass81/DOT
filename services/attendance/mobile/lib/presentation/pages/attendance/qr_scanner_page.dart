@@ -9,10 +9,13 @@ import '../../../core/theme/neo_brutal_theme.dart';
 import '../../../domain/entities/attendance/attendance_queue.dart';
 import '../../../domain/entities/attendance/qr_action_type.dart';
 import '../../providers/attendance_provider.dart';
+import '../../providers/employee_registration_provider.dart';
 import '../../widgets/attendance/attendance_verification_dialog.dart';
 import '../../widgets/attendance/attendance_queue_widget.dart';
 import '../../widgets/common/neo_brutal_button.dart';
 import '../../widgets/common/neo_brutal_card.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/app_router.dart';
 
 class QrScannerPage extends ConsumerStatefulWidget {
   final QrActionType actionType;
@@ -127,8 +130,73 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
     // Haptic feedback
     await HapticFeedback.selectionClick();
     
-    // Process QR code - for login action
-    final attendanceAction = AttendanceActionType.checkIn; // Default to check-in for login
+    // Parse QR data to extract token and location
+    Uri? qrUri;
+    String? token;
+    String? locationId;
+    
+    try {
+      qrUri = Uri.parse(qrData);
+      token = qrUri.queryParameters['token'];
+      locationId = qrUri.queryParameters['location'];
+    } catch (e) {
+      debugPrint('Failed to parse QR data: $e');
+    }
+    
+    // Check if this is attendance QR
+    if (widget.actionType == QrActionType.attendance || 
+        (qrUri != null && (qrUri.host == 'checkin' || qrUri.queryParameters['type'] == 'attendance'))) {
+      
+      debugPrint('QR Scan - Checking registration and approval status...');
+      
+      // Check employee status
+      final status = await ref.read(employeeRegistrationProvider.notifier)
+          .checkRegistrationStatus();
+      
+      debugPrint('QR Scan - Employee status: $status');
+      
+      final employeeId = ref.read(employeeRegistrationProvider).employeeId;
+      
+      if (mounted) {
+        switch (status) {
+          case 'NOT_REGISTERED':
+            // Not registered, navigate to registration page
+            debugPrint('QR Scan - Navigating to registration page');
+            context.go('${RouteNames.employeeRegistration}?token=$token&location=${locationId ?? ""}');
+            return;
+            
+          case 'PENDING_APPROVAL':
+            // Registration pending approval
+            debugPrint('QR Scan - Navigating to approval pending page');
+            context.go('${RouteNames.approvalPending}?employeeId=$employeeId');
+            return;
+            
+          case 'REJECTED':
+            // Registration rejected, show message and redirect to registration
+            _showRejectionMessage();
+            return;
+            
+          case 'SUSPENDED':
+            // Account suspended
+            _showSuspendedMessage();
+            return;
+            
+          case 'APPROVED':
+            // Approved, continue with normal attendance flow
+            debugPrint('QR Scan - Employee approved, processing attendance');
+            break;
+            
+          default:
+            debugPrint('QR Scan - Unknown status: $status');
+            break;
+        }
+      }
+    }
+    
+    // Process as normal attendance check-in
+    final attendanceAction = widget.actionType == QrActionType.attendance 
+        ? AttendanceActionType.checkIn 
+        : AttendanceActionType.checkIn; // Default to check-in
     
     await ref.read(attendanceProvider.notifier).processScannedQrCode(
       qrData: qrData,
@@ -142,8 +210,10 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
   }
 
   void _showVerificationDialog() {
-    // For login action
-    final attendanceAction = AttendanceActionType.checkIn; // Default to check-in for login
+    // Determine attendance action based on QR action type
+    final attendanceAction = widget.actionType == QrActionType.attendance 
+        ? AttendanceActionType.checkIn 
+        : AttendanceActionType.checkIn; // Default to check-in
     
     showDialog(
       context: context,
@@ -169,6 +239,76 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage>
       hasScanned = false;
       lastScannedCode = null;
     });
+  }
+  
+  void _showRejectionMessage() {
+    final rejectionReason = ref.read(employeeRegistrationProvider).rejectionReason;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: NeoBrutalTheme.bg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusCard),
+          side: const BorderSide(
+            color: NeoBrutalTheme.fg,
+            width: NeoBrutalTheme.borderThick,
+          ),
+        ),
+        title: const Text('등록 거부됨'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('관리자가 귀하의 등록을 거부했습니다.'),
+            if (rejectionReason != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                '사유: $rejectionReason',
+                style: const TextStyle(color: NeoBrutalTheme.error),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.go(RouteNames.employeeRegistration);
+            },
+            child: const Text('다시 등록'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showSuspendedMessage() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: NeoBrutalTheme.bg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusCard),
+          side: const BorderSide(
+            color: NeoBrutalTheme.fg,
+            width: NeoBrutalTheme.borderThick,
+          ),
+        ),
+        title: const Text('계정 정지'),
+        content: const Text('귀하의 계정이 정지되었습니다.\n관리자에게 문의하세요.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close scanner
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _toggleFlash() async {

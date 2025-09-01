@@ -1,0 +1,59 @@
+# Supabase Configuration
+project_id = "dot-attendance"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+ip_version = "ipv4"
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+email = true
+phone = true
+external_anonymous_users_enabled = false
+mailer_secure_email_change_enabled = true
+change_email_token_new = "You requested to change your email to {{ .Email }}. Please click the link to confirm: {{ .ConfirmationURL }}"
+change_email_token_current = "You requested to change your email to {{ .Email }}. Please click the link to confirm: {{ .ConfirmationURL }}"
+subject_line = "Confirm Your Email"
+
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = ""
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+gcp_project_id = "analytics"
+gcp_project_number = "1234567890"
+gcp_jwt_path = "supabase/gcloud.json"
+
+[functions]
+enabled = true
