@@ -150,4 +150,62 @@ export class ValidationService implements IValidationService {
       details: errors.length > 0 ? errors : undefined,
     };
   }
+
+  validateRegistrationData(data: {
+    name: string;
+    email: string;
+    phone: string;
+    department: string;
+    position: string;
+    deviceId: string;
+  }): ValidationResult {
+    const errors: string[] = [];
+    const { name, email, phone, department, position, deviceId } = data;
+
+    // Name validation
+    if (!name || name.trim().length < 2) {
+      errors.push("Name must be at least 2 characters");
+    }
+
+    // Email validation
+    if (!email) {
+      errors.push("Email is required");
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.push("Invalid email format");
+      }
+    }
+
+    // Phone validation
+    if (!phone) {
+      errors.push("Phone is required");
+    } else {
+      const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+      if (!phoneRegex.test(phone) || phone.replace(/\D/g, "").length < 10) {
+        errors.push("Invalid phone number");
+      }
+    }
+
+    // Department validation
+    if (!department || department.trim().length < 2) {
+      errors.push("Department must be at least 2 characters");
+    }
+
+    // Position validation
+    if (!position || position.trim().length < 2) {
+      errors.push("Position must be at least 2 characters");
+    }
+
+    // Device ID validation
+    if (!deviceId || deviceId.trim().length < 1) {
+      errors.push("Device ID is required");
+    }
+
+    return {
+      isValid: errors.length === 0,
+      error: errors.length > 0 ? "Validation failed" : undefined,
+      details: errors.length > 0 ? errors : undefined,
+    };
+  }
 }
