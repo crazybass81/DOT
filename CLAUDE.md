@@ -69,6 +69,79 @@ When executing ANY task or command, Claude MUST:
 - NEVER execute sequentially what can be parallelized
 - ALWAYS use the most powerful tool available for each task
 
+## 🎯 Development Methodology (MANDATORY)
+
+### Test-Driven Development (TDD) - REQUIRED
+**ALL code MUST be developed using TDD methodology:**
+
+1. **Red Phase**: Write failing tests FIRST
+   - Define expected behavior through tests
+   - Tests must fail initially (no implementation exists)
+   - Cover edge cases, error scenarios, and happy paths
+
+2. **Green Phase**: Write minimal code to pass tests
+   - Implement ONLY enough code to make tests pass
+   - No premature optimization or extra features
+   - Focus on making tests green
+
+3. **Refactor Phase**: Improve code quality
+   - Refactor while keeping tests green
+   - Apply SOLID principles and clean code practices
+   - Ensure maintainability without breaking functionality
+
+**TDD Rules:**
+- ❌ NEVER write production code without failing tests first
+- ❌ NEVER write more production code than needed to pass tests
+- ❌ NEVER skip the refactor phase
+- ✅ ALWAYS maintain 80%+ test coverage
+- ✅ ALWAYS use real implementations (NO mocks, fakes, or stubs)
+- ✅ ALWAYS test with actual databases, APIs, and services
+
+### SOLID Principles - MANDATORY
+**ALL code architecture MUST follow SOLID principles:**
+
+1. **Single Responsibility Principle (SRP)**
+   - Each class/module has ONE reason to change
+   - Each function does ONE thing well
+   - Separate concerns into distinct components
+
+2. **Open/Closed Principle (OCP)**
+   - Open for extension, closed for modification
+   - Use abstraction and polymorphism
+   - Add features without changing existing code
+
+3. **Liskov Substitution Principle (LSP)**
+   - Derived classes must be substitutable for base classes
+   - Maintain behavioral compatibility
+   - Honor contracts and invariants
+
+4. **Interface Segregation Principle (ISP)**
+   - Clients shouldn't depend on unused interfaces
+   - Prefer small, focused interfaces
+   - Avoid "fat" interfaces with unnecessary methods
+
+5. **Dependency Inversion Principle (DIP)**
+   - Depend on abstractions, not concretions
+   - High-level modules shouldn't depend on low-level modules
+   - Both should depend on abstractions
+
+### Implementation Checklist
+Before ANY code implementation:
+- [ ] Tests written first (TDD Red phase)
+- [ ] Tests cover all scenarios
+- [ ] Implementation passes all tests (TDD Green phase)
+- [ ] Code refactored for quality (TDD Refactor phase)
+- [ ] SOLID principles applied
+- [ ] No mocks or fake objects used
+- [ ] Real integrations tested
+- [ ] 80%+ test coverage achieved
+
+### Enforcement
+- Code without tests will be REJECTED
+- Violations of SOLID principles require refactoring
+- Mock objects are FORBIDDEN - use real implementations
+- Test-first approach is NON-NEGOTIABLE
+
 ## Project Overview
 
 This is a JavaScript/TypeScript project optimized for modern web development. The project uses industry-standard tools and follows best practices for scalable application development.
