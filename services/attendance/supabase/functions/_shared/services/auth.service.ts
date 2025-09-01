@@ -132,4 +132,22 @@ export class AuthService implements IAuthService {
       throw new Error(`Failed to update approval status: ${error.message}`);
     }
   }
+
+  async checkMasterAdminStatus(employeeId: string): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from("employees")
+      .select("is_master_admin")
+      .eq("id", employeeId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No rows found - employee doesn't exist
+        return false;
+      }
+      throw new Error(`Failed to check master admin status: ${error.message}`);
+    }
+
+    return data.is_master_admin === true;
+  }
 }
