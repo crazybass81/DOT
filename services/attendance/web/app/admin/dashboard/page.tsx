@@ -7,12 +7,17 @@ import { userService } from '@/services/userService';
 import AttendanceStats from '@/components/dashboard/AttendanceStats';
 import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
 import AttendanceChart from '@/components/dashboard/AttendanceChart';
+import NotificationSystem, { useNotifications } from '@/components/notifications/NotificationSystem';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [organizationId, setOrganizationId] = useState('default-org'); // TODO: Get from user context
+
+  // Use notifications hook
+  const { showNotification, showSuccess, showError, showInfo, setNotificationSystem } = useNotifications();
 
   useEffect(() => {
     // Check authentication and admin rights
