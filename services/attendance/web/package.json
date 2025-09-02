@@ -28,6 +28,7 @@
   "license": "ISC",
   "description": "DOT 근태관리 서비스",
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.56.1",
     "@types/node": "^24.3.0",
     "@types/qrcode": "^1.5.5",
@@ -44,6 +45,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2",
