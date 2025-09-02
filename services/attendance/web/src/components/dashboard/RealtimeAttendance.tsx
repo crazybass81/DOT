@@ -119,11 +119,65 @@ export default function RealtimeAttendance({
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">실시간 출퇴근 현황</h3>
-        <div className="text-sm text-gray-500">
-          마지막 업데이트: {new Date().toLocaleTimeString('ko-KR')}
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-semibold text-gray-900">실시간 출퇴근 현황</h3>
+          {/* Connection Status Indicator */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              isConnected ? 'bg-green-500' : 
+              isReconnecting ? 'bg-yellow-500 animate-pulse' : 
+              'bg-red-500'
+            }`} />
+            <span className="text-xs text-gray-500">
+              {isConnected ? '연결됨' : isReconnecting ? '재연결 중...' : '연결 끊김'}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Recent Events Count */}
+          {recentEvents.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-blue-600">
+                최근 업데이트 {recentEvents.length}건
+              </span>
+              <button
+                onClick={clearRecentEvents}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+              >
+                지우기
+              </button>
+            </div>
+          )}
+          
+          {/* Refresh Button */}
+          <button
+            onClick={refreshData}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+            disabled={isReconnecting}
+          >
+            {isReconnecting ? '연결 중...' : '새로고침'}
+          </button>
+          
+          <div className="text-sm text-gray-500">
+            마지막 업데이트: {data.lastUpdated.toLocaleTimeString('ko-KR')}
+          </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-red-700">{error}</span>
+            <button
+              onClick={reconnect}
+              className="text-sm text-red-600 hover:text-red-800 underline"
+            >
+              재연결
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
