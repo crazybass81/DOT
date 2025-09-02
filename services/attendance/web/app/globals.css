@@ -22,9 +22,7 @@
     --muted: 100 116 139;
   }
   
-  * {
-    @apply border-border;
-  }
+
   
   body {
     @apply bg-background text-foreground antialiased;
