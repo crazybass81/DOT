@@ -9,19 +9,17 @@ export const awsConfig = {
   apiEndpoint: process.env.NEXT_PUBLIC_API_ENDPOINT || '',
 };
 
-// Configure Amplify function
-export const configureAmplify = () => {
-  if (typeof window !== 'undefined') {
-    Amplify.configure({
-      Auth: {
-        Cognito: {
-          userPoolId: awsConfig.userPoolId,
-          userPoolClientId: awsConfig.userPoolClientId,
-        }
+// Initialize Amplify
+if (typeof window !== 'undefined') {
+  Amplify.configure({
+    Auth: {
+      Cognito: {
+        userPoolId: awsConfig.userPoolId,
+        userPoolClientId: awsConfig.userPoolClientId,
       }
-    });
-  }
-};
+    }
+  });
+}
 
 // Authentication helpers
 export const authService = {

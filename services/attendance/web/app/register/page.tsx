@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase-config';
-import { toast } from 'react-hot-toast';
 
 interface FormData {
   name: string;
@@ -48,49 +46,34 @@ export default function RegisterPage() {
       const businessId = sessionStorage.getItem('qrBusinessId');
       const locationId = sessionStorage.getItem('qrLocationId');
 
-      // Create employee record with PENDING approval status
-      const { data: employee, error } = await supabase
-        .from('employees')
-        .insert({
-          organization_id: businessId || '00000000-0000-0000-0000-000000000001', // Default org
-          branch_id: locationId || '00000000-0000-0000-0000-000000000002', // Default branch
-          department_id: '00000000-0000-0000-0000-000000000003', // Default department
-          position_id: '00000000-0000-0000-0000-000000000004', // Default position
-          name: formData.name,
-          email: '', // Will be updated when user creates auth account
-          phone: formData.phone,
-          date_of_birth: formData.birthDate,
-          approval_status: 'PENDING',
-          role: 'EMPLOYEE',
-          is_master_admin: false,
-          is_active: false,
-          device_id: btoa(navigator.userAgent), // Simple device fingerprint
-          qr_registered_device_id: btoa(navigator.userAgent)
+      // TODO: API call to register user
+      const response = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...formData,
+          businessId,
+          locationId,
+          deviceFingerprint: btoa(navigator.userAgent) // Simple fingerprint
         })
-        .select()
-        .single();
+      });
 
-      if (error) {
-        console.error('Registration error:', error);
-        throw new Error(error.message || '등록 실패');
+      if (!response.ok) {
+        throw new Error('등록 실패');
       }
 
-      // Store employee ID for approval status checking
-      sessionStorage.setItem('pendingEmployeeId', employee.id);
+      // Success
+      setStep('success');
       
-      // Redirect to approval pending page
-      router.push('/approval-pending');
-      
-      // Clear business session storage
+      // Clear session storage
       sessionStorage.removeItem('qrBusinessId');
       sessionStorage.removeItem('qrLocationId');
       
     } catch (error: any) {
       console.error('Registration error:', error);
-      const errorMessage = error.message || '등록 중 오류가 발생했습니다';
-      setError(errorMessage);
-      // Show toast notification
-      toast.error(errorMessage);
+      setError(error.message || '등록 중 오류가 발생했습니다');
     } finally {
       setLoading(false);
     }
