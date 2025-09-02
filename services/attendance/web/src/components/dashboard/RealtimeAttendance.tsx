@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { apiService } from '@/services/apiService';
+import { useState, useCallback } from 'react';
+import { useRealtimeAttendance } from '@/hooks/useRealtimeAttendance';
+import { ConnectionState } from '@/lib/realtime';
+import { AttendanceStatus } from '@/lib/database/models/attendance.model';
 
 interface AttendanceRecord {
   employeeId: string;
@@ -13,79 +15,79 @@ interface AttendanceRecord {
   workHours?: number;
 }
 
-export default function RealtimeAttendance() {
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+interface RealtimeAttendanceProps {
+  organizationId: string;
+  onNotification?: (notification: any) => void;
+}
+
+export default function RealtimeAttendance({ 
+  organizationId, 
+  onNotification 
+}: RealtimeAttendanceProps) {
   const [filter, setFilter] = useState<'all' | 'present' | 'absent'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchAttendanceData();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchAttendanceData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  // Use realtime attendance hook
+  const {
+    data,
+    connectionState,
+    isConnected,
+    isReconnecting,
+    error,
+    recentEvents,
+    refreshData,
+    clearRecentEvents,
+    reconnect,
+    getEmployeeStatus,
+    getTodayRecord
+  } = useRealtimeAttendance({
+    organizationId,
+    debounceMs: 500,
+    enableNotifications: true,
+    onNotification,
+    autoReconnect: true
+  });
 
-  const fetchAttendanceData = async () => {
-    try {
-      setLoading(true);
-      const data = await apiService.getEmployees();
-      // Transform data or use as is
-      setRecords(data);
-    } catch (error) {
-      console.error('Failed to fetch attendance data:', error);
-      // Use mock data for demonstration
-      setRecords([
-        {
-          employeeId: 'EMP001',
-          employeeName: '김철수',
-          department: '주방',
-          checkInTime: '09:00',
-          checkOutTime: undefined,
-          status: 'present',
-          workHours: 3.5
-        },
-        {
-          employeeId: 'EMP002',
-          employeeName: '이영희',
-          department: '홀',
-          checkInTime: '08:55',
-          checkOutTime: undefined,
-          status: 'present',
-          workHours: 3.6
-        },
-        {
-          employeeId: 'EMP003',
-          employeeName: '박민수',
-          department: '주방',
-          checkInTime: '09:15',
-          checkOutTime: undefined,
-          status: 'late',
-          workHours: 3.2
-        },
-        {
-          employeeId: 'EMP004',
-          employeeName: '정수진',
-          department: '홀',
-          checkInTime: undefined,
-          checkOutTime: undefined,
-          status: 'absent',
-          workHours: 0
-        },
-        {
-          employeeId: 'EMP005',
-          employeeName: '최동훈',
-          department: '관리',
-          checkInTime: '08:45',
-          checkOutTime: '18:00',
-          status: 'present',
-          workHours: 9.25
-        }
-      ]);
-    } finally {
-      setLoading(false);
+  // Transform realtime data to display format
+  const transformRecords = useCallback((): AttendanceRecord[] => {
+    const today = new Date().toISOString().split('T')[0];
+    const todayRecords = data.records.filter(record => record.date === today);
+    
+    return todayRecords.map(record => ({
+      employeeId: record.employeeId,
+      employeeName: record.employeeId, // TODO: Get actual employee names
+      department: record.departmentId || 'Unknown',
+      checkInTime: record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }) : undefined,
+      checkOutTime: record.checkOutTime ? new Date(record.checkOutTime).toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }) : undefined,
+      status: mapAttendanceStatus(record.status),
+      workHours: record.actualWorkHours || 0
+    }));
+  }, [data.records]);
+
+  // Map attendance status to display status
+  const mapAttendanceStatus = (status: AttendanceStatus): 'present' | 'absent' | 'late' | 'leave' => {
+    switch (status) {
+      case AttendanceStatus.PRESENT:
+        return 'present';
+      case AttendanceStatus.LATE:
+        return 'late';
+      case AttendanceStatus.ABSENT:
+        return 'absent';
+      case AttendanceStatus.SICK_LEAVE:
+      case AttendanceStatus.VACATION:
+        return 'leave';
+      default:
+        return 'absent';
     }
   };
+
+  const records = transformRecords();
 
   const filteredRecords = records
     .filter(record => {
