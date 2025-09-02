@@ -1,8 +1,8 @@
-// Attendance Model for DynamoDB
+// Attendance Model for Supabase
 export interface AttendanceRecord {
   // Primary Key
-  attendanceId: string; // PK: ATTENDANCE#<uuid>
-  employeeId: string;   // SK: EMPLOYEE#<employeeId>
+  attendanceId: string;
+  employeeId: string;
   
   // Attendance Details
   date: string;         // ISO date string (YYYY-MM-DD)
@@ -32,10 +32,6 @@ export interface AttendanceRecord {
   notes?: string;
   approvedBy?: string;
   modifiedBy?: string;
-  
-  // GSI attributes
-  employeeDate: string; // GSI1-PK: EMPLOYEE#<employeeId>#DATE#<date>
-  dateStatus: string;   // GSI2-PK: DATE#<date>#STATUS#<status>
 }
 
 export enum AttendanceStatus {
@@ -68,8 +64,8 @@ export interface DeviceInfo {
 // Employee Model
 export interface Employee {
   // Primary Key
-  employeeId: string;    // PK: EMPLOYEE#<employeeId>
-  organizationId: string; // SK: ORG#<organizationId>
+  employeeId: string;
+  organizationId: string;
   
   // Personal Information
   name: string;
@@ -90,7 +86,7 @@ export interface Employee {
   workSchedule?: WorkSchedule;
   
   // Authentication
-  cognitoUserId?: string;
+  userId?: string; // Supabase Auth User ID
   
   // Status
   isActive: boolean;
@@ -100,9 +96,6 @@ export interface Employee {
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
-  
-  // GSI attributes
-  organizationIndex: string; // GSI3-PK: ORG#<organizationId>
 }
 
 export enum EmployeeRole {
@@ -131,8 +124,8 @@ export interface WorkSchedule {
 // Schedule Model
 export interface Schedule {
   // Primary Key
-  scheduleId: string;    // PK: SCHEDULE#<scheduleId>
-  employeeId: string;    // SK: EMPLOYEE#<employeeId>#DATE#<date>
+  scheduleId: string;
+  employeeId: string;
   
   // Schedule Details
   date: string;
