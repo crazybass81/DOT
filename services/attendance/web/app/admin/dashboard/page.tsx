@@ -184,7 +184,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Overview */}
-        <AttendanceStats />
+        <AttendanceStats 
+          organizationId={organizationId}
+          onNotification={handleRealtimeNotification}
+        />
 
         {/* Charts and Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -219,9 +222,20 @@ export default function AdminDashboard() {
 
         {/* Realtime Attendance Table */}
         <div className="mt-6">
-          <RealtimeAttendance />
+          <RealtimeAttendance 
+            organizationId={organizationId}
+            onNotification={handleRealtimeNotification}
+          />
         </div>
       </main>
+
+      {/* Notification System */}
+      <NotificationSystem 
+        position="top-right"
+        defaultDuration={5000}
+        maxNotifications={5}
+        enableSounds={true}
+      />
     </div>
   );
 }
