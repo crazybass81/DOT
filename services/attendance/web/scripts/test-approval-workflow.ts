@@ -189,17 +189,16 @@ async function testDatabaseConnection() {
   console.log('🔌 Testing database connection...');
   
   try {
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('employees')
-      .select('count(*)', { count: 'exact' })
-      .limit(1);
+      .select('*', { count: 'exact', head: true });
 
     if (error) {
       throw error;
     }
 
     console.log('✅ Database connection successful');
-    console.log(`📊 Total employees in database: ${data?.[0]?.count || 0}`);
+    console.log(`📊 Total employees in database: ${count || 0}`);
     return true;
   } catch (error: any) {
     console.error('❌ Database connection failed:', error.message);
