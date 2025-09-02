@@ -173,8 +173,8 @@ export default function Dashboard() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">출근 시간</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {attendanceToday?.checkIn 
-                    ? new Date(attendanceToday.checkIn).toLocaleTimeString('ko-KR', {
+                  {attendanceData?.checkIn 
+                    ? new Date(attendanceData.checkIn).toLocaleTimeString('ko-KR', {
                         hour: '2-digit',
                         minute: '2-digit'
                       })
@@ -185,8 +185,8 @@ export default function Dashboard() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">퇴근 시간</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {attendanceToday?.checkOut 
-                    ? new Date(attendanceToday.checkOut).toLocaleTimeString('ko-KR', {
+                  {attendanceData?.checkOut 
+                    ? new Date(attendanceData.checkOut).toLocaleTimeString('ko-KR', {
                         hour: '2-digit',
                         minute: '2-digit'
                       })
