@@ -1,4 +1,4 @@
-# AWS to Supabase Migration Guide
+# Supabase Setup Guide
 
 ## 🎯 Migration Overview
 
