@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pending { background: #fef3c7; color: #f59e0b; }
+        .approved { background: #d1fae5; color: #10b981; }
+        .rejected { background: #fee2e2; color: #ef4444; }
+        .button {
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .approve { background: #10b981; color: white; }
+        .reject { background: #ef4444; color: white; }
+        .search { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+        }
+        .table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0;
+        }
+        .table th, .table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #eee; 
+        }
+        .table th { 
+            background: #f9fafb; 
+            font-weight: 600; 
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .stat-pending { color: #f59e0b; }
+        .stat-approved { color: #10b981; }
+        .stat-rejected { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>DOT Attendance - Admin Approval Dashboard</h1>
+    
+    <div class="card">
+        <h2>Dashboard Overview</h2>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number stat-pending">3</div>
+                <div>Pending</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number stat-approved">15</div>
+                <div>Approved</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number stat-rejected">2</div>
+                <div>Rejected</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Employee Registrations</h2>
+        <input type="text" class="search" placeholder="Search by name, email, or phone..." />
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Contact</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                J
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">John Smith</div>
+                                <div style="color: #666; font-size: 12px;">EMP001</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>john.smith@example.com</div>
+                        <div style="color: #666; font-size: 12px;">+1-555-0123</div>
+                    </td>
+                    <td style="color: #666; font-size: 14px;">Dec 15, 2024<br>2:30 PM</td>
+                    <td><span class="status pending">Pending</span></td>
+                    <td>
+                        <button class="button approve" onclick="handleApprove('John Smith')">Approve</button>
+                        <button class="button reject" onclick="handleReject('John Smith')">Reject</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                M
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">Maria Garcia</div>
+                                <div style="color: #666; font-size: 12px;">EMP002</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>maria.garcia@example.com</div>
+                        <div style="color: #666; font-size: 12px;">+1-555-0124</div>
+                    </td>
+                    <td style="color: #666; font-size: 14px;">Dec 14, 2024<br>4:15 PM</td>
+                    <td><span class="status pending">Pending</span></td>
+                    <td>
+                        <button class="button approve" onclick="handleApprove('Maria Garcia')">Approve</button>
+                        <button class="button reject" onclick="handleReject('Maria Garcia')">Reject</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                D
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">David Chen</div>
+                                <div style="color: #666; font-size: 12px;">EMP003</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>david.chen@example.com</div>
+                        <div style="color: #666; font-size: 12px;">+1-555-0125</div>
+                    </td>
+                    <td style="color: #666; font-size: 14px;">Dec 13, 2024<br>9:20 AM</td>
+                    <td><span class="status approved">Approved</span></td>
+                    <td style="color: #999;">Processed</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                S
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">Sarah Wilson</div>
+                                <div style="color: #666; font-size: 12px;">EMP004</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>sarah.wilson@example.com</div>
+                        <div style="color: #666; font-size: 12px;">+1-555-0126</div>
+                    </td>
+                    <td style="color: #666; font-size: 14px;">Dec 12, 2024<br>1:45 PM</td>
+                    <td><span class="status rejected">Rejected</span></td>
+                    <td style="color: #999;">Processed</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Features Implemented</h2>
+        <h3>✅ Core Functionality</h3>
+        <ul>
+            <li><strong>Master Admin Authentication:</strong> Only users with is_master_admin = true can access</li>
+            <li><strong>Real-time Employee List:</strong> Displays all employee registrations with current approval status</li>
+            <li><strong>Status Management:</strong> Clear visual indicators (PENDING, APPROVED, REJECTED)</li>
+            <li><strong>Approval Workflow:</strong> Detailed modal for employee approval with additional information</li>
+            <li><strong>Rejection Workflow:</strong> Option to reject with reason that gets stored</li>
+            <li><strong>Search & Filter:</strong> Search by name, email, or phone; filter by approval status</li>
+        </ul>
+
+        <h3>✅ Technical Implementation</h3>
+        <ul>
+            <li><strong>Supabase Integration:</strong> Direct database queries with proper TypeScript types</li>
+            <li><strong>Real-time Updates:</strong> Automatic refresh when employee status changes</li>
+            <li><strong>Error Handling:</strong> Comprehensive error handling with toast notifications</li>
+            <li><strong>Loading States:</strong> Proper loading indicators throughout the interface</li>
+            <li><strong>Responsive Design:</strong> Mobile-friendly responsive layout</li>
+            <li><strong>Modern UI/UX:</strong> Clean, professional design with Tailwind CSS</li>
+        </ul>
+
+        <h3>✅ Components Created</h3>
+        <ul>
+            <li><strong>/app/admin/layout.tsx:</strong> Admin layout with navigation and auth checks</li>
+            <li><strong>/app/admin/approvals/page.tsx:</strong> Main approval dashboard page</li>
+            <li><strong>/components/admin/ApprovalTable.tsx:</strong> Interactive table component</li>
+            <li><strong>/components/admin/ApprovalActions.tsx:</strong> Approval/rejection modal component</li>
+        </ul>
+
+        <h3>✅ Database Operations</h3>
+        <ul>
+            <li><strong>Read:</strong> Fetch all employees ordered by creation date</li>
+            <li><strong>Update:</strong> Update approval_status, approved_by, approved_at fields</li>
+            <li><strong>Track:</strong> Store approval/rejection metadata and reasons</li>
+            <li><strong>Real-time:</strong> Live updates via Supabase subscriptions</li>
+        </ul>
+    </div>
+
+    <script>
+        function handleApprove(name) {
+            alert(`Approve ${name}?\n\nThis would:\n1. Show detailed employee information\n2. Allow setting department, position, role\n3. Set start date and additional notes\n4. Update database with APPROVED status\n5. Set approved_by and approved_at fields\n6. Make employee active`);
+        }
+
+        function handleReject(name) {
+            const reason = prompt(`Reject ${name}?\n\nPlease provide a reason for rejection:`);
+            if (reason) {
+                alert(`${name} would be rejected with reason: "${reason}"\n\nThis would:\n1. Update database with REJECTED status\n2. Set rejected_by and rejected_at fields\n3. Store rejection_reason\n4. Set is_active to false`);
+            }
+        }
+    </script>
+</body>
+</html>
