@@ -14,42 +14,15 @@ export interface UnifiedUser {
 export interface AuthResult {
   success: boolean;
   user?: UnifiedUser;
-  needsVerification?: boolean;
-  needsMigration?: boolean;
-  migrationStatus?: MigrationStatus;
   error?: string;
+  requiresAction?: 'verify_email' | 'change_password' | 'setup_mfa';
 }
 
+/**
+ * Unified Authentication Service
+ * Uses Supabase as the single authentication provider
+ */
 export class UnifiedAuthService {
-  private readonly FEATURE_FLAG_KEY = 'auth_feature_flags';
-  
-  constructor() {
-    this.initializeFeatureFlags();
-  }
-
-  /**
-   * Initialize feature flags for gradual rollout
-   */
-  private initializeFeatureFlags() {
-    const flags = this.getFeatureFlags();
-    if (!flags) {
-      this.setFeatureFlags({
-        enableSupabaseAuth: true,
-        forceSupabaseForNewUsers: true,
-        enableMigrationFlow: true,
-        enableCognitoFallback: true
-      });
-    }
-  }
-
-  private getFeatureFlags(): any {
-    const flags = localStorage.getItem(this.FEATURE_FLAG_KEY);
-    return flags ? JSON.parse(flags) : null;
-  }
-
-  private setFeatureFlags(flags: any): void {
-    localStorage.setItem(this.FEATURE_FLAG_KEY, JSON.stringify(flags));
-  }
 
   /**
    * Unified sign up - always uses Supabase for new users
