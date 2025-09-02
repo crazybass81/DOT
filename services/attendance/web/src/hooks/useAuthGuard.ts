@@ -165,7 +165,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // Check admin requirement
-      if (requireAdmin && !isAdmin) {
+      if (requireAdmin && !isAdmin && user.employee) {
         if (showToastOnFail) {
           toast.error('관리자 권한이 필요합니다.');
         }
@@ -191,20 +191,22 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // All checks passed
-      setState({
-        isLoading: false,
-        isAuthenticated: true,
-        isApproved: isApproved,
-        isAdmin: isAdmin,
-        user: {
-          id: user.id,
-          name: user.employee.name,
-          email: user.email,
-          role: user.employee.role,
-          approval_status: user.employee.approval_status
-        },
-        error: null
-      });
+      if (user.employee) {
+        setState({
+          isLoading: false,
+          isAuthenticated: true,
+          isApproved: isApproved,
+          isAdmin: isAdmin,
+          user: {
+            id: user.id,
+            name: user.employee.name,
+            email: user.email,
+            role: user.employee.role,
+            approval_status: user.employee.approval_status
+          },
+          error: null
+        });
+      }
 
     } catch (error: any) {
       console.error('Auth guard error:', error);
