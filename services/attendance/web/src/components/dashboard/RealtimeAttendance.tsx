@@ -236,16 +236,16 @@ export default function RealtimeAttendance({
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {!isConnected && connectionState !== ConnectionState.RECONNECTING ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  데이터 로딩 중...
+                <td colSpan={6} className="text-center py-8 text-red-500">
+                  실시간 연결이 끊어졌습니다. 재연결을 시도하세요.
                 </td>
               </tr>
             ) : filteredRecords.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center py-8 text-gray-500">
-                  데이터가 없습니다
+                  {isReconnecting ? '데이터 동기화 중...' : '출퇴근 기록이 없습니다'}
                 </td>
               </tr>
             ) : (
