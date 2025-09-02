@@ -1,20 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Create Supabase client for middleware
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sanlpdXpldGNodGp1ZGJjZnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDg3MDUsImV4cCI6MjA3MjIyNDcwNX0.8s8-zrgnztjabvrVE32J2ZRCiH5bVrypyHBJjHNzfjQ';
 
 // Protected routes that require authentication
 const protectedRoutes = [
   '/dashboard',
   '/attendance',
-  '/admin'
-];
-
-// Admin-only routes
-const adminRoutes = [
   '/admin'
 ];
 
@@ -53,83 +43,25 @@ export async function middleware(request: NextRequest) {
     pathname === route || pathname.startsWith(route + '/')
   );
 
-  const isAdminRoute = adminRoutes.some(route => 
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
   if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
-  // Get the session token from cookies
-  const sessionToken = request.cookies.get('sb-mljyiuzetchtjudbcfvd-auth-token');
+  // For protected routes, we'll let the client-side components handle
+  // the detailed authentication and approval checks using the auth service
+  // This middleware just ensures we have some form of session
   
-  if (!sessionToken) {
-    // No session, redirect to login
+  const authCookies = request.cookies.getAll().filter(cookie => 
+    cookie.name.startsWith('sb-') && cookie.name.includes('auth-token')
+  );
+  
+  if (authCookies.length === 0) {
+    // No authentication cookies found, redirect to login
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  try {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(sessionToken.value);
-    
-    if (userError || !user) {
-      // Invalid session, redirect to login
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    // Get employee data to check approval status
-    const { data: employee, error: employeeError } = await supabase
-      .from('employees')
-      .select('approval_status, role, is_master_admin, is_active')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (employeeError || !employee) {
-      // No employee record, redirect to registration
-      return NextResponse.redirect(new URL('/register', request.url));
-    }
-
-    // Check if user is trying to access admin routes
-    if (isAdminRoute) {
-      const canAccessAdmin = employee.is_master_admin || 
-                            employee.role === 'ADMIN' || 
-                            employee.role === 'MASTER_ADMIN';
-      
-      if (!canAccessAdmin) {
-        // Not authorized for admin access, redirect to dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
-    }
-
-    // Check approval status for non-admin routes
-    if (!isAdminRoute) {
-      if (employee.approval_status === 'PENDING') {
-        // User is pending approval, redirect to approval pending page
-        return NextResponse.redirect(new URL('/approval-pending', request.url));
-      }
-
-      if (employee.approval_status === 'REJECTED') {
-        // User was rejected, redirect to approval pending page to see status
-        return NextResponse.redirect(new URL('/approval-pending', request.url));
-      }
-
-      if (employee.approval_status !== 'APPROVED' || !employee.is_active) {
-        // User is not approved or not active, redirect to approval pending
-        return NextResponse.redirect(new URL('/approval-pending', request.url));
-      }
-    }
-
-    // User is approved or is accessing admin routes with proper permissions
-    return NextResponse.next();
-
-  } catch (error) {
-    console.error('Middleware error:', error);
-    // On error, redirect to login for safety
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
+  // Let the request proceed - detailed checks happen client-side
+  return NextResponse.next();
 }
 
 export const config = {
