@@ -35,11 +35,23 @@ export default function AdminDashboard() {
       }
 
       setUserName(user.name || user.email);
+      // TODO: Get actual organization ID from user
+      setOrganizationId(user.organizationId || 'default-org');
       setLoading(false);
     };
 
     checkAuth();
   }, [router]);
+
+  // Handle realtime notifications
+  const handleRealtimeNotification = (notification: any) => {
+    showNotification(notification);
+    
+    // Show additional success message for important events
+    if (notification.priority === 'high') {
+      showSuccess('중요 알림', notification.message);
+    }
+  };
 
   // Update time every second
   useEffect(() => {
