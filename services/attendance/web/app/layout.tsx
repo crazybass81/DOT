@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { Providers } from './providers'
 
 export const metadata: Metadata = {
   title: 'DOT 근태관리',
