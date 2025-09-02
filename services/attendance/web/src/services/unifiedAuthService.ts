@@ -1,6 +1,4 @@
-import { authService as cognitoAuthService, User as CognitoUser } from './authService';
 import { supabaseAuthService, User as SupabaseUser } from './supabaseAuthService';
-import { migrationService, MigrationStatus } from './migrationService';
 
 export interface UnifiedUser {
   id: string;
@@ -9,8 +7,8 @@ export interface UnifiedUser {
   role?: string;
   approvalStatus?: string;
   employee?: any;
-  authProvider: 'cognito' | 'supabase';
-  isMigrated: boolean;
+  authProvider: 'supabase';
+  metadata?: Record<string, any>;
 }
 
 export interface AuthResult {
