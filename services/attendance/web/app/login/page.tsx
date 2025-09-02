@@ -16,6 +16,23 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
+    // 하드코딩된 마스터 계정 체크
+    if (email === 'archt723@gmail.com' && password === 'Master123!@#') {
+      // 로컬 스토리지에 임시 인증 정보 저장
+      localStorage.setItem('auth_user', JSON.stringify({
+        id: 'master-001',
+        email: 'archt723@gmail.com',
+        name: 'Master Admin',
+        role: 'MASTER_ADMIN',
+        is_master_admin: true
+      }));
+      localStorage.setItem('auth_token', 'hardcoded-master-token-' + Date.now());
+      
+      setLoading(false);
+      router.push('/');
+      return;
+    }
+
     try {
       const result = await cognitoAuthService.directSignIn(email, password);
       if (result && result.success) {
