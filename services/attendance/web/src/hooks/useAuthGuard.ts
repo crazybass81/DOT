@@ -106,7 +106,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
                      user.employee.role === 'MASTER_ADMIN';
 
       // Check approval requirement
-      if (requireApproval && !isApproved) {
+      if (requireApproval && !isApproved && user.employee) {
         if (user.employee.approval_status === 'PENDING') {
           setState(prev => ({ 
             ...prev, 
