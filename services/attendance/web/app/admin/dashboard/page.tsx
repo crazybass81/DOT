@@ -2,39 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { cognitoAuthService } from '@/services/cognitoAuthService';
-import { userService } from '@/services/userService';
-import AttendanceStats from '@/components/dashboard/AttendanceStats';
-import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
-import AttendanceChart from '@/components/dashboard/AttendanceChart';
+import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { toast } from 'react-hot-toast';
+import { useRequireAdmin } from '@/hooks/useAuthGuard';
+// import AttendanceStats from '@/components/dashboard/AttendanceStats';
+// import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
+// import AttendanceChart from '@/components/dashboard/AttendanceChart';
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const auth = useRequireAdmin();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [userName, setUserName] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check authentication and admin rights
-    const checkAuth = () => {
-      if (!cognitoAuthService.isAuthenticated()) {
-        router.push('/login');
-        return;
-      }
-
-      const user = userService.getCurrentUser();
-      if (!user || !userService.isAdmin()) {
-        alert('관리자 권한이 필요합니다');
-        router.push('/attendance');
-        return;
-      }
-
-      setUserName(user.name || user.email);
-      setLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
 
   // Update time every second
   useEffect(() => {
@@ -44,17 +22,19 @@ export default function AdminDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLogout = () => {
-    cognitoAuthService.signOut();
-    
-    // Add delay to ensure localStorage is cleared before redirect
-    setTimeout(() => {
-      // Force page reload to ensure complete cleanup
-      window.location.href = '/login';
-    }, 100);
+  const handleLogout = async () => {
+    try {
+      await supabaseAuthService.signOut();
+      toast.success('로그아웃되었습니다.');
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('로그아웃 중 오류가 발생했습니다.');
+    }
   };
 
-  if (loading) {
+  // Show loading while auth is being checked
+  if (auth.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
@@ -63,6 +43,11 @@ export default function AdminDashboard() {
         </div>
       </div>
     );
+  }
+
+  // If auth guard redirected or user is not admin, don't render
+  if (!auth.user || !auth.isAuthenticated || !auth.isAdmin) {
+    return null;
   }
 
   return (
@@ -87,7 +72,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
-                안녕하세요, <span className="font-medium">{userName}</span>님
+                안녕하세요, <span className="font-medium">{auth.user.name}</span>님
               </span>
               <button
                 onClick={handleLogout}
