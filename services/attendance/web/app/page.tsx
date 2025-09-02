@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import QrScanner from 'qr-scanner';
+import { Building2, QrCode, Shield, Users, CheckCircle, AlertCircle, MapPin, Clock, LogIn } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -11,13 +12,21 @@ export default function Home() {
   const [scanning, setScanning] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [error, setError] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Start camera
   const startCamera = async () => {
     try {
       if (!videoRef.current) return;
       
-      // Initialize QR Scanner
       qrScannerRef.current = new QrScanner(
         videoRef.current,
         (result) => {
@@ -26,7 +35,7 @@ export default function Home() {
           router.push(`/qr/${encodedData}`);
         },
         {
-          preferredCamera: 'environment', // Use back camera on mobile
+          preferredCamera: 'environment',
           highlightScanRegion: true,
           highlightCodeOutline: true,
           maxScansPerSecond: 5,
@@ -65,150 +74,246 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="text-center max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4 text-gray-900">
-          DOT 근태관리 시스템
-        </h1>
-        <p className="text-lg md:text-xl mb-8 text-gray-700">
-          QR 코드를 스캔하여 간편하게 출퇴근하세요
-        </p>
-        
-        {/* QR Scanner */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-          <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
-            {!scanning && cameraPermission !== 'denied' && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">📱</div>
-                  <button
-                    onClick={startCamera}
-                    className="px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105"
-                  >
-                    QR 스캔 시작
-                  </button>
-                  <p className="text-sm text-gray-600 mt-3">
-                    사업장 QR 코드를 스캔하세요
-                  </p>
-                </div>
+    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-white" />
               </div>
-            )}
-            
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className={`w-full h-full object-cover ${!scanning ? 'hidden' : ''}`}
-            />
-            
-            {scanning && (
-              <div className="absolute inset-0 pointer-events-none">
-                {/* Scanning overlay */}
-                <div className="absolute inset-0 border-2 border-blue-500 opacity-50">
-                  <div className="absolute top-4 left-4 w-12 h-12 border-t-4 border-l-4 border-white"></div>
-                  <div className="absolute top-4 right-4 w-12 h-12 border-t-4 border-r-4 border-white"></div>
-                  <div className="absolute bottom-4 left-4 w-12 h-12 border-b-4 border-l-4 border-white"></div>
-                  <div className="absolute bottom-4 right-4 w-12 h-12 border-b-4 border-r-4 border-white"></div>
-                </div>
-                
-                {/* Scanning animation */}
-                <div className="absolute inset-x-0 top-1/2 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-pulse"></div>
-                
-                {/* Instructions */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                  <p className="bg-black bg-opacity-60 text-white px-4 py-2 rounded-lg text-sm">
-                    QR 코드를 화면 중앙에 맞춰주세요
-                  </p>
-                </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">DOT 근태관리</h1>
+                <p className="text-xs text-gray-500">Smart Attendance System</p>
               </div>
-            )}
-          </div>
-
-          {scanning && (
-            <div className="mt-4 flex justify-between items-center">
-              <p className="text-sm text-gray-600">QR 코드를 인식 중입니다...</p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium text-gray-900">
+                  {currentTime.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {currentTime.toLocaleTimeString('ko-KR')}
+                </p>
+              </div>
+              
               <button
-                onClick={stopCamera}
-                className="px-4 py-2 text-sm text-red-600 hover:text-red-800 bg-red-50 rounded-lg hover:bg-red-100"
+                onClick={() => router.push('/login')}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
               >
-                스캔 중지
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">관리자</span>
               </button>
             </div>
-          )}
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
-            <p className="text-sm text-red-800">{error}</p>
           </div>
-        )}
+        </div>
+      </header>
 
-        {/* Admin Link */}
-        <div className="mb-8">
-          <button
-            onClick={() => router.push('/login')}
-            className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium shadow-lg transition-all transform hover:scale-105"
-          >
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-xl">⚙️</span>
-              <span>관리자 로그인</span>
+      {/* Hero Section */}
+      <section className="relative py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              간편한 출퇴근 관리
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600">
+              QR 코드 스캔 한 번으로 출퇴근을 기록하세요
+            </p>
+          </div>
+
+          {/* QR Scanner Card */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <QrCode className="w-8 h-8" />
+                    <div>
+                      <h3 className="text-xl font-semibold">QR 스캐너</h3>
+                      <p className="text-sm opacity-90">사업장 QR 코드를 스캔하세요</p>
+                    </div>
+                  </div>
+                  {scanning && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-sm">스캔 중</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
+                  {!scanning && cameraPermission !== 'denied' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                          <QrCode className="w-12 h-12 text-white" />
+                        </div>
+                        <button
+                          onClick={startCamera}
+                          className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                        >
+                          QR 스캔 시작
+                        </button>
+                        <p className="text-sm text-gray-400 mt-3">
+                          카메라 권한이 필요합니다
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover ${!scanning ? 'hidden' : ''}`}
+                  />
+                  
+                  {scanning && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute inset-0">
+                        <div className="absolute top-8 left-8 w-16 h-16 border-t-4 border-l-4 border-white rounded-tl-lg"></div>
+                        <div className="absolute top-8 right-8 w-16 h-16 border-t-4 border-r-4 border-white rounded-tr-lg"></div>
+                        <div className="absolute bottom-8 left-8 w-16 h-16 border-b-4 border-l-4 border-white rounded-bl-lg"></div>
+                        <div className="absolute bottom-8 right-8 w-16 h-16 border-b-4 border-r-4 border-white rounded-br-lg"></div>
+                      </div>
+                      <div className="absolute inset-x-0 top-1/2 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent animate-pulse"></div>
+                    </div>
+                  )}
+                </div>
+
+                {scanning && (
+                  <div className="mt-4 flex justify-between items-center">
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      QR 코드를 인식 중입니다...
+                    </p>
+                    <button
+                      onClick={stopCamera}
+                      className="px-4 py-2 text-sm text-red-600 hover:text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                    >
+                      스캔 중지
+                    </button>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-200">
+                    <p className="text-sm text-red-600 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {error}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </button>
-        </div>
+          </div>
 
-        {/* Instructions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <div className="text-4xl mb-3">📱</div>
-            <h3 className="font-semibold text-gray-900 mb-2">1단계</h3>
-            <p className="text-sm text-gray-600">
-              사업장에 도착하여 입구의 QR 코드를 찾으세요
-            </p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <div className="text-4xl mb-3">📷</div>
-            <h3 className="font-semibold text-gray-900 mb-2">2단계</h3>
-            <p className="text-sm text-gray-600">
-              위의 'QR 스캔 시작' 버튼을 눌러 카메라를 활성화하세요
-            </p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <div className="text-4xl mb-3">✅</div>
-            <h3 className="font-semibold text-gray-900 mb-2">3단계</h3>
-            <p className="text-sm text-gray-600">
-              QR 코드를 스캔하면 자동으로 출퇴근 처리됩니다
-            </p>
+          {/* Instructions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                <MapPin className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">1. 사업장 도착</h3>
+              <p className="text-sm text-gray-600">
+                등록된 사업장에 도착하여 입구의 QR 코드를 찾으세요
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <QrCode className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">2. QR 스캔</h3>
+              <p className="text-sm text-gray-600">
+                'QR 스캔 시작' 버튼을 눌러 QR 코드를 스캔하세요
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">3. 자동 기록</h3>
+              <p className="text-sm text-gray-600">
+                출퇴근이 자동으로 기록되고 확인 메시지가 표시됩니다
+              </p>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Business Locations */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500 mb-2">등록된 사업장</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {['강남 본사', '판교 테크센터', '여의도 지사', '시청 사무소', '태평역점'].map((location) => (
-              <span key={location} className="px-3 py-1 bg-white rounded-full text-xs text-gray-600 shadow-sm">
-                {location}
-              </span>
+      {/* Features Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <div className="max-w-7xl mx-auto">
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">시스템 특징</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Shield className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-1">보안 인증</h4>
+              <p className="text-xs text-gray-600">Supabase 기반 안전한 인증</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <MapPin className="w-8 h-8 text-green-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-1">위치 확인</h4>
+              <p className="text-xs text-gray-600">GPS 기반 자동 위치 검증</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Clock className="w-8 h-8 text-blue-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-1">실시간 기록</h4>
+              <p className="text-xs text-gray-600">즉시 출퇴근 시간 저장</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Users className="w-8 h-8 text-purple-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-1">통합 관리</h4>
+              <p className="text-xs text-gray-600">전 직원 근태 중앙 관리</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Business Locations */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">등록된 사업장</h3>
+          <div className="flex flex-wrap justify-center gap-3">
+            {['강남 본사', '판교 테크센터', '여의도 지사', '부산 지점', '대구 사무소'].map((location) => (
+              <div key={location} className="px-4 py-2 bg-white rounded-full shadow-md flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-indigo-600" />
+                <span className="text-sm font-medium text-gray-700">{location}</span>
+              </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Notice */}
-        <div className="mt-8 bg-blue-50 rounded-xl p-4">
-          <p className="text-sm text-blue-800 mb-2">
-            <strong>💡 안내사항</strong>
+      {/* Footer */}
+      <footer className="py-8 px-4 sm:px-6 lg:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-sm text-gray-600 mb-2">
+            © 2024 DOT Attendance System. All rights reserved.
           </p>
-          <ul className="text-xs text-blue-700 space-y-1">
-            <li>• QR 코드 스캔 후 GPS로 위치가 자동 확인됩니다</li>
-            <li>• 사업장 반경 내에서만 출퇴근 처리가 가능합니다</li>
-            <li>• 별도의 로그인 없이 QR 스캔만으로 이용할 수 있습니다</li>
-          </ul>
+          <p className="text-xs text-gray-500">
+            Powered by Supabase • Secured by Row Level Security
+          </p>
         </div>
-      </div>
+      </footer>
     </main>
   );
 }
