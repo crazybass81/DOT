@@ -1,7 +1,7 @@
 import { cognitoAuthService } from './cognitoAuthService';
 import { userService } from './userService';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://426y70ok24.execute-api.us-east-1.amazonaws.com/prod';
+const API_BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';
 
 class ApiService {
   private async getAuthHeaders(): Promise<HeadersInit> {
