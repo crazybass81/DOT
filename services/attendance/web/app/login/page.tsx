@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { Mail, Lock, Shield, Building2, ChevronRight, QrCode } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,27 +17,23 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // 하드코딩된 마스터 계정 체크
-    if (email === 'archt723@gmail.com' && password === 'Master123!@#') {
-      // 로컬 스토리지에 임시 인증 정보 저장
-      localStorage.setItem('auth_user', JSON.stringify({
-        id: 'master-001',
-        email: 'archt723@gmail.com',
-        name: 'Master Admin',
-        role: 'MASTER_ADMIN',
-        is_master_admin: true
-      }));
-      localStorage.setItem('auth_token', 'hardcoded-master-token-' + Date.now());
-      
-      setLoading(false);
-      router.push('/');
-      return;
-    }
-
     try {
       const result = await supabaseAuthService.signIn(email, password);
       if (result && result.user) {
-        router.push('/');
+        // Check user role from database
+        const { data: employee } = await supabaseAuthService.supabase
+          .from('employees')
+          .select('role')
+          .eq('id', result.user.id)
+          .single();
+        
+        if (employee?.role === 'MASTER_ADMIN') {
+          router.push('/master-admin/dashboard');
+        } else if (employee?.role === 'ADMIN') {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError('로그인에 실패했습니다');
       }
@@ -48,157 +45,172 @@ export default function LoginPage() {
     }
   };
 
-  const fillTestAccount = (accountType: string) => {
-    switch (accountType) {
-      case 'employee':
-        setEmail('employee1@dotattendance.com');
-        setPassword('TestPass123!');
-        break;
-      case 'admin':
-        setEmail('admin@dotattendance.com');
-        setPassword('AdminPass123!');
-        break;
-      case 'superadmin':
-        setEmail('superadmin@dotattendance.com');
-        setPassword('SuperAdmin123!');
-        break;
-    }
+  const fillTestAccount = () => {
+    setEmail('archt723@gmail.com');
+    setPassword('Master123!@#');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            관리자 로그인
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            DOT 근태관리 시스템 · 관리자 전용
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Background Decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-40 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
+
+      <div className="relative z-10 max-w-md w-full">
+        {/* Logo and Title */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg mb-4">
+            <Building2 className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            DOT 근태관리
+          </h1>
+          <p className="mt-2 text-gray-600">통합 인증 시스템 · Supabase</p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-800">{error}</div>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
+
+        {/* Login Card */}
+        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-xl p-8">
+          <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+            로그인
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-sm text-red-600 flex items-center">
+                  <span className="mr-2">⚠️</span>
+                  {error}
+                </p>
+              </div>
+            )}
+
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 이메일
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 비밀번호
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center">
+                <input type="checkbox" className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                <span className="ml-2 text-gray-600">로그인 유지</span>
+              </label>
+              <a href="/auth/reset-password" className="text-indigo-600 hover:text-indigo-500">
+                비밀번호 찾기
+              </a>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {loading ? '로그인 중...' : '로그인'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  로그인 중...
+                </span>
+              ) : '로그인'}
             </button>
-          </div>
+          </form>
 
-          <div className="flex items-center justify-center">
-            <a 
-              href="/auth/reset-password"
-              className="text-sm text-indigo-600 hover:text-indigo-500"
-            >
-              비밀번호를 잊으셨나요?
-            </a>
-          </div>
-
-          {/* Admin Test Accounts */}
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg">
-            <p className="text-sm font-semibold text-gray-700 mb-3">관리자 테스트 계정 (클릭하여 자동 입력)</p>
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={() => fillTestAccount('admin')}
-                className="text-left p-3 bg-white rounded-md shadow-sm hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">👔 사업장 관리자</p>
-                    <p className="text-xs text-gray-600">admin@dotattendance.com</p>
-                  </div>
-                  <span className="text-xs text-blue-600">클릭</span>
-                </div>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => fillTestAccount('superadmin')}
-                className="text-left p-3 bg-white rounded-md shadow-sm hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">🏢 서비스 관리자</p>
-                    <p className="text-xs text-gray-600">superadmin@dotattendance.com</p>
-                  </div>
-                  <span className="text-xs text-blue-600">클릭</span>
-                </div>
-              </button>
+          {/* Test Account Quick Fill */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="text-center mb-3">
+              <span className="text-xs text-gray-500 bg-white px-2">테스트 계정</span>
             </div>
             
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <p className="text-xs text-gray-500">
-                <strong>테스트 비밀번호:</strong>
-              </p>
-              <ul className="text-xs text-gray-500 mt-1">
-                <li>• 관리자: AdminPass123!</li>
-                <li>• 서비스관리자: SuperAdmin123!</li>
-              </ul>
-              <p className="text-xs text-green-600 mt-2">
-                ✅ AWS Cognito에 실제 계정 등록 완료
+            <button
+              type="button"
+              onClick={fillTestAccount}
+              className="w-full p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200 hover:border-indigo-300 transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-800">Master Administrator</p>
+                    <p className="text-xs text-gray-500">archt723@gmail.com</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+              </div>
+            </button>
+
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-800 text-center">
+                💡 모든 권한을 가진 마스터 계정으로 시스템 전체를 관리할 수 있습니다
               </p>
             </div>
           </div>
 
-          {/* Notice for Employees */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-800 text-center">
-              💡 일반 직원은 QR 코드 스캔으로 바로 출퇴근할 수 있습니다
-            </p>
-            <div className="mt-2 text-center">
+          {/* QR Code Login Option */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-600">
+                직원이신가요?
+              </p>
               <button
                 type="button"
-                onClick={() => router.push('/')}
-                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                onClick={() => router.push('/attendance/qr')}
+                className="w-full py-2 px-4 bg-white border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all flex items-center justify-center"
               >
-                QR 스캔 페이지로 이동 →
+                <QrCode className="w-4 h-4 mr-2" />
+                QR 코드로 출퇴근하기
               </button>
             </div>
           </div>
-        </form>
+        </div>
+
+        {/* Footer Info */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-500">
+            © 2024 DOT Attendance System
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Powered by Supabase Auth
+          </p>
+        </div>
       </div>
     </div>
   );
