@@ -35,12 +35,6 @@
   "license": "ISC",
   "description": "DOT 근태관리 서비스",
   "dependencies": {
-    "@aws-amplify/auth": "^6.15.0",
-    "@aws-amplify/core": "^6.13.1",
-    "@aws-amplify/ui-react": "^6.12.0",
-    "@aws-sdk/client-cognito-identity-provider": "^3.873.0",
-    "@aws-sdk/client-dynamodb": "^3.873.0",
-    "@aws-sdk/lib-dynamodb": "^3.873.0",
     "@supabase/supabase-js": "^2.56.1",
     "@types/node": "^24.3.0",
     "@types/qrcode": "^1.5.5",
