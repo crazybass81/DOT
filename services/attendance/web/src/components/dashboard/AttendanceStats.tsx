@@ -93,40 +93,66 @@ export default function AttendanceStats({
     <div className="p-6">
       {/* Period Selector */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">근태 현황</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-900">근태 현황</h2>
+          {/* Real-time indicator */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              isConnected ? 'bg-green-500' : 'bg-red-500'
+            }`} />
+            <span className="text-xs text-gray-500">실시간</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Refresh button */}
           <button
-            onClick={() => setPeriod('daily')}
-            className={`px-4 py-2 rounded-lg ${
-              period === 'daily'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+            onClick={refreshData}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
           >
-            일간
+            새로고침
           </button>
-          <button
-            onClick={() => setPeriod('weekly')}
-            className={`px-4 py-2 rounded-lg ${
-              period === 'weekly'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            주간
-          </button>
-          <button
-            onClick={() => setPeriod('monthly')}
-            className={`px-4 py-2 rounded-lg ${
-              period === 'monthly'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            월간
-          </button>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPeriod('daily')}
+              className={`px-4 py-2 rounded-lg ${
+                period === 'daily'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              일간
+            </button>
+            <button
+              onClick={() => setPeriod('weekly')}
+              className={`px-4 py-2 rounded-lg ${
+                period === 'weekly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              주간
+            </button>
+            <button
+              onClick={() => setPeriod('monthly')}
+              className={`px-4 py-2 rounded-lg ${
+                period === 'monthly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              월간
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <span className="text-sm text-red-700">{error}</span>
+        </div>
+      )}
 
       {/* Stats Grid */}
       {loading ? (
