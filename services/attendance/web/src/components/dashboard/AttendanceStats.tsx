@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { apiService } from '@/services/apiService';
+import { useState } from 'react';
+import { useRealtimeAttendance } from '@/hooks/useRealtimeAttendance';
+import { ConnectionState } from '@/lib/realtime';
 
 interface StatsData {
   totalEmployees: number;
@@ -12,42 +13,42 @@ interface StatsData {
   attendanceRate: number;
 }
 
-export default function AttendanceStats() {
-  const [stats, setStats] = useState<StatsData>({
-    totalEmployees: 0,
-    checkedIn: 0,
-    checkedOut: 0,
-    onLeave: 0,
-    averageWorkHours: 0,
-    attendanceRate: 0
-  });
-  const [loading, setLoading] = useState(true);
+interface AttendanceStatsProps {
+  organizationId: string;
+  onNotification?: (notification: any) => void;
+}
+
+export default function AttendanceStats({ 
+  organizationId, 
+  onNotification 
+}: AttendanceStatsProps) {
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-  useEffect(() => {
-    fetchStats();
-  }, [period]);
+  // Use realtime attendance hook
+  const {
+    data,
+    connectionState,
+    isConnected,
+    error,
+    refreshData
+  } = useRealtimeAttendance({
+    organizationId,
+    debounceMs: 1000, // Less frequent updates for stats
+    enableNotifications: false, // Stats don't need individual notifications
+    autoReconnect: true
+  });
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const data = await apiService.getAttendanceStats(period);
-      setStats(data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-      // Use mock data for now
-      setStats({
-        totalEmployees: 25,
-        checkedIn: 18,
-        checkedOut: 5,
-        onLeave: 2,
-        averageWorkHours: 7.5,
-        attendanceRate: 92
-      });
-    } finally {
-      setLoading(false);
-    }
+  // Transform realtime stats to display format
+  const stats: StatsData = {
+    totalEmployees: data.stats.totalEmployees,
+    checkedIn: data.stats.presentToday,
+    checkedOut: data.stats.checkOutsToday,
+    onLeave: 0, // TODO: Calculate leave from attendance records
+    averageWorkHours: 8.0, // TODO: Calculate from actual work hours
+    attendanceRate: data.stats.attendanceRate
   };
+
+  const loading = connectionState === ConnectionState.CONNECTING;
 
   const statCards = [
     {
