@@ -51,9 +51,10 @@ attendance/
 - **Frontend**: Next.js 15.5, React 19, TypeScript
 - **Styling**: Tailwind CSS
 - **State**: React Hooks
-- **Auth**: AWS Cognito
-- **Database**: DynamoDB
-- **Deployment**: AWS Amplify / Vercel
+- **Auth**: Supabase Auth
+- **Database**: Supabase (PostgreSQL)
+- **Real-time**: Supabase Realtime
+- **Deployment**: Vercel / Netlify
 
 ### Mobile (직원용 앱)
 - **Framework**: Flutter 3.x
@@ -71,7 +72,7 @@ attendance/
 ### Prerequisites
 - Node.js 18+
 - Flutter SDK 3.10+
-- AWS CLI (configured)
+- Supabase account
 - Docker (for local development)
 
 ### Web Setup
@@ -123,12 +124,13 @@ flutter build web     # Web build
 
 ## 🌐 API Integration
 
-Both web and mobile applications connect to the same backend API:
+Both web and mobile applications connect to the same backend:
 
-- **Base URL**: `https://api.dot-attendance.com`
-- **Authentication**: JWT tokens via AWS Cognito
-- **API Gateway**: AWS API Gateway
-- **Functions**: AWS Lambda (Serverless)
+- **Base URL**: Supabase Project URL
+- **Authentication**: JWT tokens via Supabase Auth
+- **Database**: Supabase (PostgreSQL with Row Level Security)
+- **Real-time**: WebSocket connections via Supabase Realtime
+- **Edge Functions**: Supabase Edge Functions (Deno)
 
 ## 📱 Platform-Specific Features
 
@@ -155,26 +157,34 @@ Both web and mobile applications connect to the same backend API:
 
 ## 📊 Database Schema
 
-Using DynamoDB with single-table design:
+Using Supabase (PostgreSQL) with relational design:
 
-```
-Primary Key (PK): ATTENDANCE#<uuid> | EMPLOYEE#<id> | SCHEDULE#<id>
-Sort Key (SK): EMPLOYEE#<id> | ORG#<id> | DATE#<date>
+```sql
+-- Main tables
+- attendance_records
+- employees
+- schedules
+- organizations
+- departments
+
+-- Row Level Security (RLS) enabled for all tables
+-- Real-time subscriptions available
 ```
 
 ## 🚦 CI/CD
 
-- **Web**: GitHub Actions → AWS Amplify
+- **Web**: GitHub Actions → Vercel / Netlify
 - **Mobile**: GitHub Actions → App Store / Play Store
+- **Database**: Supabase Migrations
 
 ## 📝 Environment Variables
 
 ### Web (.env.local)
 ```
-NEXT_PUBLIC_API_URL=
-NEXT_PUBLIC_AWS_REGION=
-NEXT_PUBLIC_COGNITO_USER_POOL_ID=
-NEXT_PUBLIC_COGNITO_CLIENT_ID=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=
 ```
 
 ### Mobile (config files)
