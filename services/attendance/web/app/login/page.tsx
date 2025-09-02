@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { cognitoAuthService } from '@/services/cognitoAuthService';
+import { supabaseAuthService } from '@/services/supabaseAuthService';
 
 export default function LoginPage() {
   const router = useRouter();
