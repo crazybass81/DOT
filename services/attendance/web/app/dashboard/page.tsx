@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabaseAuthService } from '@/services/supabaseAuthService';
 import { supabase } from '@/lib/supabase-config';
 import { toast } from 'react-hot-toast';
+import { useRequireApproval } from '@/hooks/useAuthGuard';
 
 interface DashboardData {
   user: {
@@ -28,8 +29,17 @@ interface DashboardData {
 
 export default function Dashboard() {
   const router = useRouter();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const auth = useRequireApproval();
+  const [attendanceData, setAttendanceData] = useState<{
+    checkIn?: string;
+    checkOut?: string;
+  } | null>(null);
+  const [stats] = useState({
+    totalWorkDays: 22,
+    presentDays: 20,
+    lateDays: 2,
+    attendanceRate: 91
+  });
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update time every second
@@ -40,78 +50,34 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
+  // Load attendance data when user is ready
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (auth.user && !auth.isLoading) {
+      loadAttendanceData();
+    }
+  }, [auth.user, auth.isLoading]);
 
-  const loadDashboardData = async () => {
+  const loadAttendanceData = async () => {
+    if (!auth.user) return;
+    
     try {
-      setLoading(true);
-
-      // Check if user is authenticated
-      const isAuth = await supabaseAuthService.isAuthenticated();
-      if (!isAuth) {
-        router.push('/login');
-        return;
-      }
-
-      // Get current user
-      const user = await supabaseAuthService.getCurrentUser();
-      if (!user || !user.employee) {
-        toast.error('사용자 정보를 찾을 수 없습니다.');
-        router.push('/login');
-        return;
-      }
-
-      // Check if user is approved
-      if (user.employee.approval_status !== 'APPROVED') {
-        router.push('/approval-pending');
-        return;
-      }
-
-      if (!user.employee.is_active) {
-        toast.error('계정이 비활성화되었습니다.');
-        router.push('/approval-pending');
-        return;
-      }
-
       // Get today's attendance
       const today = new Date().toISOString().split('T')[0];
-      const { data: attendanceData } = await supabase
+      const { data: attendanceRecord } = await supabase
         .from('attendance_records')
         .select('check_in_time, check_out_time')
-        .eq('employee_id', user.employee.id)
+        .eq('employee_id', auth.user.id)
         .eq('date', today)
         .single();
 
-      // Get attendance stats (mock data for now)
-      const stats = {
-        totalWorkDays: 22,
-        presentDays: 20,
-        lateDays: 2,
-        attendanceRate: 91
-      };
-
-      setDashboardData({
-        user: {
-          id: user.id,
-          name: user.employee.name,
-          email: user.email,
-          role: user.employee.role,
-          approval_status: user.employee.approval_status
-        },
-        attendanceToday: attendanceData ? {
-          checkIn: attendanceData.check_in_time,
-          checkOut: attendanceData.check_out_time
-        } : undefined,
-        stats
-      });
+      setAttendanceData(attendanceRecord ? {
+        checkIn: attendanceRecord.check_in_time,
+        checkOut: attendanceRecord.check_out_time
+      } : null);
 
     } catch (error: any) {
-      console.error('Error loading dashboard:', error);
-      toast.error('대시보드 로딩 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
+      console.error('Error loading attendance:', error);
+      // Don't show error toast for missing attendance data
     }
   };
 
@@ -130,7 +96,8 @@ export default function Dashboard() {
     router.push('/attendance');
   };
 
-  if (loading) {
+  // Show loading while auth is being checked
+  if (auth.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
@@ -141,24 +108,13 @@ export default function Dashboard() {
     );
   }
 
-  if (!dashboardData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
-          <button
-            onClick={() => router.push('/login')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            로그인 페이지로
-          </button>
-        </div>
-      </div>
-    );
+  // If auth guard redirected or user is not available, don't render
+  if (!auth.user || !auth.isAuthenticated || !auth.isApproved) {
+    return null;
   }
 
-  const { user, attendanceToday, stats } = dashboardData;
-  const isAdmin = user.role === 'ADMIN' || user.role === 'MASTER_ADMIN';
+  const { user } = auth;
+  const isAdmin = auth.isAdmin;
 
   return (
     <div className="min-h-screen bg-gray-100">
