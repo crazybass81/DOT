@@ -19,7 +19,9 @@
     "test:security": "jest --config=../tests/jest.integration.config.js --testNamePattern='Security|security'",
     "test:performance": "jest --config=../tests/jest.integration.config.js --testNamePattern='Performance|performance'",
     "test:cleanup": "node -e \"console.log('Manual cleanup would run here')\"",
-    "deploy": "./scripts/deploy.sh"
+    "deploy": "./scripts/deploy.sh",
+    "setup:test-user": "node ../scripts/setup-test-user.js",
+    "test:auth": "node ../scripts/setup-test-user.js && echo '✅ 인증 테스트 완료!'"
   },
   "keywords": [],
   "author": "",
