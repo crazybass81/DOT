@@ -151,12 +151,39 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* Stats Overview */}
-        <AttendanceStats />
+        {/* Stats Overview - TODO: Implement AttendanceStats component */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">통계 개요</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">85</div>
+              <div className="text-sm text-gray-600">총 직원</div>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">78</div>
+              <div className="text-sm text-gray-600">출근</div>
+            </div>
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-600">5</div>
+              <div className="text-sm text-gray-600">지각</div>
+            </div>
+            <div className="text-center p-4 bg-red-50 rounded-lg">
+              <div className="text-2xl font-bold text-red-600">2</div>
+              <div className="text-sm text-gray-600">결근</div>
+            </div>
+          </div>
+        </div>
 
         {/* Charts and Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <AttendanceChart />
+          {/* Chart Placeholder */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">출근 현황 차트</h3>
+            <div className="text-center py-12 text-gray-500">
+              <span className="text-4xl mb-4 block">📊</span>
+              <p>차트 컴포넌트를 개발 중입니다.</p>
+            </div>
+          </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">오늘의 알림</h3>
             <div className="space-y-3">
