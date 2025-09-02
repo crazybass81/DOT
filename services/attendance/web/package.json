@@ -19,16 +19,7 @@
     "test:security": "jest --config=../tests/jest.integration.config.js --testNamePattern='Security|security'",
     "test:performance": "jest --config=../tests/jest.integration.config.js --testNamePattern='Performance|performance'",
     "test:cleanup": "node -e \"console.log('Manual cleanup would run here')\"",
-    "db:local": "docker-compose up -d dynamodb-local dynamodb-admin",
-    "db:local:stop": "docker-compose stop dynamodb-local dynamodb-admin",
-    "db:create-tables": "ts-node scripts/create-dynamodb-tables.ts",
-    "db:seed": "ts-node scripts/seed-data.ts",
-    "setup": "./scripts/setup-local.sh",
-    "deploy": "./scripts/deploy.sh",
-    "cdk": "cdk",
-    "cdk:synth": "cdk synth",
-    "cdk:deploy": "cdk deploy",
-    "cdk:destroy": "cdk destroy"
+    "deploy": "./scripts/deploy.sh"
   },
   "keywords": [],
   "author": "",
