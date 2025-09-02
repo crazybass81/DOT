@@ -137,7 +137,7 @@ export default function QRHandlerPage() {
 
         const result = await apiService.checkIn({
           location: location,
-          verificationMethod: 'qr-gps',
+          verificationMethod: 'qr',
           qrCode: qrData
         });
 
