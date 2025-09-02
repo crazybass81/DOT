@@ -1,27 +1,18 @@
-import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { NextRequest, NextResponse } from 'next/server';
 import { AttendanceRepository } from '../lib/database/repositories/attendance.repository';
 import { AttendanceStatus } from '../lib/database/models/attendance.model';
 
 const attendanceRepo = new AttendanceRepository();
 
-// CORS headers for API responses
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-  'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE',
+// Helper function to create API response
+const createResponse = (statusCode: number, body: any) => {
+  return NextResponse.json(body, { status: statusCode });
 };
 
-// Helper function to create API response
-const createResponse = (statusCode: number, body: any): APIGatewayProxyResult => ({
-  statusCode,
-  headers: corsHeaders,
-  body: JSON.stringify(body),
-});
-
 // Check-in endpoint
-export const checkIn: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+export async function checkIn(request: NextRequest) {
   try {
-    const { employeeId, organizationId, location, deviceInfo } = JSON.parse(event.body || '{}');
+    const { employeeId, organizationId, location, deviceInfo } = await request.json();
     
     if (!employeeId || !organizationId) {
       return createResponse(400, {
@@ -49,12 +40,12 @@ export const checkIn: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       message: error.message,
     });
   }
-};
+}
 
 // Check-out endpoint
-export const checkOut: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+export async function checkOut(request: NextRequest) {
   try {
-    const { employeeId, location } = JSON.parse(event.body || '{}');
+    const { employeeId, location } = await request.json();
     
     if (!employeeId) {
       return createResponse(400, {
@@ -83,12 +74,13 @@ export const checkOut: APIGatewayProxyHandler = async (event: APIGatewayProxyEve
       message: error.message,
     });
   }
-};
+}
 
 // Get today's attendance
-export const getTodayAttendance: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+export async function getTodayAttendance(request: NextRequest) {
   try {
-    const employeeId = event.pathParameters?.employeeId;
+    const { searchParams } = new URL(request.url);
+    const employeeId = searchParams.get('employeeId');
     
     if (!employeeId) {
       return createResponse(400, {
@@ -103,24 +95,27 @@ export const getTodayAttendance: APIGatewayProxyHandler = async (event: APIGatew
         message: 'No attendance record found for today',
       });
     }
-    
+
     return createResponse(200, {
       data: attendance,
     });
   } catch (error: any) {
     console.error('Get today attendance error:', error);
+    
     return createResponse(500, {
       error: 'Internal server error',
       message: error.message,
     });
   }
-};
+}
 
 // Get attendance history
-export const getAttendanceHistory: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+export async function getAttendanceHistory(request: NextRequest) {
   try {
-    const employeeId = event.pathParameters?.employeeId;
-    const { startDate, endDate } = event.queryStringParameters || {};
+    const { searchParams } = new URL(request.url);
+    const employeeId = searchParams.get('employeeId');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     
     if (!employeeId || !startDate || !endDate) {
       return createResponse(400, {
@@ -128,157 +123,116 @@ export const getAttendanceHistory: APIGatewayProxyHandler = async (event: APIGat
       });
     }
 
-    const records = await attendanceRepo.getAttendanceByEmployeeAndDateRange(
-      employeeId,
-      startDate,
-      endDate
-    );
+    const history = await attendanceRepo.getAttendanceHistory(employeeId, startDate, endDate);
     
     return createResponse(200, {
-      data: records,
-      count: records.length,
+      data: history,
+      count: history.length,
     });
   } catch (error: any) {
     console.error('Get attendance history error:', error);
+    
     return createResponse(500, {
       error: 'Internal server error',
       message: error.message,
     });
   }
-};
+}
 
-// Get attendance by date
-export const getAttendanceByDate: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+// Get organization attendance
+export async function getOrganizationAttendance(request: NextRequest) {
   try {
-    const { date } = event.pathParameters || {};
-    const { organizationId } = event.queryStringParameters || {};
+    const { searchParams } = new URL(request.url);
+    const organizationId = searchParams.get('organizationId');
+    const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
     
-    if (!date) {
+    if (!organizationId) {
       return createResponse(400, {
-        error: 'Missing required parameter: date',
+        error: 'Missing required parameter: organizationId',
       });
     }
 
-    const records = await attendanceRepo.getAttendanceByDate(date, organizationId);
+    const attendance = await attendanceRepo.getOrganizationAttendance(organizationId, date);
     
     return createResponse(200, {
-      data: records,
-      count: records.length,
+      data: attendance,
+      count: attendance.length,
+      date,
     });
   } catch (error: any) {
-    console.error('Get attendance by date error:', error);
+    console.error('Get organization attendance error:', error);
+    
     return createResponse(500, {
       error: 'Internal server error',
       message: error.message,
     });
   }
-};
+}
 
-// Get attendance statistics
-export const getAttendanceStatistics: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
+// Update attendance status (admin action)
+export async function updateAttendanceStatus(request: NextRequest) {
   try {
-    const employeeId = event.pathParameters?.employeeId;
-    const { period } = event.queryStringParameters || {};
+    const { employeeId, date, status, approvedBy, notes } = await request.json();
     
-    if (!employeeId || !period) {
+    if (!employeeId || !date || !status) {
       return createResponse(400, {
-        error: 'Missing required parameters: employeeId, period',
+        error: 'Missing required fields: employeeId, date, status',
       });
     }
 
-    const stats = await attendanceRepo.getAttendanceStatistics(employeeId, period);
+    if (!Object.values(AttendanceStatus).includes(status)) {
+      return createResponse(400, {
+        error: `Invalid status. Must be one of: ${Object.values(AttendanceStatus).join(', ')}`,
+      });
+    }
+
+    const attendance = await attendanceRepo.updateAttendanceStatus(
+      employeeId,
+      date,
+      status,
+      approvedBy,
+      notes
+    );
+    
+    return createResponse(200, {
+      message: 'Attendance status updated successfully',
+      data: attendance,
+    });
+  } catch (error: any) {
+    console.error('Update attendance status error:', error);
+    
+    return createResponse(500, {
+      error: 'Internal server error',
+      message: error.message,
+    });
+  }
+}
+
+// Get attendance statistics
+export async function getAttendanceStats(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const employeeId = searchParams.get('employeeId');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    
+    if (!employeeId || !startDate || !endDate) {
+      return createResponse(400, {
+        error: 'Missing required parameters: employeeId, startDate, endDate',
+      });
+    }
+
+    const stats = await attendanceRepo.getAttendanceStats(employeeId, startDate, endDate);
     
     return createResponse(200, {
       data: stats,
     });
   } catch (error: any) {
-    console.error('Get attendance statistics error:', error);
+    console.error('Get attendance stats error:', error);
+    
     return createResponse(500, {
       error: 'Internal server error',
       message: error.message,
     });
   }
-};
-
-// Update attendance status
-export const updateAttendanceStatus: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  try {
-    const attendanceId = event.pathParameters?.attendanceId;
-    const { employeeId, status, modifiedBy } = JSON.parse(event.body || '{}');
-    
-    if (!attendanceId || !employeeId || !status) {
-      return createResponse(400, {
-        error: 'Missing required fields: attendanceId, employeeId, status',
-      });
-    }
-
-    const updated = await attendanceRepo.updateAttendanceStatus(
-      attendanceId,
-      employeeId,
-      status as AttendanceStatus,
-      modifiedBy
-    );
-    
-    return createResponse(200, {
-      message: 'Attendance status updated successfully',
-      data: updated,
-    });
-  } catch (error: any) {
-    console.error('Update attendance status error:', error);
-    return createResponse(500, {
-      error: 'Internal server error',
-      message: error.message,
-    });
-  }
-};
-
-// Batch create attendance records (for admin/import)
-export const batchCreateAttendance: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  try {
-    const { records } = JSON.parse(event.body || '{}');
-    
-    if (!records || !Array.isArray(records) || records.length === 0) {
-      return createResponse(400, {
-        error: 'Missing or invalid records array',
-      });
-    }
-
-    await attendanceRepo.batchCreateAttendance(records);
-    
-    return createResponse(200, {
-      message: `Successfully created ${records.length} attendance records`,
-    });
-  } catch (error: any) {
-    console.error('Batch create attendance error:', error);
-    return createResponse(500, {
-      error: 'Internal server error',
-      message: error.message,
-    });
-  }
-};
-
-// Delete attendance record
-export const deleteAttendance: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-  try {
-    const attendanceId = event.pathParameters?.attendanceId;
-    const employeeId = event.queryStringParameters?.employeeId;
-    
-    if (!attendanceId || !employeeId) {
-      return createResponse(400, {
-        error: 'Missing required parameters: attendanceId, employeeId',
-      });
-    }
-
-    await attendanceRepo.deleteAttendance(attendanceId, employeeId);
-    
-    return createResponse(200, {
-      message: 'Attendance record deleted successfully',
-    });
-  } catch (error: any) {
-    console.error('Delete attendance error:', error);
-    return createResponse(500, {
-      error: 'Internal server error',
-      message: error.message,
-    });
-  }
-};
+}
