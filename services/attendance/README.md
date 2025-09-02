@@ -15,10 +15,19 @@ attendance/
 │   ├── lib/           # 비즈니스 로직
 │   └── scripts/       # 배포 및 설정 스크립트
 │
-└── mobile/             # Flutter 모바일 애플리케이션
-    ├── lib/           # Dart 소스 코드
-    ├── assets/        # 이미지, 폰트 등
-    └── test/          # 테스트 코드
+├── mobile/             # Flutter 모바일 애플리케이션
+│   ├── lib/           # Dart 소스 코드
+│   ├── assets/        # 이미지, 폰트 등
+│   └── test/          # 테스트 코드
+│
+├── supabase/          # Supabase 설정 및 마이그레이션
+│   ├── migrations/    # 데이터베이스 마이그레이션
+│   └── functions/     # Edge Functions
+│
+└── docs/              # 프로젝트 문서
+    ├── guides/        # 개발 가이드
+    ├── features/      # 기능 문서
+    └── architecture/  # 아키텍처 문서
 ```
 
 ## 🚀 Features
@@ -79,7 +88,7 @@ attendance/
 ```bash
 cd services/attendance/web
 npm install
-cp .env.example .env.local
+cp .env.template .env.local
 # Configure your environment variables
 npm run dev
 ```
@@ -89,6 +98,13 @@ npm run dev
 cd services/attendance/mobile
 flutter pub get
 flutter run
+```
+
+### Database Setup
+```bash
+# Run migrations in Supabase Dashboard
+# SQL Editor > New Query
+# Copy contents from: supabase/migrations/001_create_tables.sql
 ```
 
 ## 🔧 Development
@@ -104,7 +120,7 @@ npm run test:coverage   # Generate coverage report
 
 # Build & Deploy
 npm run build          # Production build
-npm run deploy         # Deploy to AWS
+npm run deploy         # Deploy to Vercel/Netlify
 ```
 
 ### Mobile Commands
@@ -151,6 +167,7 @@ Both web and mobile applications connect to the same backend:
 
 - JWT-based authentication
 - Role-based access control (RBAC)
+- Row Level Security (RLS)
 - Data encryption at rest and in transit
 - GPS spoofing prevention
 - Device fingerprinting
@@ -188,7 +205,7 @@ NEXT_PUBLIC_APP_URL=
 ```
 
 ### Mobile (config files)
-- Firebase configuration
+- Firebase configuration (FCM)
 - API endpoints
 - Feature flags
 
@@ -207,3 +224,11 @@ Proprietary - DOT Platform
 
 - [Marketing Service](../marketing/README.md)
 - [Scheduler Service](../scheduler/README.md)
+
+## 📚 Documentation
+
+- [System Architecture](./docs/architecture/)
+- [API Documentation](./docs/api/)
+- [Development Guides](./docs/guides/)
+- [Feature Documentation](./docs/features/)
+- [Migration Guide](./docs/AWS_TO_SUPABASE_MIGRATION.md)
