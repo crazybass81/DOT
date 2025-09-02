@@ -21,6 +21,27 @@ export default function MasterAdminLoginPage() {
     setError('');
     setIsLoading(true);
 
+    // 하드코딩된 마스터 계정 체크
+    if (email === 'archt723@gmail.com' && password === 'Master123!@#') {
+      // 로컬 스토리지에 마스터 관리자 인증 정보 저장
+      localStorage.setItem('master_admin_token', 'hardcoded-master-token-' + Date.now());
+      localStorage.setItem('master_admin_user', JSON.stringify({
+        id: 'master-001',
+        email: 'archt723@gmail.com',
+        name: 'Master Admin',
+        role: 'MASTER_ADMIN',
+        is_master_admin: true
+      }));
+      
+      if (rememberMe) {
+        localStorage.setItem('master_admin_email', email);
+      }
+      
+      setIsLoading(false);
+      router.push('/master-admin/dashboard');
+      return;
+    }
+
     try {
       const response = await fetch('/api/master-admin/login', {
         method: 'POST',
