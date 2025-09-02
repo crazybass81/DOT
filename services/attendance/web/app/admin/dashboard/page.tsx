@@ -212,9 +212,18 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Realtime Attendance Table */}
-        <div className="mt-6">
-          <RealtimeAttendance />
+        {/* Realtime Attendance Table - TODO: Implement RealtimeAttendance component */}
+        <div className="mt-6 bg-white rounded-lg shadow">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">실시간 출퇴근 현황</h3>
+          </div>
+          <div className="p-6">
+            <div className="text-center py-12 text-gray-500">
+              <span className="text-4xl mb-4 block">👥</span>
+              <p>실시간 출퇴근 테이블을 개발 중입니다.</p>
+              <p className="text-sm mt-2">곧 직원들의 실시간 출퇴근 현황을 확인할 수 있습니다.</p>
+            </div>
+          </div>
         </div>
       </main>
     </div>
