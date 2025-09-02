@@ -34,8 +34,8 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await cognitoAuthService.directSignIn(email, password);
-      if (result && result.success) {
+      const result = await supabaseAuthService.signIn(email, password);
+      if (result && result.user) {
         router.push('/');
       } else {
         setError('로그인에 실패했습니다');
