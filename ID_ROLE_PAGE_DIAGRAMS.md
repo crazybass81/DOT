@@ -1,168 +1,126 @@
-## 권한 및 역할 시스템 다이어그램
+죄송합니다! 머메이드 다이어그램을 캔버스에서 제대로 렌더링해드리겠습니다.
+
+## 사용자 권한 시스템 다이어그램
+
+### 1. 아이디 체계와 역할 구조
 
 ```mermaid
 graph TB
-    subgraph "아이디 체계"
-        PersonalID["🔑 개인 아이디<br/>(모든 사용자 필수)"]
-        FranchiseID["🏢 가맹본부 아이디"]
-        CorporateID["🏛️ 법인 아이디"]
-        
-        PersonalID -.컨트롤.-> FranchiseID
-        PersonalID -.컨트롤.-> CorporateID
+    subgraph "로그인 체계"
+        PersonalID["🔑 개인 아이디<br/>(모든 사용자 필수 로그인)"]
     end
     
-    subgraph "역할 (Roles)"
-        Worker["👷 워커<br/>(근로자)"]
-        Admin["👔 어드민<br/>(사업주)"]
-        Manager["📊 매니저<br/>(관리자)"]
-        FranchiseRole["🏪 가맹본부"]
+    subgraph "아이디 유형"
+        PersonalType["개인 아이디"]
+        FranchiseType["가맹본부 아이디"]
+        CorporateType["법인 아이디"]
     end
     
-    subgraph "페이지 유형"
-        BusinessPage["📋 사업자 페이지<br/>(사업자등록증당 1개)"]
-        ContractPage["📄 계약서 페이지<br/>(근로계약서당 1개)"]
+    subgraph "역할 4종"
+        Worker["👷 워커 (근로자)"]
+        Admin["👔 어드민 (사업주)"]
+        Manager["📊 매니저 (관리자)"]
+        Franchise["🏪 가맹본부"]
     end
+    
+    subgraph "페이지 단위"
+        BusinessDashboard["📋 사업자 대시보드<br/>(사업자등록증당 1개)"]
+        ContractDashboard["📄 계약서 대시보드<br/>(근로계약서당 1개)"]
+    end
+    
+    PersonalID --> PersonalType
+    PersonalID -.제어.-> FranchiseType
+    PersonalID -.제어.-> CorporateType
     
     PersonalID ==> Worker
     PersonalID ==> Admin
     PersonalID ==> Manager
-    PersonalID ==> FranchiseRole
+    PersonalID ==> Franchise
     
-    Worker --> ContractPage
-    Admin --> BusinessPage
-    Manager --> BusinessPage
-    FranchiseRole --> BusinessPage
-    
-    style PersonalID fill:#FFE4B5
-    style Worker fill:#E6F3FF
-    style Admin fill:#FFE6E6
-    style Manager fill:#E6FFE6
-    style FranchiseRole fill:#F0E6FF
+    Admin --> BusinessDashboard
+    Manager --> BusinessDashboard
+    Franchise --> BusinessDashboard
+    Worker --> ContractDashboard
 ```
 
-## 복잡한 사용자 예시 - Case Study
+### 2. 사용 케이스별 다이어그램
 
+#### Case 1: 단순 워커 (알바생)
 ```mermaid
 graph LR
-    subgraph "Case 1: 단순 워커"
-        User1["👤 김알바<br/>(개인 아이디)"]
-        Role1["👷 워커 역할"]
-        Page1["📄 A카페 계약서 페이지"]
-        
-        User1 --> Role1
-        Role1 --> Page1
-    end
-    
-    subgraph "Case 2: 워커 + 매니저"
-        User2["👤 이매니저<br/>(개인 아이디)"]
-        Role2A["👷 워커 역할"]
-        Role2B["📊 매니저 역할"]
-        Page2A["📄 B식당 워커 페이지<br/>(계약서)"]
-        Page2B["📄 C마트 워커 페이지<br/>(계약서)"]
-        Page2C["📋 C마트 매니저 페이지<br/>(사업자)"]
-        
-        User2 --> Role2A
-        User2 --> Role2B
-        Role2A --> Page2A
-        Role2A --> Page2B
-        Role2B --> Page2C
-    end
+    User1["김알바<br/>(개인ID)"] --> Role1["워커 역할"]
+    Role1 --> Contract1["📄 A카페 계약서 대시보드"]
 ```
 
-## 최복잡 케이스 - 다중 역할 사용자
-
+#### Case 2: 워커 + 매니저
 ```mermaid
-flowchart TD
-    subgraph "개인 아이디"
-        User["👤 김만능<br/>(개인 아이디 로그인)"]
-    end
+graph TD
+    User2["이직원<br/>(개인ID)"] --> Role2A["워커 역할"]
+    User2 --> Role2B["매니저 역할"]
     
-    subgraph "보유 역할"
-        R1["👷 워커"]
-        R2["👔 어드민"]
-        R3["📊 매니저"]
-    end
-    
-    subgraph "접근 가능 페이지"
-        subgraph "사업자 페이지"
-            BP1["📋 본인 개인사업자<br/>(어드민)"]
-            BP2["📋 타인 개인사업자<br/>(매니저)"]
-            BP3["📋 법인 사업자<br/>(어드민)"]
-            BP4["📋 가맹본부<br/>(매니저)"]
-        end
-        
-        subgraph "계약서 페이지"
-            CP1["📄 알바 A<br/>(워커)"]
-            CP2["📄 타 개인사업자<br/>(워커)"]
-            CP3["📄 법인<br/>(워커)"]
-            CP4["📄 가맹본부<br/>(워커)"]
-        end
-    end
-    
-    User --> R1
-    User --> R2
-    User --> R3
-    
-    R2 --> BP1
-    R3 --> BP2
-    R2 --> BP3
-    R3 --> BP4
-    
-    R1 --> CP1
-    R1 --> CP2
-    R1 --> CP3
-    R1 --> CP4
-    
-    style User fill:#FFD700
-    style R1 fill:#E6F3FF
-    style R2 fill:#FFE6E6
-    style R3 fill:#E6FFE6
+    Role2A --> Contract2A["📄 A카페 워커 대시보드"]
+    Role2A --> Contract2B["📄 B마트 워커 대시보드"]
+    Role2B --> Business2["📋 B마트 매니저 대시보드"]
 ```
 
-## 시스템 아키텍처 Overview
+#### Case 3: 최복잡 케이스
+```mermaid
+graph TD
+    User["김만능<br/>(개인ID 로그인)"]
+    
+    User --> RoleW["👷 워커"]
+    User --> RoleA["👔 어드민"]
+    User --> RoleM["📊 매니저"]
+    
+    RoleA --> B1["📋 본인 개인사업자<br/>어드민 페이지"]
+    RoleM --> B2["📋 타인 개인사업자<br/>매니저 페이지"]
+    RoleA --> B3["📋 법인<br/>어드민 페이지"]
+    RoleM --> B4["📋 가맹본부<br/>매니저 페이지"]
+    
+    RoleW --> C1["📄 알바 워커 페이지"]
+    RoleW --> C2["📄 타 개인사업자<br/>워커 페이지"]
+    RoleW --> C3["📄 법인 워커 페이지"]
+    RoleW --> C4["📄 가맹본부<br/>워커 페이지"]
+```
+
+### 3. 데이터 관계도
 
 ```mermaid
 erDiagram
-    PERSONAL_ID ||--o{ ROLE : "has"
-    PERSONAL_ID ||--o{ FRANCHISE_ID : "controls"
-    PERSONAL_ID ||--o{ CORPORATE_ID : "controls"
+    개인아이디 ||--o{ 역할 : "보유"
+    개인아이디 ||--o| 가맹본부아이디 : "제어"
+    개인아이디 ||--o| 법인아이디 : "제어"
     
-    ROLE {
-        string type "Worker|Admin|Manager|Franchise"
-        string entity_id "연결된 사업체 ID"
+    역할 ||--o{ 사업자페이지 : "접근"
+    역할 ||--o{ 계약서페이지 : "접근"
+    
+    사업자페이지 ||--|| 사업자등록증 : "대응"
+    계약서페이지 ||--|| 근로계약서 : "대응"
+    
+    개인아이디 {
+        string id PK
+        string 이름
+        string 전화번호
+        string 이메일
     }
     
-    PERSONAL_ID {
-        string user_id PK
-        string name
-        string phone
-        string email
+    역할 {
+        string 역할유형
+        string 사업체ID
+        string 권한범위
     }
     
-    FRANCHISE_ID {
-        string franchise_id PK
-        string business_number
-        string controlled_by FK
+    사업자페이지 {
+        string 페이지ID PK
+        string 사업자번호
+        string 접근권한
     }
     
-    CORPORATE_ID {
-        string corporate_id PK
-        string corporate_number
-        string controlled_by FK
+    계약서페이지 {
+        string 페이지ID PK
+        string 계약서번호
+        string 워커ID
     }
-    
-    BUSINESS_PAGE ||--|| BUSINESS_REGISTRATION : "represents"
-    CONTRACT_PAGE ||--|| LABOR_CONTRACT : "represents"
-    
-    ROLE ||--o{ BUSINESS_PAGE : "accesses"
-    ROLE ||--o{ CONTRACT_PAGE : "accesses"
 ```
 
-이 다이어그램들은 복잡한 권한 시스템을 시각화한 것입니다:
-
-1. **기본 구조**: 모든 사용자는 개인 아이디로 로그인
-2. **역할 할당**: 한 사용자가 여러 역할 보유 가능
-3. **페이지 접근**: 역할에 따라 접근 가능한 페이지 결정
-4. **확장성**: 새로운 역할이나 페이지 유형 추가 가능
-
-이해하기 쉽도록 단순한 케이스부터 복잡한 케이스까지 단계적으로 표현했습니다.
+캔버스에서 다이어그램이 제대로 보이시나요? 머메이드 형식으로 작성했는데, 혹시 다른 형식(플로우차트, 이미지 등)으로 다시 만들어드릴까요?
