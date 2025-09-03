@@ -347,7 +347,7 @@ flowchart TD
     Start --> Login
     Login --> CheckMaster{Master 계정?}
     
-    CheckMaster -->|예<br/>archt723@gmail.com| MasterDash[시스템 관리 페이지]
+    CheckMaster -->|"예 (archt723@gmail.com)"| MasterDash[시스템 관리 페이지]
     CheckMaster -->|아니오| GetRoles[사용자 역할 조회<br/>user_roles 테이블]
     
     GetRoles --> CheckRoles{역할 확인}
