@@ -1,4 +1,4 @@
-# 📊 근로 관리 SaaS 완벽한 시스템 다이어그램 세트
+# 📊 근로 관리 SaaS 완전한 시스템 다이어그램 세트 (Supabase 기반)
 
 ## 1️⃣ 전체 시스템 구조도
 
@@ -82,19 +82,19 @@ flowchart TD
     AgeCheck -->|15-18세| TeenConsent[부모 동의<br/>부모 휴대폰 인증]
     AgeCheck -->|18세 이상| PhoneAuth
     
-    TeenConsent --> PhoneAuth[휴대폰 본인인증]
-    PhoneAuth --> CreatePersonalID[개인 아이디 생성]
-    CreatePersonalID --> RoleSelect1{역할 선택}
+    TeenConsent --> PhoneAuth[휴대폰 본인인증<br/>NICE API]
+    PhoneAuth --> CreateSupaAuth[Supabase Auth<br/>계정 생성]
+    CreateSupaAuth --> RoleSelect1{역할 선택}
     
     %% 신규 가입 역할
     RoleSelect1 -->|일반 근로자| JustWorker[워커 대기 상태<br/>계약 필요]
-    RoleSelect1 -->|개인사업자| IndivBizNew[사업자 검증<br/>→ 어드민 역할<br/>계약 불필요]
-    RoleSelect1 -->|법인 설립| CorpNew[법인 아이디 생성<br/>→ 어드민 역할<br/>→ 근로계약 생성]
-    RoleSelect1 -->|가맹본부 설립| FranNew[가맹본부 아이디 생성<br/>→ 어드민 역할<br/>→ 근로계약 생성]
+    RoleSelect1 -->|개인사업자| IndivBizNew[국세청 API 검증<br/>→ 어드민 역할<br/>계약 불필요]
+    RoleSelect1 -->|법인 설립| CorpNew[법인 아이디 생성<br/>→ 어드민 역할<br/>→ 근로계약 자동생성]
+    RoleSelect1 -->|가맹본부 설립| FranNew[가맹본부 아이디 생성<br/>→ 어드민 역할<br/>→ 근로계약 자동생성]
     
     %% 기존 회원 역할 추가
-    ExistingUser --> Login[로그인]
-    Login --> RoleSelect2{역할 추가 선택}
+    ExistingUser --> SupaLogin[Supabase Auth<br/>로그인]
+    SupaLogin --> RoleSelect2{역할 추가 선택}
     
     RoleSelect2 -->|개인사업 시작| IndivBizAdd[사업자 검증<br/>→ 어드민 추가]
     RoleSelect2 -->|법인 어드민 승계| CorpAdminCheck{해당 법인<br/>직원?}
@@ -102,11 +102,14 @@ flowchart TD
     CorpAdminCheck -->|예| GrantAdmin[어드민 권한 부여<br/>기존 계약 유지]
     CorpAdminCheck -->|아니오| DenyAdmin[❌ 불가<br/>먼저 입사 필요]
     
+    %% Edge Functions 호출
+    IndivBizNew --> EF1[Edge Function<br/>employee-register]
+    CorpNew --> EF1
+    FranNew --> EF1
+    
     %% 최종
     JustWorker --> Complete
-    IndivBizNew --> Complete
-    CorpNew --> Complete
-    FranNew --> Complete
+    EF1 --> Complete
     IndivBizAdd --> Complete
     GrantAdmin --> Complete
     
@@ -114,49 +117,401 @@ flowchart TD
     
     style Reject fill:#f8d7da
     style DenyAdmin fill:#f8d7da
-    style CorpNew fill:#cce5ff
-    style FranNew fill:#ffe6cc
+    style CreateSupaAuth fill:#fff3cd
+    style EF1 fill:#ffe6cc
     style Complete fill:#d4edda
 ```
 
-## 3️⃣ 복합 사용자 케이스
+## 3️⃣ Supabase 데이터베이스 스키마
+
+```mermaid
+erDiagram
+    organizations {
+        uuid id PK
+        string name
+        string code UK
+        string biz_number UK
+        enum biz_type "PERSONAL/CORP/FRANCHISE"
+        boolean is_active
+        jsonb metadata
+        timestamp created_at
+    }
+    
+    branches {
+        uuid id PK
+        uuid organization_id FK
+        string name
+        string code UK
+        text address
+        decimal latitude
+        decimal longitude
+        integer geofence_radius "30m"
+        boolean is_active
+    }
+    
+    employees {
+        uuid id PK
+        uuid auth_user_id FK "Supabase Auth"
+        uuid organization_id FK
+        uuid branch_id FK
+        string employee_code UK
+        string email UK
+        string phone UK
+        string name
+        date birth_date
+        string resident_id_hash "암호화"
+        enum role "EMPLOYEE/MANAGER/ADMIN/MASTER_ADMIN"
+        enum approval_status "PENDING/APPROVED/REJECTED"
+        jsonb biometric_data "암호화"
+        timestamp approved_at
+    }
+    
+    contracts {
+        uuid id PK
+        uuid employee_id FK
+        uuid organization_id FK
+        date start_date
+        date end_date
+        enum status "PENDING/ACTIVE/TERMINATED"
+        decimal wage
+        enum wage_type "HOURLY/MONTHLY"
+        jsonb terms "표준근로계약서"
+        boolean is_teen "청소년여부"
+        jsonb parent_consent "부모동의"
+    }
+    
+    user_roles {
+        uuid id PK
+        uuid employee_id FK
+        uuid organization_id FK
+        enum role_type "WORKER/ADMIN/MANAGER/FRANCHISE"
+        boolean is_active
+        timestamp granted_at
+        uuid granted_by FK
+    }
+    
+    attendance {
+        uuid id PK
+        uuid employee_id FK
+        uuid contract_id FK
+        date work_date
+        timestamp check_in_time
+        timestamp check_out_time
+        point check_in_location "PostGIS"
+        point check_out_location "PostGIS"
+        enum check_type "GPS/QR/MANUAL"
+        enum status "WORKING/ON_BREAK/COMPLETED"
+        integer total_minutes
+        boolean kakao_sent "알림톡발송여부"
+        timestamp dispute_deadline "이의신청마감"
+    }
+    
+    breaks {
+        uuid id PK
+        uuid attendance_id FK
+        timestamp start_time
+        timestamp end_time
+        integer duration_minutes
+        enum status "ACTIVE/COMPLETED"
+    }
+    
+    qr_codes {
+        uuid id PK
+        uuid branch_id FK
+        string code UK
+        timestamp valid_from
+        timestamp valid_until
+        boolean is_active
+    }
+    
+    device_tokens {
+        uuid id PK
+        uuid employee_id FK
+        string token UK
+        string platform "iOS/Android/Web"
+        boolean is_active
+    }
+    
+    audit_logs {
+        uuid id PK
+        uuid user_id FK
+        string table_name
+        string action "INSERT/UPDATE/DELETE"
+        jsonb old_data
+        jsonb new_data
+        timestamp created_at
+    }
+    
+    organizations ||--o{ branches : has
+    organizations ||--o{ employees : employs
+    organizations ||--o{ contracts : manages
+    branches ||--o{ qr_codes : generates
+    employees ||--o{ contracts : signs
+    employees ||--o{ user_roles : has
+    employees ||--o{ attendance : records
+    employees ||--o{ device_tokens : owns
+    contracts ||--o{ attendance : tracks
+    attendance ||--o{ breaks : contains
+    employees ||--o{ audit_logs : generates
+```
+
+## 4️⃣ Supabase 시스템 아키텍처
+
+```mermaid
+graph TB
+    subgraph "Frontend Applications"
+        Web[Next.js 15.5<br/>React 19 + TypeScript<br/>Port: 3002]
+        Mobile[Flutter 3.x<br/>Dart + Riverpod]
+    end
+    
+    subgraph "Supabase Cloud"
+        subgraph "Authentication"
+            Auth[Supabase Auth<br/>JWT 토큰 관리<br/>Master: archt723@gmail.com]
+            RLS[Row Level Security<br/>역할별 데이터 격리]
+        end
+        
+        subgraph "Edge Functions (Deno)"
+            EF1[attendance-checkin<br/>GPS/QR 검증]
+            EF2[attendance-checkout<br/>퇴근 + 카톡발송]
+            EF3[employee-register<br/>회원가입]
+            EF4[employee-approve<br/>직원 승인]
+            EF5[contract-create<br/>계약 생성]
+        end
+        
+        subgraph "Database"
+            PG[(PostgreSQL<br/>+ PostGIS<br/>+ pg_cron)]
+            RT[Realtime<br/>구독/알림]
+            Storage[Storage<br/>계약서/서류]
+        end
+    end
+    
+    subgraph "External APIs"
+        NICE[NICE 본인인증]
+        NTS[국세청 사업자검증]
+        Kakao[카카오 알림톡]
+        FCM[Firebase Push]
+    end
+    
+    subgraph "Device Features"
+        GPS[GPS 위치추적<br/>30m 오차]
+        QR[QR Scanner]
+        Bio[생체인증]
+        Offline[오프라인 동기화]
+    end
+    
+    Web --> Auth
+    Mobile --> Auth
+    Auth --> RLS
+    RLS --> PG
+    
+    Web --> EF1
+    Web --> EF2
+    Web --> EF3
+    Web --> EF4
+    Web --> EF5
+    
+    Mobile --> EF1
+    Mobile --> EF2
+    Mobile --> GPS
+    Mobile --> QR
+    Mobile --> Bio
+    Mobile --> Offline
+    
+    EF1 --> PG
+    EF2 --> PG
+    EF3 --> NICE
+    EF3 --> NTS
+    EF2 --> Kakao
+    Mobile --> FCM
+    
+    PG --> RT
+    RT --> Web
+    RT --> Mobile
+    
+    EF5 --> Storage
+    
+    style Auth fill:#fff3cd
+    style PG fill:#d4edda
+    style EF1 fill:#ffe6cc
+    style EF2 fill:#ffe6cc
+    style EF3 fill:#ffe6cc
+```
+
+## 5️⃣ 로그인 및 권한 플로우
 
 ```mermaid
 flowchart TD
-    subgraph "김철수 - 최대 복잡도 예시"
-        User[김철수<br/>개인 아이디]
+    Start([시작])
+    Login[Supabase Auth 로그인<br/>이메일/비밀번호]
+    
+    Start --> Login
+    Login --> CheckMaster{Master 계정?}
+    
+    CheckMaster -->|예<br/>archt723@gmail.com| MasterDash[시스템 관리 페이지]
+    CheckMaster -->|아니오| GetRoles[사용자 역할 조회<br/>user_roles 테이블]
+    
+    GetRoles --> CheckRoles{역할 확인}
+    
+    CheckRoles -->|워커만| WorkerFlow{계약 수?}
+    CheckRoles -->|어드민/매니저| BizSelect[사업장 선택]
+    CheckRoles -->|복합 역할| MultiRole[역할 선택 화면]
+    
+    WorkerFlow -->|1개| SingleWorker[워커 페이지 직접]
+    WorkerFlow -->|여러개| ContractSelect[계약 선택]
+    
+    BizSelect --> BizPage[선택한 사업자 페이지<br/>RLS 적용]
+    
+    MultiRole --> RoleChoice{선택}
+    RoleChoice -->|어드민| AdminPage[어드민 페이지들]
+    RoleChoice -->|매니저| ManagerPage[매니저 페이지들]
+    RoleChoice -->|워커| WorkerPage[워커 페이지들]
+    RoleChoice -->|가맹본부| FranchisePage[가맹본부 페이지]
+    
+    style CheckMaster fill:#ffcccc
+    style GetRoles fill:#fff3cd
+    style BizPage fill:#d4edda
+```
+
+## 6️⃣ 출퇴근 프로세스 (Edge Functions)
+
+```mermaid
+sequenceDiagram
+    participant M as Mobile App
+    participant A as Supabase Auth
+    participant E as Edge Functions
+    participant D as Database
+    participant X as External API
+    
+    Note over M: 출근 시나리오
+    M->>A: 로그인 (JWT 토큰)
+    A-->>M: 인증 토큰
+    
+    M->>M: GPS 위치 확인
+    M->>M: QR 코드 스캔
+    
+    M->>E: attendance-checkin<br/>{location, qr_code}
+    E->>E: JWT 검증
+    E->>D: 지점 위치 조회
+    E->>E: 거리 계산 (30m 이내)
+    E->>D: QR 코드 유효성 확인
+    E->>D: attendance 레코드 생성
+    E->>M: ✅ 출근 완료
+    
+    Note over M: 퇴근 시나리오
+    M->>E: attendance-checkout
+    E->>D: 출근 기록 확인
+    E->>E: 근무시간 계산
+    E->>D: attendance 업데이트
+    E->>X: 카카오 알림톡 API
+    X-->>M: 📱 일일 근무내역
+    
+    Note over M: 자동 퇴근
+    D->>D: pg_cron (매 30분)
+    D->>D: GPS 범위 이탈 확인
+    D->>E: attendance-auto-checkout
+    E->>X: 확인 알림 발송
+    X-->>M: "퇴근 처리할까요?"
+    
+    alt 응답 없음
+        E->>D: 자동 퇴근 처리
+        E->>X: 퇴근 알림톡
+    else 응답
+        M->>E: 계속 근무
+        E->>D: 상태 유지
+    end
+```
+
+## 7️⃣ 권한 매트릭스 (RLS 정책)
+
+```mermaid
+graph TB
+    subgraph "Master Admin (시스템 관리자)"
+        M1[✅ 모든 조직 데이터 읽기]
+        M2[✅ 사업자 승인/정지]
+        M3[✅ 시스템 설정 변경]
+        M4[⚠️ 개인정보는 마스킹 처리]
+        M5[❌ 급여 직접 수정 불가]
     end
     
-    subgraph "제어하는 조직"
-        User -.제어.-> Corp[C법인 아이디]
-        User -.제어.-> Franchise[D가맹본부 아이디]
+    subgraph "Admin (사업자 관리자)"
+        A1[✅ 소속 조직 전체 관리]
+        A2[✅ 계약서 작성/삭제]
+        A3[✅ 매니저 권한 부여]
+        A4[✅ 급여 관리]
+        A5[✅ 근태 승인/수정]
+        A6[⚠️ 조직당 1명만]
     end
     
-    subgraph "보유 역할 (4종)"
+    subgraph "Manager (중간 관리자)"
+        MG1[✅ 근태 승인]
+        MG2[✅ 공지 작성]
+        MG3[✅ 스케줄 관리]
+        MG4[✅ 소속 지점 데이터]
+        MG5[❌ 급여 정보 접근 불가]
+        MG6[❌ 계약서 수정 불가]
+    end
+    
+    subgraph "Worker (근로자)"
+        W1[✅ 본인 출퇴근]
+        W2[✅ 본인 기록 조회]
+        W3[✅ 본인 계약서 조회]
+        W4[❌ 타인 정보 접근 불가]
+        W5[❌ 관리 기능 사용 불가]
+    end
+    
+    subgraph "RLS Policies"
+        P1[auth.uid() = master_id]
+        P2[org_id = auth.jwt() ->> 'org_id']
+        P3[branch_id = auth.jwt() ->> 'branch_id']
+        P4[employee_id = auth.uid()]
+    end
+    
+    M1 --> P1
+    A1 --> P2
+    MG1 --> P3
+    W1 --> P4
+    
+    style M4 fill:#fff3cd
+    style M5 fill:#ffcccc
+    style A6 fill:#fff3cd
+    style MG5 fill:#ffcccc
+    style MG6 fill:#ffcccc
+    style W4 fill:#ffcccc
+    style W5 fill:#ffcccc
+```
+
+## 8️⃣ 복합 사용자 케이스
+
+```mermaid
+flowchart TD
+    subgraph "김철수 - 복잡한 케이스"
+        User[김철수<br/>Supabase Auth ID: uuid-123]
+    end
+    
+    subgraph "보유 역할 (user_roles)"
         User --> R1[워커 - 4개 계약]
         User --> R2[어드민 - 2개 조직]
         User --> R3[매니저 - 1개 조직]
         User --> R4[가맹본부 직원]
     end
     
-    subgraph "접근 페이지 (총 8개)"
-        subgraph "워커 페이지 (4)"
+    subgraph "제어하는 조직 (organizations)"
+        R2 --> Corp[C법인<br/>법인 어드민]
+        R2 --> Personal[본인 개인사업자<br/>어드민]
+    end
+    
+    subgraph "접근 가능 페이지 (8개)"
+        subgraph "워커 페이지 (contracts)"
             R1 --> W1[A카페 알바]
-            R1 --> W2[B식당 알바]
+            R1 --> W2[B식당 알바]  
             R1 --> W3[C법인 정규직]
             R1 --> W4[D가맹본부 정규직]
         end
         
-        subgraph "어드민 페이지 (2)"
-            R2 --> A1[본인 개인사업자]
+        subgraph "관리 페이지"
+            R2 --> A1[개인사업자 어드민]
             R2 --> A2[C법인 어드민]
-        end
-        
-        subgraph "매니저 페이지 (1)"
             R3 --> M1[B식당 매니저]
-        end
-        
-        subgraph "가맹본부 페이지 (1)"
             R4 --> F1[D가맹본부 관리]
         end
     end
@@ -168,252 +523,122 @@ flowchart TD
     style R4 fill:#ffe6cc
 ```
 
-## 4️⃣ 데이터베이스 ERD
-
-```mermaid
-erDiagram
-    USERS {
-        uuid id PK
-        string email UK
-        string phone UK
-        string name
-        boolean is_master
-        string resident_id_hash "암호화"
-        string personal_biz_number "개인사업자"
-        date birth_date
-    }
-    
-    CORP_ACCOUNTS {
-        uuid id PK
-        string corp_name
-        string biz_number UK
-        uuid creator_user_id FK
-        uuid current_admin_id FK "현재 어드민"
-        date created_at
-    }
-    
-    FRANCHISE_ACCOUNTS {
-        uuid id PK
-        string franchise_name
-        string biz_number UK
-        uuid creator_user_id FK
-        uuid current_admin_id FK
-        date created_at
-    }
-    
-    CONTRACTS {
-        uuid id PK
-        uuid worker_user_id FK
-        string biz_number FK
-        string biz_type "PERSONAL/CORP/FRANCHISE"
-        date start_date
-        date end_date
-        string status "PENDING/ACTIVE/TERMINATED"
-        decimal wage
-        string wage_type "HOURLY/MONTHLY"
-    }
-    
-    USER_ROLES {
-        uuid id PK
-        uuid user_id FK
-        string biz_number FK
-        string role "WORKER/ADMIN/MANAGER"
-        boolean is_active
-        date granted_at
-    }
-    
-    PAGES {
-        uuid id PK
-        string page_type "BIZ_ADMIN/BIZ_MANAGER/WORKER/FRANCHISE/SYSTEM"
-        string biz_number FK
-        uuid contract_id FK "워커페이지용"
-    }
-    
-    WORK_RECORDS {
-        uuid id PK
-        uuid contract_id FK
-        date work_date
-        time check_in
-        time check_out
-        decimal latitude
-        decimal longitude
-        string check_type "GPS/QR"
-    }
-    
-    USERS ||--o{ CONTRACTS : "signs"
-    USERS ||--o{ USER_ROLES : "has"
-    USERS ||--o| CORP_ACCOUNTS : "creates/admins"
-    USERS ||--o| FRANCHISE_ACCOUNTS : "creates/admins"
-    CONTRACTS ||--|| PAGES : "generates worker page"
-    CONTRACTS ||--o{ WORK_RECORDS : "records"
-    USER_ROLES }o--|| PAGES : "accesses biz pages"
-```
-
-## 5️⃣ 로그인 및 페이지 선택 플로우
-
-```mermaid
-flowchart LR
-    Start([로그인])
-    Login[개인 아이디 입력]
-    Auth[인증 성공]
-    
-    Start --> Login --> Auth
-    
-    Auth --> CheckRole{역할 확인}
-    
-    CheckRole -->|워커만| SingleWorker{계약 수}
-    CheckRole -->|어드민/매니저| BizSelect[사업장 선택]
-    CheckRole -->|복합 역할| MultiRole[역할 선택 화면]
-    
-    SingleWorker -->|1개| DirectWorker[워커 페이지 직접 이동]
-    SingleWorker -->|여러개| SelectContract[계약 선택]
-    
-    MultiRole -->|어드민 선택| AdminPages[어드민 페이지 목록]
-    MultiRole -->|매니저 선택| ManagerPages[매니저 페이지 목록]
-    MultiRole -->|워커 선택| WorkerPages[워커 페이지 목록]
-    MultiRole -->|가맹본부 선택| FranchiseMain[가맹본부 페이지]
-    
-    style Auth fill:#d4edda
-    style CheckRole fill:#fff3cd
-```
-
-## 6️⃣ 권한 매트릭스
-
-```mermaid
-graph LR
-    subgraph "Master (시스템 관리자)"
-        M1[✓ 시스템 모니터링]
-        M2[✓ 사업자 승인/정지]
-        M3[✓ 분쟁 조정]
-        M4[❌ 개인정보 직접 열람]
-        M5[❌ 급여 정보 접근]
-    end
-    
-    subgraph "Admin (사업자 관리자)"
-        A1[✓ 계약서 작성/삭제]
-        A2[✓ 매니저 권한 부여]
-        A3[✓ 급여 관리]
-        A4[✓ 모든 근태 관리]
-        A5[✓ 직원 정보 관리]
-        A6[조직당 1명만]
-    end
-    
-    subgraph "Manager (중간 관리자)"
-        MG1[✓ 근태 승인]
-        MG2[✓ 공지 작성]
-        MG3[✓ 스케줄 관리]
-        MG4[❌ 급여 열람]
-        MG5[❌ 계약서 작성]
-        MG6[조직당 여러명 가능]
-    end
-    
-    subgraph "Worker (근로자)"
-        W1[✓ 본인 출퇴근]
-        W2[✓ 본인 기록 조회]
-        W3[✓ 본인 계약서 조회]
-        W4[❌ 타인 정보]
-        W5[❌ 관리 기능]
-    end
-    
-    subgraph "Franchise (가맹본부)"
-        F1[✓ 가맹점 현황]
-        F2[✓ 통합 통계]
-        F3[✓ 일괄 공지]
-        F4[❌ 개별 급여 정보]
-        F5[❌ 개인정보 상세]
-    end
-    
-    style M4 fill:#ffcccc
-    style M5 fill:#ffcccc
-    style MG4 fill:#ffcccc
-    style MG5 fill:#ffcccc
-    style W4 fill:#ffcccc
-    style W5 fill:#ffcccc
-    style F4 fill:#ffcccc
-    style F5 fill:#ffcccc
-    style A6 fill:#fff3cd
-    style MG6 fill:#d4edda
-```
-
-## 7️⃣ 특수 케이스 처리
+## 9️⃣ 특수 케이스 처리
 
 ```mermaid
 graph TB
-    subgraph "청소년 (15-18세)"
+    subgraph "청소년 보호 (15-18세)"
         Teen[청소년 근로자]
-        Teen --> T1[부모 동의서 필수]
-        Teen --> T2[부모 휴대폰 인증]
-        Teen --> T3[1일 7시간 제한]
-        Teen --> T4[주 35시간 제한]
-        Teen --> T5[야간근무 차단<br/>22:00-06:00]
+        Teen --> T1[부모 동의서<br/>Supabase Storage 저장]
+        Teen --> T2[부모 휴대폰 인증<br/>NICE API]
+        Teen --> T3[근무 제한<br/>1일 7시간]
+        Teen --> T4[주 35시간 제한<br/>pg_cron 자동 체크]
+        Teen --> T5[야간 차단<br/>22:00-06:00<br/>Edge Function 검증]
     end
     
-    subgraph "계약 및 페이지 생성 규칙"
-        Rule1[개인사업자 = 계약 불필요]
-        Rule2[법인 어드민 = 근로계약 필수]
-        Rule3[가맹본부 어드민 = 근로계약 필수]
-        Rule4[1계약 = 1워커페이지]
-        Rule5[어드민 변경 = 기존 직원만]
+    subgraph "자동 처리 (pg_cron)"
+        Auto1[30분마다 GPS 체크]
+        Auto2[일일 근무시간 집계]
+        Auto3[3년 지난 데이터 삭제]
+        Auto4[카톡 알림 재발송]
     end
     
-    subgraph "출퇴근 기록"
-        Check1[GPS + QR 병행]
-        Check2[GPS 오차 30m]
-        Check3[범위 이탈 → 확인 알림]
-        Check4[무응답 → 자동 퇴근]
-        Check5[매일 카톡 근무내역]
+    subgraph "오프라인 모드"
+        Off1[로컬 SQLite 저장]
+        Off2[출퇴근 기록 큐잉]
+        Off3[네트워크 복구시<br/>Supabase 동기화]
+        Off4[충돌 해결 로직]
     end
     
-    subgraph "데이터 정책"
-        Data1[3년 보관 후 자동삭제]
-        Data2[접근 로그 기록]
-        Data3[폐업 후 3년 조회 가능]
+    subgraph "보안 정책"
+        Sec1[주민번호 암호화<br/>단방향 해시]
+        Sec2[생체정보 암호화<br/>AES-256]
+        Sec3[3년 후 자동삭제<br/>GDPR 준수]
+        Sec4[감사 로그<br/>audit_logs 테이블]
     end
     
     style T5 fill:#ffcccc
-    style Rule1 fill:#d4edda
-    style Rule2 fill:#cce5ff
-    style Rule5 fill:#fff3cd
+    style Auto3 fill:#fff3cd
+    style Off3 fill:#d4edda
+    style Sec1 fill:#ffe6cc
 ```
 
-## 8️⃣ 시스템 아키텍처
+## 🔟 배포 파이프라인
 
 ```mermaid
-graph TB
-    subgraph "Frontend"
-        Web[Next.js + Tailwind]
-        Mobile[React Native]
+graph LR
+    subgraph "개발 환경"
+        Dev[로컬 개발<br/>localhost:3002]
+        DevSupa[Supabase Local<br/>Docker]
+        DevDB[(PostgreSQL<br/>localhost:54321)]
     end
     
-    subgraph "Backend"
-        API[Node.js/Python API]
-        Auth[JWT + Redis]
-        Queue[Bull Queue]
+    subgraph "스테이징"
+        Stg[Vercel Preview]
+        StgSupa[Supabase Project<br/>staging-xxx]
+        StgDB[(PostgreSQL<br/>Supabase Cloud)]
     end
     
-    subgraph "Database"
-        PG[(PostgreSQL<br/>메인 DB)]
-        Redis[(Redis<br/>세션/캐시)]
+    subgraph "프로덕션"
+        Prod[Vercel Production<br/>app.dot-attendance.com]
+        ProdSupa[Supabase Project<br/>prod-xxx]
+        ProdDB[(PostgreSQL<br/>Supabase Cloud)]
     end
     
-    subgraph "External APIs"
-        NICE[휴대폰 본인인증]
-        NTS[국세청 사업자검증]
-        Kakao[카카오 알림톡]
-    end
+    Dev --> DevSupa --> DevDB
     
-    Web --> API
-    Mobile --> API
-    API --> PG
-    API --> Redis
-    API --> NICE
-    API --> NTS
-    API --> Kakao
+    Dev -->|git push| GitHub
+    GitHub -->|PR| Stg
+    Stg --> StgSupa --> StgDB
     
-    style Web fill:#e3f2fd
-    style Mobile fill:#e3f2fd
-    style API fill:#fff3cd
-    style PG fill:#d4edda
+    GitHub -->|merge main| Prod
+    Prod --> ProdSupa --> ProdDB
+    
+    style Dev fill:#fff3cd
+    style Stg fill:#ffe6cc
+    style Prod fill:#d4edda
 ```
 
-이 다이어그램 세트가 전체 시스템을 완벽하게 표현합니다. MVP 개발 시 이 구조를 따라가면 됩니다!
+## 1️⃣1️⃣ 환경 변수 설정
+
+```mermaid
+graph TD
+    subgraph ".env.local (Web)"
+        E1[NEXT_PUBLIC_SUPABASE_URL]
+        E2[NEXT_PUBLIC_SUPABASE_ANON_KEY]
+        E3[SUPABASE_SERVICE_ROLE_KEY]
+    end
+    
+    subgraph "Flutter Config"
+        F1[supabaseUrl]
+        F2[supabaseAnonKey]
+        F3[fcmServerKey]
+    end
+    
+    subgraph "Edge Functions Secrets"
+        S1[NICE_API_KEY]
+        S2[NTS_API_KEY]
+        S3[KAKAO_API_KEY]
+        S4[SERVICE_ROLE_KEY]
+    end
+    
+    subgraph "사용처"
+        E1 --> Web[Next.js App]
+        E2 --> Web
+        E3 --> API[API Routes]
+        
+        F1 --> Mobile[Flutter App]
+        F2 --> Mobile
+        F3 --> Push[Push Notifications]
+        
+        S1 --> Auth[본인인증]
+        S2 --> Verify[사업자검증]
+        S3 --> Alert[알림톡]
+    end
+    
+    style E1 fill:#e3f2fd
+    style F1 fill:#e3f2fd
+    style S1 fill:#ffe6cc
+```
+
+이 다이어그램 세트는 Supabase 기반의 완전한 근로 관리 SaaS 시스템을 표현합니다. 실제 ~/desktop/DOT/services/attendance 프로젝트 구조와 완벽히 일치하며, MVP 개발에 바로 사용할 수 있습니다!
