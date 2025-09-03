@@ -424,60 +424,55 @@ sequenceDiagram
 ## 7️⃣ 권한 매트릭스 (RLS 정책)
 
 ```mermaid
-graph TB
-    subgraph "Master Admin (시스템 관리자)"
-        M1[✅ 모든 조직 데이터 읽기]
-        M2[✅ 사업자 승인/정지]
-        M3[✅ 시스템 설정 변경]
-        M4[⚠️ 개인정보는 마스킹 처리]
-        M5[❌ 급여 직접 수정 불가]
+graph TD
+    subgraph "역할별 권한"
+        Master[Master Admin<br/>시스템 관리자]
+        Admin[Admin<br/>사업자 관리자]
+        Manager[Manager<br/>중간 관리자]
+        Worker[Worker<br/>근로자]
     end
     
-    subgraph "Admin (사업자 관리자)"
-        A1[✅ 소속 조직 전체 관리]
-        A2[✅ 계약서 작성/삭제]
-        A3[✅ 매니저 권한 부여]
-        A4[✅ 급여 관리]
-        A5[✅ 근태 승인/수정]
-        A6[⚠️ 조직당 1명만]
+    subgraph "Master 권한"
+        Master --> M1[✅ 모든 조직 데이터 읽기]
+        Master --> M2[✅ 사업자 승인/정지]
+        Master --> M3[⚠️ 개인정보 마스킹]
+        Master --> M4[❌ 급여 직접 수정 불가]
     end
     
-    subgraph "Manager (중간 관리자)"
-        MG1[✅ 근태 승인]
-        MG2[✅ 공지 작성]
-        MG3[✅ 스케줄 관리]
-        MG4[✅ 소속 지점 데이터]
-        MG5[❌ 급여 정보 접근 불가]
-        MG6[❌ 계약서 수정 불가]
+    subgraph "Admin 권한"
+        Admin --> A1[✅ 소속 조직 전체 관리]
+        Admin --> A2[✅ 계약서 작성/삭제]
+        Admin --> A3[✅ 매니저 권한 부여]
+        Admin --> A4[✅ 급여 관리]
+        Admin --> A5[⚠️ 조직당 1명만]
     end
     
-    subgraph "Worker (근로자)"
-        W1[✅ 본인 출퇴근]
-        W2[✅ 본인 기록 조회]
-        W3[✅ 본인 계약서 조회]
-        W4[❌ 타인 정보 접근 불가]
-        W5[❌ 관리 기능 사용 불가]
+    subgraph "Manager 권한"
+        Manager --> MG1[✅ 근태 승인]
+        Manager --> MG2[✅ 공지 작성]
+        Manager --> MG3[✅ 스케줄 관리]
+        Manager --> MG4[❌ 급여 접근 불가]
+        Manager --> MG5[❌ 계약서 수정 불가]
     end
     
-    subgraph "RLS Policies"
-        P1[Master Policy:<br/>user_id equals master_id]
-        P2[Admin Policy:<br/>org_id matches user org]
-        P3[Manager Policy:<br/>branch_id matches user branch]
-        P4[Worker Policy:<br/>employee_id equals user_id]
+    subgraph "Worker 권한"
+        Worker --> W1[✅ 본인 출퇴근]
+        Worker --> W2[✅ 본인 기록 조회]
+        Worker --> W3[✅ 본인 계약서 조회]
+        Worker --> W4[❌ 타인 정보 불가]
+        Worker --> W5[❌ 관리 기능 불가]
     end
     
-    M1 --> P1
-    A1 --> P2
-    MG1 --> P3
-    W1 --> P4
-    
-    style M4 fill:#fff3cd
-    style M5 fill:#ffcccc
-    style A6 fill:#fff3cd
-    style MG5 fill:#ffcccc
-    style MG6 fill:#ffcccc
-    style W4 fill:#ffcccc
-    style W5 fill:#ffcccc
+    style Master fill:#ffcccc
+    style Admin fill:#cce5ff
+    style Manager fill:#ffe6cc
+    style Worker fill:#d4edda
+    style M4 fill:#f8d7da
+    style A5 fill:#fff3cd
+    style MG4 fill:#f8d7da
+    style MG5 fill:#f8d7da
+    style W4 fill:#f8d7da
+    style W5 fill:#f8d7da
 ```
 
 ## 8️⃣ 복합 사용자 케이스
