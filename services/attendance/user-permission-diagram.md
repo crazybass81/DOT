@@ -4,7 +4,7 @@
 
 ```mermaid
 graph TB
-    subgraph "1. ID Layer (로그인 단위)"
+    subgraph "아이디 계층 (로그인 단위)"
         Master[Master ID<br/>시스템 관리자<br/>특수 개인 아이디]
         PersonalID[개인 아이디<br/>모든 일반 사용자]
         
@@ -14,19 +14,19 @@ graph TB
         end
     end
     
-    subgraph "2. 사업자 구분 (2종)"
+    subgraph "사업자 구분 (2종)"
         IndivBiz[개인사업자<br/>개인 아이디가 직접 운영]
         CorpBiz[법인사업자<br/>법인 아이디 통해 운영]
     end
     
-    subgraph "3. 역할 계층 (권한 단위)"
+    subgraph "역할 계층 (권한 단위)"
         WorkerRole[워커<br/>근로계약 체결자]
         AdminRole[어드민<br/>사업자 최고관리자]
         ManagerRole[매니저<br/>중간관리자]
         FranchiseRole[가맹본부 직원<br/>가맹점 관리]
     end
     
-    subgraph "4. 페이지 종류 (접근 단위)"
+    subgraph "페이지 종류 (접근 단위)"
         subgraph "사업자 페이지"
             BizPageAdmin[사업자 페이지<br/>어드민 권한]
             BizPageManager[사업자 페이지<br/>매니저 권한]
