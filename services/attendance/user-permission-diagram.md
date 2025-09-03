@@ -1,11 +1,4 @@
-# 근로 관리 SaaS - 사용자 권한 시스템 다이어그램
-
-## 📌 개요
-이 문서는 근로 관리 SaaS의 복잡한 사용자 권한 시스템을 시각화한 다이어그램입니다.
-
----
-
-## 1. 권한 및 역할 시스템 다이어그램
+## 권한 및 역할 시스템 다이어그램
 
 ```mermaid
 graph TB
@@ -47,9 +40,7 @@ graph TB
     style FranchiseRole fill:#F0E6FF
 ```
 
----
-
-## 2. 복잡한 사용자 예시 - Case Study
+## 복잡한 사용자 예시 - Case Study
 
 ```mermaid
 graph LR
@@ -78,9 +69,7 @@ graph LR
     end
 ```
 
----
-
-## 3. 최복잡 케이스 - 다중 역할 사용자
+## 최복잡 케이스 - 다중 역할 사용자
 
 ```mermaid
 flowchart TD
@@ -130,9 +119,7 @@ flowchart TD
     style R3 fill:#E6FFE6
 ```
 
----
-
-## 4. 시스템 아키텍처 Overview
+## 시스템 아키텍처 Overview
 
 ```mermaid
 erDiagram
@@ -171,10 +158,6 @@ erDiagram
     ROLE ||--o{ CONTRACT_PAGE : "accesses"
 ```
 
----
-
-## 📋 시스템 특징
-
 이 다이어그램들은 복잡한 권한 시스템을 시각화한 것입니다:
 
 1. **기본 구조**: 모든 사용자는 개인 아이디로 로그인
@@ -183,27 +166,3 @@ erDiagram
 4. **확장성**: 새로운 역할이나 페이지 유형 추가 가능
 
 이해하기 쉽도록 단순한 케이스부터 복잡한 케이스까지 단계적으로 표현했습니다.
-
----
-
-## 🔧 VSCode에서 보는 방법
-
-### 필요한 확장 프로그램 설치
-1. VSCode 확장 프로그램 마켓플레이스에서 다음 중 하나를 설치:
-   - **Markdown Preview Mermaid Support** (추천)
-   - **Mermaid Markdown Syntax Highlighting**
-   - **Markdown Preview Enhanced**
-
-### 미리보기 실행
-1. 이 파일을 VSCode에서 열기
-2. `Ctrl+Shift+V` (Windows/Linux) 또는 `Cmd+Shift+V` (Mac) 누르기
-3. 또는 우측 상단의 미리보기 아이콘 클릭
-
-### 문제 해결
-- 다이어그램이 보이지 않으면 확장 프로그램이 제대로 설치되었는지 확인
-- VSCode를 재시작해보세요
-- 다른 머메이드 미리보기 확장 프로그램을 시도해보세요
-
----
-
-*문서 생성일: 2025-01-03*
