@@ -37,7 +37,6 @@ graph TB
         SystemPage[시스템 관리 페이지]
     end
     
-    %% 관계 연결
     Master --> SystemPage
     PersonalID --> WorkerRole
     PersonalID --> AdminRole
@@ -266,4 +265,62 @@ graph TD
     style F4 fill:#ffcccc
 ```
 
-이 다이어그램 세트가 전체 시스템 구조를 명확하게 보여줍니다. 추가로 필요한 다이어그램이 있으면 말씀해주세요!
+### 6️⃣ 회원가입 플로우
+
+```mermaid
+flowchart TD
+    Start([회원가입 시작])
+    
+    Start --> BasicInfo[기본정보 입력<br/>이름, 이메일, 휴대폰, 생년월일]
+    BasicInfo --> AgeCheck{만 15세 이상?}
+    
+    AgeCheck -->|15세 미만| Reject[❌ 가입 불가]
+    AgeCheck -->|15-18세| TeenConsent[부모 동의 필요<br/>부모 휴대폰 인증]
+    AgeCheck -->|18세 이상| PhoneAuth[휴대폰 본인인증]
+    
+    TeenConsent --> ParentAuth{부모 인증<br/>성공?}
+    ParentAuth -->|실패| Reject
+    ParentAuth -->|성공| PhoneAuth
+    
+    PhoneAuth --> RoleSelect{가입 유형 선택}
+    
+    RoleSelect -->|일반 근로자| WorkerReg[워커로 가입]
+    RoleSelect -->|개인사업자| IndivBizReg[사업자 정보 입력]
+    RoleSelect -->|법인 담당자| CorpReg[법인 정보 입력]
+    RoleSelect -->|가맹본부 담당자| FranchiseReg[가맹본부 정보 입력]
+    
+    IndivBizReg --> BizVerify[사업자등록번호<br/>국세청 API 검증]
+    CorpReg --> CorpVerify[법인등록번호<br/>국세청 API 검증]
+    FranchiseReg --> FranVerify[가맹본부<br/>사업자번호 검증]
+    
+    BizVerify -->|검증 실패| RetryBiz[재입력/포기]
+    BizVerify -->|검증 성공| Terms
+    
+    CorpVerify -->|검증 성공| CreateCorpID[법인 아이디 생성]
+    FranVerify -->|검증 성공| CreateFranID[가맹본부 아이디 생성]
+    
+    CreateCorpID --> Terms
+    CreateFranID --> Terms
+    WorkerReg --> Terms
+    
+    Terms[이용약관<br/>개인정보처리방침<br/>동의]
+    
+    Terms --> Complete([✅ 가입 완료])
+    
+    style Start fill:#e8f5e9
+    style Complete fill:#d4edda
+    style Reject fill:#f8d7da
+```
+
+## 📊 핵심 구조 정리
+
+### 아이디 체계
+**아이디 3종류**: 개인 아이디가 기본이며, 법인 아이디와 가맹본부 아이디는 개인이 제어하는 조직 아이디입니다.
+
+### 사업자 구분
+**사업자 2종류**: 개인사업자와 법인사업자만 존재합니다. 가맹본부는 특별한 권한을 가진 조직이지만 그 자체도 개인사업자 또는 법인사업자입니다.
+
+### 중요 포인트
+**가맹본부의 이중성**: 가맹본부는 사업자이면서 동시에 가맹점 관리라는 특수 권한을 가진 조직입니다. 따라서 가맹본부 아이디는 조직 아이디로 존재하며, 가맹점 관리를 위한 특별 페이지를 갖습니다.
+
+**통합 관리**: 모든 사용자는 하나의 개인 아이디로 여러 역할을 수행할 수 있으며, 법인이나 가맹본부도 개인 아이디를 통해 제어됩니다.
