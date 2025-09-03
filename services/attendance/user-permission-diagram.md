@@ -265,7 +265,22 @@ graph TD
     style F4 fill:#ffcccc
 ```
 
-### 6️⃣ 회원가입 플로우
+## 📊 핵심 구조 정리
+
+### 아이디 체계
+**아이디 3종류**: 개인 아이디가 기본이며, 법인 아이디와 가맹본부 아이디는 개인이 제어하는 조직 아이디입니다.
+
+### 사업자 구분
+**사업자 2종류**: 개인사업자와 법인사업자만 존재합니다. 가맹본부는 특별한 권한을 가진 조직이지만 그 자체도 개인사업자 또는 법인사업자입니다.
+
+### 중요 포인트
+**가맹본부의 이중성**: 가맹본부는 사업자이면서 동시에 가맹점 관리라는 특수 권한을 가진 조직입니다. 따라서 가맹본부 아이디는 조직 아이디로 존재하며, 가맹점 관리를 위한 특별 페이지를 갖습니다.
+
+**통합 관리**: 모든 사용자는 하나의 개인 아이디로 여러 역할을 수행할 수 있으며, 법인이나 가맹본부도 개인 아이디를 통해 제어됩니다.
+
+
+
+## 6️⃣ 수정된 회원가입 플로우
 
 ```mermaid
 flowchart TD
@@ -294,14 +309,17 @@ flowchart TD
     FranchiseReg --> FranVerify[가맹본부<br/>사업자번호 검증]
     
     BizVerify -->|검증 실패| RetryBiz[재입력/포기]
-    BizVerify -->|검증 성공| Terms
+    BizVerify -->|검증 성공| CreatePersonal1[개인 아이디 생성<br/>+ 어드민 역할 부여]
     
-    CorpVerify -->|검증 성공| CreateCorpID[법인 아이디 생성]
-    FranVerify -->|검증 성공| CreateFranID[가맹본부 아이디 생성]
+    CorpVerify -->|검증 성공| CreateBoth1[개인 아이디 생성<br/>+ 법인 아이디 생성<br/>+ 어드민 역할 부여]
+    FranVerify -->|검증 성공| CreateBoth2[개인 아이디 생성<br/>+ 가맹본부 아이디 생성<br/>+ 가맹본부 역할 부여]
     
-    CreateCorpID --> Terms
-    CreateFranID --> Terms
-    WorkerReg --> Terms
+    WorkerReg --> CreatePersonal2[개인 아이디만 생성<br/>워커 역할 대기]
+    
+    CreatePersonal1 --> Terms
+    CreatePersonal2 --> Terms
+    CreateBoth1 --> Terms
+    CreateBoth2 --> Terms
     
     Terms[이용약관<br/>개인정보처리방침<br/>동의]
     
@@ -310,17 +328,73 @@ flowchart TD
     style Start fill:#e8f5e9
     style Complete fill:#d4edda
     style Reject fill:#f8d7da
+    style CreateBoth1 fill:#cce5ff
+    style CreateBoth2 fill:#ffe6cc
+    style CreatePersonal1 fill:#fff3cd
 ```
 
-## 📊 핵심 구조 정리
+### 가입 유형별 생성 아이디 정리
 
-### 아이디 체계
-**아이디 3종류**: 개인 아이디가 기본이며, 법인 아이디와 가맹본부 아이디는 개인이 제어하는 조직 아이디입니다.
+```mermaid
+graph LR
+    subgraph "가입 유형별 생성 결과"
+        subgraph "일반 근로자"
+            W1[개인 아이디 ✓]
+            W2[법인 아이디 ✗]
+            W3[가맹본부 아이디 ✗]
+            W4[역할: 워커 대기]
+        end
+        
+        subgraph "개인사업자"
+            I1[개인 아이디 ✓]
+            I2[법인 아이디 ✗]
+            I3[가맹본부 아이디 ✗]
+            I4[역할: 어드민]
+        end
+        
+        subgraph "법인 담당자"
+            C1[개인 아이디 ✓]
+            C2[법인 아이디 ✓]
+            C3[가맹본부 아이디 ✗]
+            C4[역할: 어드민]
+        end
+        
+        subgraph "가맹본부 담당자"
+            F1[개인 아이디 ✓]
+            F2[법인 아이디 ✗]
+            F3[가맹본부 아이디 ✓]
+            F4[역할: 가맹본부]
+        end
+    end
+    
+    style C1 fill:#cce5ff
+    style C2 fill:#cce5ff
+    style F1 fill:#ffe6cc
+    style F3 fill:#ffe6cc
+```
 
-### 사업자 구분
-**사업자 2종류**: 개인사업자와 법인사업자만 존재합니다. 가맹본부는 특별한 권한을 가진 조직이지만 그 자체도 개인사업자 또는 법인사업자입니다.
+### 계정 생성 상세 플로우
 
-### 중요 포인트
-**가맹본부의 이중성**: 가맹본부는 사업자이면서 동시에 가맹점 관리라는 특수 권한을 가진 조직입니다. 따라서 가맹본부 아이디는 조직 아이디로 존재하며, 가맹점 관리를 위한 특별 페이지를 갖습니다.
+```mermaid
+flowchart TD
+    subgraph "법인 담당자 가입 상세"
+        CorpStart[법인 담당자 선택]
+        CorpStart --> InputCorp[법인정보 입력<br/>법인명, 법인번호, 사업자번호]
+        InputCorp --> VerifyCorp[국세청 API 검증]
+        VerifyCorp -->|성공| CheckExist{해당 법인<br/>이미 존재?}
+        
+        CheckExist -->|존재| AlreadyExist[이미 등록된 법인<br/>관리자에게 문의]
+        CheckExist -->|미존재| CreateTwo[동시 생성<br/>1. 개인 아이디<br/>2. 법인 아이디]
+        
+        CreateTwo --> LinkAccounts[개인 아이디가<br/>법인 아이디를<br/>제어하도록 연결]
+        LinkAccounts --> SetAdmin[개인에게<br/>어드민 역할 부여]
+    end
+    
+    style CreateTwo fill:#cce5ff
+    style AlreadyExist fill:#f8d7da
+```
 
-**통합 관리**: 모든 사용자는 하나의 개인 아이디로 여러 역할을 수행할 수 있으며, 법인이나 가맹본부도 개인 아이디를 통해 제어됩니다.
+- **일반 근로자**: 개인 아이디만
+- **개인사업자**: 개인 아이디만 (어드민 역할 자동 부여)
+- **법인 담당자**: 개인 아이디 + 법인 아이디
+- **가맹본부 담당자**: 개인 아이디 + 가맹본부 아이디
