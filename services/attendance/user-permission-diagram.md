@@ -4,7 +4,7 @@
 
 ```mermaid
 graph TB
-    subgraph "1. 아이디 계층 (로그인 단위)"
+    subgraph "1. ID Layer (로그인 단위)"
         Master[Master ID<br/>시스템 관리자<br/>특수 개인 아이디]
         PersonalID[개인 아이디<br/>모든 일반 사용자]
         
