@@ -460,10 +460,10 @@ graph TB
     end
     
     subgraph "RLS Policies"
-        P1[auth.uid() = master_id]
-        P2[org_id = auth.jwt() ->> 'org_id']
-        P3[branch_id = auth.jwt() ->> 'branch_id']
-        P4[employee_id = auth.uid()]
+        P1[Master Policy:<br/>user_id equals master_id]
+        P2[Admin Policy:<br/>org_id matches user org]
+        P3[Manager Policy:<br/>branch_id matches user branch]
+        P4[Worker Policy:<br/>employee_id equals user_id]
     end
     
     M1 --> P1
