@@ -424,63 +424,55 @@ sequenceDiagram
 ## 7️⃣ 권한 매트릭스 (RLS 정책)
 
 ```mermaid
-flowchart TB
-    subgraph MA["Master Admin"]
-        MA1[✅ 모든 조직 데이터 읽기]
-        MA2[✅ 사업자 승인/정지]
-        MA3[⚠️ 개인정보 마스킹]
-        MA4[❌ 급여 직접 수정 불가]
-        MA1 --> MA2
-        MA2 --> MA3
-        MA3 --> MA4
+graph TD
+    subgraph "역할별 권한"
+        Master[Master Admin<br/>시스템 관리자]
+        Admin[Admin<br/>사업자 관리자]
+        Manager[Manager<br/>중간 관리자]
+        Worker[Worker<br/>근로자]
     end
     
-    subgraph AD["Admin"]
-        AD1[✅ 소속 조직 전체 관리]
-        AD2[✅ 계약서 작성/삭제]
-        AD3[✅ 매니저 권한 부여]
-        AD4[✅ 급여 관리]
-        AD5[⚠️ 조직당 1명만]
-        AD1 --> AD2
-        AD2 --> AD3
-        AD3 --> AD4
-        AD4 --> AD5
+    subgraph "Master 권한"
+        Master --> M1[✅ 모든 조직 데이터 읽기]
+        Master --> M2[✅ 사업자 승인/정지]
+        Master --> M3[⚠️ 개인정보 마스킹]
+        Master --> M4[❌ 급여 직접 수정 불가]
     end
     
-    subgraph MG["Manager"]
-        MG1[✅ 근태 승인]
-        MG2[✅ 공지 작성]
-        MG3[✅ 스케줄 관리]
-        MG4[❌ 급여 접근 불가]
-        MG5[❌ 계약서 수정 불가]
-        MG1 --> MG2
-        MG2 --> MG3
-        MG3 --> MG4
-        MG4 --> MG5
+    subgraph "Admin 권한"
+        Admin --> A1[✅ 소속 조직 전체 관리]
+        Admin --> A2[✅ 계약서 작성/삭제]
+        Admin --> A3[✅ 매니저 권한 부여]
+        Admin --> A4[✅ 급여 관리]
+        Admin --> A5[⚠️ 조직당 1명만]
     end
     
-    subgraph WK["Worker"]
-        WK1[✅ 본인 출퇴근]
-        WK2[✅ 본인 기록 조회]
-        WK3[✅ 본인 계약서 조회]
-        WK4[❌ 타인 정보 불가]
-        WK5[❌ 관리 기능 불가]
-        WK1 --> WK2
-        WK2 --> WK3
-        WK3 --> WK4
-        WK4 --> WK5
+    subgraph "Manager 권한"
+        Manager --> MG1[✅ 근태 승인]
+        Manager --> MG2[✅ 공지 작성]
+        Manager --> MG3[✅ 스케줄 관리]
+        Manager --> MG4[❌ 급여 접근 불가]
+        Manager --> MG5[❌ 계약서 수정 불가]
     end
     
-    style MA fill:#ffcccc
-    style AD fill:#cce5ff
-    style MG fill:#ffe6cc
-    style WK fill:#d4edda
-    style MA4 fill:#f8d7da
-    style AD5 fill:#fff3cd
+    subgraph "Worker 권한"
+        Worker --> W1[✅ 본인 출퇴근]
+        Worker --> W2[✅ 본인 기록 조회]
+        Worker --> W3[✅ 본인 계약서 조회]
+        Worker --> W4[❌ 타인 정보 불가]
+        Worker --> W5[❌ 관리 기능 불가]
+    end
+    
+    style Master fill:#ffcccc
+    style Admin fill:#cce5ff
+    style Manager fill:#ffe6cc
+    style Worker fill:#d4edda
+    style M4 fill:#f8d7da
+    style A5 fill:#fff3cd
     style MG4 fill:#f8d7da
     style MG5 fill:#f8d7da
-    style WK4 fill:#f8d7da
-    style WK5 fill:#f8d7da
+    style W4 fill:#f8d7da
+    style W5 fill:#f8d7da
 ```
 
 ## 8️⃣ 복합 사용자 케이스
