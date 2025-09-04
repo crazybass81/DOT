@@ -202,6 +202,16 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Sign Up Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            계정이 없으신가요?{' '}
+            <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+              회원가입
+            </a>
+          </p>
+        </div>
+
         {/* Footer Info */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
