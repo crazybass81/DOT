@@ -454,5 +454,4 @@ export async function initializeFCM(config: FCMConfig): Promise<FCMClient> {
   return client
 }
 
-// Types for external use
-export type { FCMConfig, DeviceRegistrationResult, NotificationPayload }
+// Types are already exported as interfaces above
