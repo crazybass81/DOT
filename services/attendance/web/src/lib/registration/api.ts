@@ -143,17 +143,15 @@ export class RegistrationAPI {
         return { success: false, error: authError?.message || '계정 생성 실패' }
       }
 
-      // 3. employees 테이블에 추가 (역할 없이, 대기 상태)
+      // 3. employees 테이블에 추가 (organization_id 없이, 개인 계정만)
       const { data: employee, error: empError } = await this.supabase
         .from('employees')
         .insert({
-          auth_user_id: authUser.user.id,
+          user_id: authUser.user.id,
+          name: data.fullName,
           email: data.email,
           phone: data.phone,
-          name: data.fullName,
           birth_date: data.birthDate,
-          role: 'EMPLOYEE',
-          approval_status: 'PENDING',
           is_active: true
         })
         .select()
@@ -161,22 +159,13 @@ export class RegistrationAPI {
 
       if (empError) {
         console.error('Employee creation error:', empError)
-        // Auth 계정 삭제
-        await this.supabase.auth.admin.deleteUser(authUser.user.id)
+        // 계정 생성 실패 시 롤백 시도 (admin 권한 없으면 실패할 수 있음)
+        try {
+          await this.supabase.auth.admin.deleteUser(authUser.user.id)
+        } catch (deleteError) {
+          console.log('Could not delete auth user, may require manual cleanup')
+        }
         return { success: false, error: '직원 정보 생성 실패' }
-      }
-
-      // 4. 청소년인 경우 메타데이터에 표시
-      if (age < 18) {
-        await this.supabase
-          .from('employees')
-          .update({
-            metadata: {
-              is_teen: true,
-              requires_parent_consent: true
-            }
-          })
-          .eq('id', employee.id)
       }
 
       return {
