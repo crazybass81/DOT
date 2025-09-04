@@ -147,7 +147,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
           scanResult.qrData = qrData;
           onScanSuccess?.(qrData, scanData);
         } else {
-          onScanError?('Unable to parse QR code data');
+          onScanError?.('Unable to parse QR code data');
         }
       }
 
