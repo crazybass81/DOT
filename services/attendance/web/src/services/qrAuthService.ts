@@ -137,6 +137,51 @@ class QRAuthService {
   /**
    * 사용자 역할 확인
    */
+  /**
+   * HMAC 서명 검증
+   */
+  private async verifyHMACSignature(data: any, signature: string): Promise<boolean> {
+    try {
+      // 서버 키 (실제로는 환경변수에서 가져와야 함)
+      const secretKey = process.env.NEXT_PUBLIC_HMAC_KEY || 'default-hmac-key';
+      
+      // 데이터 정렬 후 문자열화
+      const payload = JSON.stringify(data, Object.keys(data).sort());
+      
+      // Web Crypto API를 사용한 HMAC 생성
+      const encoder = new TextEncoder();
+      const keyData = encoder.encode(secretKey);
+      const messageData = encoder.encode(payload);
+      
+      // Import key
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      
+      // Generate signature
+      const signatureBuffer = await crypto.subtle.sign(
+        'HMAC',
+        cryptoKey,
+        messageData
+      );
+      
+      // Convert to hex string
+      const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+      const computedSignature = signatureArray
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      
+      return computedSignature === signature;
+    } catch (error) {
+      console.error('HMAC verification failed:', error);
+      return false;
+    }
+  }
+
   hasRole(user: User | null, role: UserRole): boolean {
     if (!user) return false;
     return user.role === role;
