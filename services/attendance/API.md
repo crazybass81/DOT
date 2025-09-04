@@ -379,12 +379,16 @@ ws.send(JSON.stringify({
 
 | Code | Message | Description |
 |------|---------|-------------|
-| ATT_001 | Invalid QR Code | QR 코드가 만료되었거나 유효하지 않음 |
-| ATT_002 | Location Mismatch | 위치 정보가 허용 범위를 벗어남 |
-| ATT_003 | Already Checked In | 이미 출근 처리됨 |
-| ATT_004 | No Check-In Record | 출근 기록 없이 퇴근 시도 |
-| ATT_005 | Device Not Registered | 등록되지 않은 디바이스 |
-| ATT_006 | Permission Denied | 권한 없음 |
+| AUTH_001 | Not Authenticated | 인증 토큰이 없거나 유효하지 않음 |
+| AUTH_002 | Insufficient Permissions | 해당 작업을 수행할 권한이 없음 |
+| AUTH_003 | Organization Mismatch | 다른 조직의 데이터에 접근 시도 |
+| ATT_001 | Already Checked In | 이미 출근 처리됨 |
+| ATT_002 | No Check-In Record | 출근 기록 없이 퇴근 시도 |
+| ATT_003 | Location Out of Range | 위치 정보가 허용 범위를 벗어남 |
+| ATT_004 | Invalid Shift | 배정된 시프트가 없거나 유효하지 않음 |
+| EMP_001 | Employee Not Found | 직원 레코드를 찾을 수 없음 |
+| EMP_002 | Duplicate Employee Code | 중복된 직원 코드 |
+| PERM_001 | Role Cannot Manage Target | 상위 권한 역할을 관리할 수 없음 |
 
 ## 📊 Rate Limiting
 
