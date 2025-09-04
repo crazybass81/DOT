@@ -25,14 +25,27 @@ X-Organization-ID: {organization_id} (for non-master admins)
 
 ## 🔐 Authentication Endpoints
 
-### POST /api/auth/login
-직원 로그인
+### POST /functions/v1/auth-signup
+사용자 등록 (권한 기반)
+
+**Required Role:** `admin`, `manager` (for creating lower roles)
 
 **Request:**
 ```json
 {
   "email": "employee@company.com",
-  "password": "secure_password"
+  "password": "secure_password",
+  "role": "worker|manager|admin",
+  "organizationId": "org_uuid",
+  "employeeData": {
+    "firstName": "김",
+    "lastName": "직원",
+    "employeeCode": "EMP001",
+    "department": "주방",
+    "position": "요리사",
+    "hireDate": "2025-01-20",
+    "phone": "010-1234-5678"
+  }
 }
 ```
 
@@ -42,14 +55,16 @@ X-Organization-ID: {organization_id} (for non-master admins)
   "user": {
     "id": "uuid",
     "email": "employee@company.com",
-    "role": "employee",
-    "employeeId": "EMP001"
+    "role": "worker",
+    "organization_id": "org_uuid"
   },
-  "session": {
-    "access_token": "jwt_token",
-    "refresh_token": "refresh_token",
-    "expires_in": 3600
-  }
+  "employee": {
+    "id": "emp_uuid",
+    "employee_code": "EMP001",
+    "first_name": "김",
+    "last_name": "직원"
+  },
+  "message": "User created successfully"
 }
 ```
 
