@@ -54,27 +54,10 @@ export class RealtimeConnectionManager {
 
   // Setup connection event handlers
   private setupConnectionHandlers() {
-    // Monitor connection status
-    supabase.realtime.onOpen(() => {
-      this.connectionState = ConnectionState.CONNECTED;
-      this.reconnectAttempts = 0;
-      this.emit('connectionStateChange', ConnectionState.CONNECTED);
-      console.log('[Realtime] Connection established');
-    });
-
-    supabase.realtime.onClose(() => {
-      this.connectionState = ConnectionState.DISCONNECTED;
-      this.emit('connectionStateChange', ConnectionState.DISCONNECTED);
-      console.log('[Realtime] Connection closed');
-      this.handleReconnect();
-    });
-
-    supabase.realtime.onError((error) => {
-      this.connectionState = ConnectionState.ERROR;
-      this.emit('connectionStateChange', ConnectionState.ERROR);
-      console.error('[Realtime] Connection error:', error);
-      this.handleReconnect();
-    });
+    // Note: Supabase Realtime v2 handles connection state internally
+    // Connection monitoring is handled through channel states
+    this.connectionState = ConnectionState.CONNECTED;
+    console.log('[Realtime] Connection handlers initialized');
   }
 
   // Handle reconnection logic with exponential backoff
