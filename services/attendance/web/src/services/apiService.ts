@@ -107,7 +107,8 @@ class ApiService {
       throw new Error('User not authenticated');
     }
     
-    const params = new URLSearchParams({ employeeId: user.employeeId });
+    const params = new URLSearchParams();
+    if (user.employeeId) params.append('employeeId', user.employeeId);
     
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
