@@ -235,6 +235,12 @@ export class UnifiedAuthService {
       }
 
       const user = await supabaseAuthService.getCurrentUser();
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not found'
+        };
+      }
       const unifiedUser = await this.mapSupabaseUserToUnified(user);
 
       return {
