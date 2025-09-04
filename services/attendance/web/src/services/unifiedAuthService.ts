@@ -274,21 +274,6 @@ export class UnifiedAuthService {
     try {
       // updateUser method not implemented in supabaseAuthService
       throw new Error('Profile update not yet implemented');
-      
-      if (!result.success) {
-        return {
-          success: false,
-          error: result.error || 'Profile update failed'
-        };
-      }
-
-      const user = await supabaseAuthService.getCurrentUser();
-      const unifiedUser = await this.mapSupabaseUserToUnified(user);
-
-      return {
-        success: true,
-        user: unifiedUser
-      };
     } catch (error: any) {
       console.error('Profile update error:', error);
       return {
