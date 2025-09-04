@@ -137,7 +137,7 @@ function getWebGLFingerprint(): { webgl: string; webGL: any } {
     if (!gl) return { webgl: 'no-webgl', webGL: {} }
 
     // Get WebGL parameters
-    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info')
+    const debugInfo = (gl as any).getExtension ? (gl as any).getExtension('WEBGL_debug_renderer_info') : null
     const vendor = gl.getParameter(debugInfo?.UNMASKED_VENDOR_WEBGL || gl.VENDOR) || 'unknown'
     const renderer = gl.getParameter(debugInfo?.UNMASKED_RENDERER_WEBGL || gl.RENDERER) || 'unknown'
     const version = gl.getParameter(gl.VERSION) || 'unknown'
