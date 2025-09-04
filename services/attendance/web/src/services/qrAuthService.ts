@@ -115,8 +115,22 @@ class QRAuthService {
       }
     }
     
-    // API 호출 (현재는 null 반환)
-    // TODO: 실제 API 구현
+    // API 호출
+    try {
+      const response = await fetch('/api/auth/device', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceFingerprint })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.user as User;
+      }
+    } catch (error) {
+      console.error('Device lookup failed:', error);
+    }
+    
     return null;
   }
 
