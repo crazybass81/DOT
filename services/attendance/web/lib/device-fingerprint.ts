@@ -138,10 +138,10 @@ function getWebGLFingerprint(): { webgl: string; webGL: any } {
 
     // Get WebGL parameters
     const debugInfo = (gl as any).getExtension ? (gl as any).getExtension('WEBGL_debug_renderer_info') : null
-    const vendor = gl.getParameter(debugInfo?.UNMASKED_VENDOR_WEBGL || gl.VENDOR) || 'unknown'
-    const renderer = gl.getParameter(debugInfo?.UNMASKED_RENDERER_WEBGL || gl.RENDERER) || 'unknown'
-    const version = gl.getParameter(gl.VERSION) || 'unknown'
-    const shadingLanguageVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION) || 'unknown'
+    const vendor = (gl as any).getParameter ? (gl as any).getParameter(debugInfo?.UNMASKED_VENDOR_WEBGL || (gl as any).VENDOR) || 'unknown' : 'unknown'
+    const renderer = (gl as any).getParameter ? (gl as any).getParameter(debugInfo?.UNMASKED_RENDERER_WEBGL || (gl as any).RENDERER) || 'unknown' : 'unknown'
+    const version = (gl as any).getParameter ? (gl as any).getParameter((gl as any).VERSION) || 'unknown' : 'unknown'
+    const shadingLanguageVersion = (gl as any).getParameter ? (gl as any).getParameter((gl as any).SHADING_LANGUAGE_VERSION) || 'unknown' : 'unknown'
     
     const extensions = gl.getSupportedExtensions() || []
 
