@@ -112,7 +112,7 @@ const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         setCurrentStep('age_verification')
       }
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다')
     } finally {
       setLoading(false)
     }
@@ -210,7 +210,7 @@ const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       // Clear localStorage
       localStorage.removeItem('registration_flow')
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다')
     } finally {
       setLoading(false)
     }
