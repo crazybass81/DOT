@@ -5,7 +5,7 @@
  * with the existing attendance system architecture.
  */
 
-import { realtimeManager, RealtimeNotification } from './realtime';
+import { realtimeManager, RealtimeNotification, AttendanceRealtimeEvent } from './realtime';
 import { supabase } from './supabase-config';
 
 // Integration with existing authentication system
