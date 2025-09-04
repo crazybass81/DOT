@@ -80,8 +80,8 @@ class QRAuthService {
       return false;
     }
     
-    // 서명 검증 (실제로는 서버에서 검증)
-    // TODO: HMAC 서명 검증 구현
+    // 서명 검증
+    const verified = await this.verifyHMACSignature(qrData, signature)
     
     return true;
   }
