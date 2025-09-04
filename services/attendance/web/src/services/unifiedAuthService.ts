@@ -60,10 +60,10 @@ export class UnifiedAuthService {
     try {
       const result = await supabaseAuthService.verifyOtp(email, code);
       
-      if (!result.success) {
+      if (!result.user) {
         return {
           success: false,
-          error: result.error || 'Email verification failed'
+          error: 'Email verification failed'
         };
       }
 
