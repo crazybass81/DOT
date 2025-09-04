@@ -1,0 +1,852 @@
+openapi: 3.0.3
+info:
+  title: DOT Attendance Service API
+  description: |
+    Enterprise attendance management service with multi-tenant support, biometric verification, and real-time capabilities.
+    
+    ## Authentication
+    All endpoints require JWT authentication via the `Authorization` header.
+    
+    ## Rate Limiting
+    - **Anonymous**: 10 requests per 15 minutes
+    - **Authenticated**: 100 requests per 15 minutes
+    - **Premium**: 1000 requests per 15 minutes
+  version: 2.1.0
+  contact:
+    name: DOT Team
+    email: support@dot-attendance.com
+    url: https://docs.dot-attendance.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://your-project.supabase.co/functions/v1
+    description: Production server
+  - url: https://your-project-test.supabase.co/functions/v1
+    description: Test server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /attendance-check-v2:
+    post:
+      summary: Check In/Out
+      description: Record employee attendance with location and biometric verification
+      operationId: checkAttendance
+      tags:
+        - Attendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCheckRequest'
+            examples:
+              checkIn:
+                summary: Check In Example
+                value:
+                  action: check_in
+                  employeeId: 550e8400-e29b-41d4-a716-446655440000
+                  location:
+                    latitude: 37.7749
+                    longitude: -122.4194
+                    accuracy: 10
+                    locationId: 550e8400-e29b-41d4-a716-446655440001
+                  verificationMethod:
+                    type: face_id
+                    token: biometric-token-here
+                    deviceId: iPhone-15-Pro-UUID
+              checkOut:
+                summary: Check Out Example  
+                value:
+                  action: check_out
+                  employeeId: 550e8400-e29b-41d4-a716-446655440000
+                  verificationMethod:
+                    type: fingerprint
+                    token: biometric-token-here
+      responses:
+        '201':
+          description: Attendance recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCheckResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /attendance/records:
+    get:
+      summary: Get Attendance Records
+      description: Retrieve attendance records with filtering and pagination
+      operationId: getAttendanceRecords
+      tags:
+        - Attendance
+      parameters:
+        - name: employeeId
+          in: query
+          required: true
+          description: Employee identifier
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          description: Start date filter (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date filter (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Filter by attendance status
+          schema:
+            type: string
+            enum: [present, absent, late, early]
+        - name: limit
+          in: query
+          description: Maximum number of records (max 200)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: offset
+          in: query
+          description: Pagination offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Attendance records retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecordsResponse'
+
+  /employees/{employeeId}:
+    get:
+      summary: Get Employee Details
+      description: Retrieve detailed employee information including permissions
+      operationId: getEmployee
+      tags:
+        - Employees
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          description: Employee identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Employee details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /employees/{employeeId}/permissions:
+    patch:
+      summary: Update Employee Permissions
+      description: Update employee permissions and access levels
+      operationId: updateEmployeePermissions
+      tags:
+        - Employees
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePermissionsRequest'
+      responses:
+        '200':
+          description: Permissions updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeResponse'
+
+  /reports/attendance:
+    post:
+      summary: Generate Attendance Report
+      description: Generate comprehensive attendance reports with various metrics
+      operationId: generateAttendanceReport
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+
+  /leave/request:
+    post:
+      summary: Request Leave
+      description: Submit a leave request for approval
+      operationId: requestLeave
+      tags:
+        - Leave Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequest'
+      responses:
+        '201':
+          description: Leave request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequestResponse'
+
+  /config/organization/{organizationId}:
+    get:
+      summary: Get Organization Settings
+      description: Retrieve organization-specific configuration settings
+      operationId: getOrganizationConfig
+      tags:
+        - Configuration
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Organization settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationConfigResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AttendanceCheckRequest:
+      type: object
+      required:
+        - action
+        - employeeId
+        - verificationMethod
+      properties:
+        action:
+          type: string
+          enum: [check_in, check_out]
+          description: Type of attendance action
+        employeeId:
+          type: string
+          format: uuid
+          description: Unique identifier for the employee
+        location:
+          $ref: '#/components/schemas/LocationData'
+        verificationMethod:
+          $ref: '#/components/schemas/VerificationMethod'
+        shift:
+          $ref: '#/components/schemas/ShiftData'
+        notes:
+          type: string
+          maxLength: 500
+          description: Optional notes for the attendance record
+
+    AttendanceCheckResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            attendanceId:
+              type: string
+              format: uuid
+            employeeId:
+              type: string
+              format: uuid
+            action:
+              type: string
+              enum: [check_in, check_out]
+            timestamp:
+              type: string
+              format: date-time
+            location:
+              type: object
+              properties:
+                verified:
+                  type: boolean
+                distance:
+                  type: number
+                address:
+                  type: string
+            verification:
+              type: object
+              properties:
+                method:
+                  type: string
+                status:
+                  type: string
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+            shift:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [on_time, early, late]
+                variance:
+                  type: integer
+            metadata:
+              type: object
+              properties:
+                requestId:
+                  type: string
+                processingTime:
+                  type: integer
+
+    LocationData:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        accuracy:
+          type: number
+          minimum: 0
+        locationId:
+          type: string
+          format: uuid
+
+    VerificationMethod:
+      type: object
+      required:
+        - type
+        - token
+      properties:
+        type:
+          type: string
+          enum: [biometric, pin, face_id, fingerprint, touch_id]
+        token:
+          type: string
+          description: Verification token (biometric signature or PIN)
+        deviceId:
+          type: string
+          description: Unique device identifier
+        metadata:
+          type: object
+          properties:
+            biometricType:
+              type: string
+            deviceInfo:
+              type: string
+
+    ShiftData:
+      type: object
+      properties:
+        shiftId:
+          type: string
+          format: uuid
+        expectedStart:
+          type: string
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+        expectedEnd:
+          type: string
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
+
+    AttendanceRecordsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceRecord'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    AttendanceRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        checkInTime:
+          type: string
+          format: date-time
+        checkOutTime:
+          type: string
+          format: date-time
+        totalHours:
+          type: number
+        overtimeMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [present, absent, late, early]
+        location:
+          type: object
+          properties:
+            checkIn:
+              type: string
+            checkOut:
+              type: string
+        shift:
+          type: object
+          properties:
+            name:
+              type: string
+            expectedHours:
+              type: number
+
+    EmployeeResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Employee'
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        employeeNumber:
+          type: string
+        department:
+          type: string
+        role:
+          type: string
+        manager:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        schedule:
+          type: object
+          properties:
+            timezone:
+              type: string
+            workDays:
+              type: array
+              items:
+                type: string
+                enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+            defaultShift:
+              type: object
+              properties:
+                start:
+                  type: string
+                end:
+                  type: string
+        permissions:
+          $ref: '#/components/schemas/EmployeePermissions'
+
+    EmployeePermissions:
+      type: object
+      properties:
+        canViewReports:
+          type: boolean
+        canApproveLeave:
+          type: boolean
+        locations:
+          type: array
+          items:
+            type: string
+        maxOvertimeHours:
+          type: integer
+
+    UpdatePermissionsRequest:
+      type: object
+      properties:
+        permissions:
+          $ref: '#/components/schemas/EmployeePermissions'
+
+    ReportRequest:
+      type: object
+      required:
+        - reportType
+        - period
+      properties:
+        reportType:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+        period:
+          type: object
+          properties:
+            startDate:
+              type: string
+              format: date
+            endDate:
+              type: string
+              format: date
+        filters:
+          type: object
+          properties:
+            departments:
+              type: array
+              items:
+                type: string
+            employees:
+              type: array
+              items:
+                type: string
+                format: uuid
+            statuses:
+              type: array
+              items:
+                type: string
+                enum: [present, absent, late]
+            locations:
+              type: array
+              items:
+                type: string
+        metrics:
+          type: array
+          items:
+            type: string
+            enum: [attendance_rate, punctuality_rate, overtime_hours, total_hours_worked]
+        format:
+          type: string
+          enum: [json, csv, pdf]
+          default: json
+        groupBy:
+          type: string
+          enum: [employee, department, date]
+
+    ReportResponse:
+      type: object
+      properties:
+        reportId:
+          type: string
+        status:
+          type: string
+          enum: [completed, processing, failed]
+        downloadUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+        summary:
+          type: object
+          properties:
+            totalEmployees:
+              type: integer
+            totalWorkingDays:
+              type: integer
+            averageAttendanceRate:
+              type: number
+            averagePunctualityRate:
+              type: number
+            totalOvertimeHours:
+              type: number
+        data:
+          type: array
+          items:
+            type: object
+
+    LeaveRequest:
+      type: object
+      required:
+        - employeeId
+        - type
+        - startDate
+        - endDate
+      properties:
+        employeeId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [annual, sick, personal, maternity, emergency]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        halfDay:
+          type: boolean
+          default: false
+        reason:
+          type: string
+          maxLength: 1000
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              url:
+                type: string
+                format: uri
+        emergencyContact:
+          type: object
+          properties:
+            name:
+              type: string
+            phone:
+              type: string
+
+    LeaveRequestResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            requestId:
+              type: string
+            status:
+              type: string
+              enum: [pending, approved, denied]
+            approvalWorkflow:
+              type: array
+              items:
+                type: object
+                properties:
+                  step:
+                    type: integer
+                  approver:
+                    type: string
+                  status:
+                    type: string
+                  dueDate:
+                    type: string
+                    format: date-time
+            balanceImpact:
+              type: object
+              properties:
+                currentBalance:
+                  type: integer
+                requestedDays:
+                  type: integer
+                remainingBalance:
+                  type: integer
+
+    OrganizationConfigResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            organizationId:
+              type: string
+              format: uuid
+            name:
+              type: string
+            settings:
+              $ref: '#/components/schemas/OrganizationSettings'
+
+    OrganizationSettings:
+      type: object
+      properties:
+        workingHours:
+          type: object
+          properties:
+            standardMinutes:
+              type: integer
+            graceMinutes:
+              type: integer
+            overtimeThreshold:
+              type: integer
+        attendance:
+          type: object
+          properties:
+            requireLocation:
+              type: boolean
+            locationRadius:
+              type: integer
+            allowRemoteWork:
+              type: boolean
+            biometricRequired:
+              type: boolean
+        notifications:
+          type: object
+          properties:
+            lateCheckIn:
+              type: boolean
+            missedCheckOut:
+              type: boolean
+            overtimeAlert:
+              type: boolean
+            approvalReminders:
+              type: boolean
+        integrations:
+          type: object
+          properties:
+            payroll:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                provider:
+                  type: string
+                syncFrequency:
+                  type: string
+            calendar:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                provider:
+                  type: string
+
+    PaginationInfo:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        hasNext:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+            timestamp:
+              type: string
+              format: date-time
+            requestId:
+              type: string
+
+  responses:
+    ValidationError:
+      description: Invalid input data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Invalid employee ID format
+              details:
+                field: employeeId
+                constraint: Must be a valid UUID
+              timestamp: "2024-01-01T12:00:00.000Z"
+              requestId: req_123456789
+
+    AuthenticationError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: AUTHENTICATION_REQUIRED
+              message: Missing or invalid authentication token
+              timestamp: "2024-01-01T12:00:00.000Z"
+              requestId: req_123456789
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: RESOURCE_NOT_FOUND
+              message: Employee not found
+              timestamp: "2024-01-01T12:00:00.000Z"
+              requestId: req_123456789
+
+    RateLimitError:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: Too many requests. Try again later.
+              details:
+                limit: 100
+                remaining: 0
+                resetAt: 1640995200
+              timestamp: "2024-01-01T12:00:00.000Z"
+              requestId: req_123456789
+
+tags:
+  - name: Attendance
+    description: Core attendance tracking operations
+  - name: Employees
+    description: Employee management and permissions
+  - name: Reports
+    description: Analytics and reporting functionality
+  - name: Leave Management
+    description: Leave requests and approvals
+  - name: Configuration
+    description: Organization settings and configuration
