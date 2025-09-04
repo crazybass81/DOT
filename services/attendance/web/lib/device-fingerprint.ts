@@ -146,9 +146,11 @@ function getWebGLFingerprint(): { webgl: string; webGL: any } {
     const extensions = (gl as any).getSupportedExtensions ? (gl as any).getSupportedExtensions() || [] : []
 
     // Draw WebGL scene for fingerprinting
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!
-    gl.shaderSource(vertexShader, 'attribute vec2 a_position;void main(){gl_Position=vec4(a_position,0,1);}')
-    gl.compileShader(vertexShader)
+    const glCtx = gl as any
+    if (glCtx.createShader && glCtx.VERTEX_SHADER) {
+      const vertexShader = glCtx.createShader(glCtx.VERTEX_SHADER)!
+      glCtx.shaderSource(vertexShader, 'attribute vec2 a_position;void main(){gl_Position=vec4(a_position,0,1);}')
+      glCtx.compileShader(vertexShader)
 
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!
     gl.shaderSource(fragmentShader, 'precision mediump float;void main(){gl_FragColor=vec4(1,0,0.5,1);}')
