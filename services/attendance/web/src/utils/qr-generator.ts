@@ -118,8 +118,7 @@ export class QRGenerator {
         margin: finalOptions.margin,
         color: finalOptions.color,
         errorCorrectionLevel: finalOptions.errorCorrectionLevel,
-        type: finalOptions.type,
-        quality: finalOptions.quality
+        type: finalOptions.type
       });
 
       return dataUrl;
