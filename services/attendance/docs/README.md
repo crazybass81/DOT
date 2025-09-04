@@ -112,10 +112,12 @@
 
 ### Testing
 ```bash
-npm run test           # Run all tests
-npm run test:unit      # Unit tests only
-npm run test:e2e       # End-to-end tests
-npm run test:coverage  # Coverage report
+npm run test             # Run all tests
+npm run test:unit        # Unit tests only
+npm run test:e2e         # End-to-end tests
+npm run test:coverage    # Coverage report
+npm run test:benchmark   # Database performance benchmarks
+npm run benchmark        # Run performance benchmarks standalone
 ```
 
 ## 📦 Deployment
