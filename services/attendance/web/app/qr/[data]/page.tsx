@@ -137,9 +137,8 @@ export default function QRHandlerPage() {
 
         const result = await apiService.checkIn({
           location: location,
-          verificationMethod: 'qr' as 'qr',
-          qrCode: qrData
-        });
+          verificationMethod: 'qr' as 'qr'
+        } as any);
 
         setStatus('success');
         setMessage('출근 처리가 완료되었습니다!');
