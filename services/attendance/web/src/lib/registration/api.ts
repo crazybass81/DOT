@@ -356,7 +356,7 @@ export class RegistrationAPI {
 
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
     }
   }
 
@@ -396,7 +396,7 @@ export class RegistrationAPI {
 
       return { success: true, consentUrl }
     } catch (error) {
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
     }
   }
 
@@ -449,7 +449,7 @@ export class RegistrationAPI {
       
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
     }
   }
 
