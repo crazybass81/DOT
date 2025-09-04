@@ -225,7 +225,7 @@ export class UnifiedAuthService {
    */
   async refreshSession(): Promise<AuthResult> {
     try {
-      const session = await supabaseAuthService.refreshSession();
+      const session = await supabaseAuthService.getSession();
       
       if (!session) {
         return {
