@@ -204,7 +204,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       console.error('Error verifying device:', error)
-      alert('Failed to verify device: ' + error.message)
+      alert('Failed to verify device: ' + (error instanceof Error ? error.message : 'Unknown error'))
     }
   }
 
