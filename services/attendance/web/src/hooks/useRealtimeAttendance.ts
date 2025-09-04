@@ -227,13 +227,27 @@ export const useRealtimeAttendance = (
   const refreshData = useCallback(async () => {
     try {
       setError(null);
-      // TODO: Implement actual data fetch from API
-      // For now, we'll rely on real-time updates
+      // Fetch initial data from API
       console.log('[useRealtimeAttendance] Refreshing data for organization:', organizationId);
       
-      // In a real implementation, you would fetch initial data here:
-      // const initialData = await attendanceService.getAttendanceRecords(organizationId);
-      // setData(prevData => ({ ...prevData, records: initialData, stats: calculateStats(initialData) }));
+      const response = await fetch(`/api/attendance/records?organizationId=${organizationId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const initialData = await response.json();
+        setData(prevData => ({ 
+          ...prevData, 
+          records: initialData.records || [],
+          stats: calculateStats(initialData.records || [])
+        }));
+      } else {
+        throw new Error('Failed to fetch attendance records');
+      }
     } catch (err) {
       console.error('[useRealtimeAttendance] Error refreshing data:', err);
       setError(`Failed to refresh data: ${err instanceof Error ? err.message : 'Unknown error'}`);
