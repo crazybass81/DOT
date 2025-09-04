@@ -216,7 +216,7 @@ export class UnifiedAuthService {
       approvalStatus: supabaseUser.approvalStatus,
       employee: supabaseUser.employee,
       authProvider: 'supabase',
-      metadata: supabaseUser.user_metadata || {}
+      metadata: {}
     };
   }
 
