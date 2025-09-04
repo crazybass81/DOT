@@ -260,27 +260,11 @@ export class UnifiedAuthService {
    * Sign in with OAuth provider
    */
   async signInWithProvider(provider: 'google' | 'github' | 'facebook'): Promise<AuthResult> {
-    try {
-      const result = await supabaseAuthService.signInWithOAuth(provider);
-      
-      if (!result.success) {
-        return {
-          success: false,
-          error: result.error || 'OAuth sign in failed'
-        };
-      }
-
-      // OAuth redirects, so user will be available after redirect
-      return {
-        success: true
-      };
-    } catch (error: any) {
-      console.error('OAuth sign in error:', error);
-      return {
-        success: false,
-        error: error.message || 'OAuth sign in failed'
-      };
-    }
+    // OAuth sign-in not yet implemented
+    return {
+      success: false,
+      error: 'OAuth sign-in not yet implemented'
+    };
   }
 
   /**
