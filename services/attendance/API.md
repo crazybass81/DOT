@@ -70,66 +70,58 @@ X-Organization-ID: {organization_id} (for non-master admins)
 
 ## 📍 Check-In/Out Endpoints
 
-### POST /api/attendance/check-in
-QR 코드 스캔 출근
+### POST /functions/v1/attendance-check
+출퇴근 처리 (위치 기반 검증 포함)
+
+**Required Role:** `worker` or higher
 
 **Request:**
 ```json
 {
-  "qrCode": "STORE_QR_2025_01",
-  "location": {
-    "latitude": 37.5665,
-    "longitude": 126.9780,
-    "accuracy": 10
+  "type": "check_in|check_out",
+  "locationId": "location_uuid",  // Optional: specific location
+  "latitude": 37.5665,            // Optional: for geo-validation
+  "longitude": 126.9780,           // Optional: for geo-validation
+  "notes": "조기 출근"             // Optional: notes
+}
+```
+
+**Success Response (Check-in):**
+```json
+{
+  "success": true,
+  "attendance": {
+    "id": "att_uuid",
+    "employee_id": "emp_uuid",
+    "date": "2025-01-20",
+    "check_in_time": "2025-01-20T09:00:00Z",
+    "check_in_location_id": "loc_uuid",
+    "status": "present",
+    "late_minutes": 0
   },
-  "deviceInfo": {
-    "deviceId": "device_uuid",
-    "platform": "ios|android",
-    "appVersion": "1.0.0"
-  }
+  "message": "Checked in successfully"
 }
 ```
 
-**Response:**
+**Success Response (Check-out):**
 ```json
 {
   "success": true,
-  "record": {
-    "id": "uuid",
-    "employeeId": "EMP001",
-    "checkInTime": "2025-01-20T09:00:00Z",
-    "location": "강남점",
-    "status": "checked_in",
-    "qrValid": true
-  }
+  "attendance": {
+    "id": "att_uuid",
+    "check_out_time": "2025-01-20T18:30:00Z",
+    "check_out_location_id": "loc_uuid",
+    "overtime_minutes": 30
+  },
+  "message": "Checked out successfully (30 minutes overtime)"
 }
 ```
 
-### POST /api/attendance/check-out
-퇴근 처리
-
-**Request:**
+**Error Response (Location Validation Failed):**
 ```json
 {
-  "recordId": "uuid",
-  "location": {
-    "latitude": 37.5665,
-    "longitude": 126.9780
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "record": {
-    "id": "uuid",
-    "checkOutTime": "2025-01-20T18:00:00Z",
-    "totalHours": 9.0,
-    "overtime": 0,
-    "status": "completed"
-  }
+  "success": false,
+  "error": "You are 150m away from 강남점. Maximum allowed distance is 100m."
 }
 ```
 
