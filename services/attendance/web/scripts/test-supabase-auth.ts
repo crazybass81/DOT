@@ -9,7 +9,7 @@
 
 import { supabaseAuthService } from '../src/services/supabaseAuthService';
 import { unifiedAuthService } from '../src/services/unifiedAuthService';
-import { migrationService } from '../src/services/migrationService';
+// Migration service not yet implemented
 
 async function testSupabaseAuth() {
   console.log('🧪 Testing Supabase Authentication Implementation...\n');
