@@ -31,7 +31,7 @@ export default function FranchiseSetupPage() {
           </p>
         </div>
 
-        <form className="space-y-6 bg-white shadow px-6 py-8 rounded-lg">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow px-6 py-8 rounded-lg">
           <div>
             <label className="block text-sm font-medium text-gray-700">
               가맹본부명 *
