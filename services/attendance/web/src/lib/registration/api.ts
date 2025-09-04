@@ -37,14 +37,15 @@ export class RegistrationAPI {
     phoneAvailable: boolean
     existingAccount: boolean
   }> {
+    // Check in employees table for existing accounts
     const { data: emailCheck } = await this.supabase
-      .from('personal_accounts')
+      .from('employees')
       .select('id')
       .eq('email', email)
       .single()
 
     const { data: phoneCheck } = await this.supabase
-      .from('personal_accounts')
+      .from('employees')
       .select('id')
       .eq('phone', phone)
       .single()
