@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RegistrationAPI } from '@/lib/registration/api'
 
-export default function SimpleRegistration() {
+export default function RegistrationForm() {
   const router = useRouter()
   const api = new RegistrationAPI()
   
