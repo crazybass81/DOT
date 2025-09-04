@@ -295,7 +295,7 @@ export class FCMClient {
         data: payload.data,
         requireInteraction: payload.requireInteraction,
         silent: payload.silent,
-        tag: payload.tag,
+        tag: payload.tag
 
       })
     } catch (error) {
