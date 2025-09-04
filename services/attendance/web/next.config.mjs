@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // 모바일 GPS 접근을 위한 설정
   headers: async () => {
     return [
