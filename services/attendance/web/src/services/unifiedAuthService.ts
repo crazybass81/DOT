@@ -188,11 +188,10 @@ export class UnifiedAuthService {
    */
   async updatePassword(newPassword: string): Promise<AuthResult> {
     try {
-      const result = await supabaseAuthService.updatePassword(newPassword);
+      await supabaseAuthService.updatePassword(newPassword);
       
       return {
-        success: result.success,
-        error: result.error
+        success: true
       };
     } catch (error: any) {
       console.error('Update password error:', error);
