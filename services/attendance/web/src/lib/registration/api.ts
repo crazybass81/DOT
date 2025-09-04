@@ -22,6 +22,9 @@ export class RegistrationAPI {
   private supabaseKey: string
 
   constructor(supabaseUrl: string, supabaseAnonKey: string) {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase URL and Anon Key are required')
+    }
     this.supabase = createClient(supabaseUrl, supabaseAnonKey)
     this.supabaseUrl = supabaseUrl
     this.supabaseKey = supabaseAnonKey
