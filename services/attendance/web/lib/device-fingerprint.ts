@@ -152,7 +152,7 @@ function getWebGLFingerprint(): { webgl: string; webGL: any } {
       glCtx.shaderSource(vertexShader, 'attribute vec2 a_position;void main(){gl_Position=vec4(a_position,0,1);}')
       glCtx.compileShader(vertexShader)
 
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!
+      const fragmentShader = glCtx.createShader(glCtx.FRAGMENT_SHADER)!
     gl.shaderSource(fragmentShader, 'precision mediump float;void main(){gl_FragColor=vec4(1,0,0.5,1);}')
     gl.compileShader(fragmentShader)
 
