@@ -490,6 +490,12 @@ export class DocumentationUpdater extends EventEmitter {
     ]);
   }
 
+  private calculateUpdatePriority(analysis: AnalysisResult): 'high' | 'medium' | 'low' {
+    if (analysis.overallImpact === 'breaking') return 'high';
+    if (analysis.overallImpact === 'major') return 'medium';
+    return 'low';
+  }
+
   private getTemplate(type: string): string {
     return this.templates.get(type) || '';
   }
