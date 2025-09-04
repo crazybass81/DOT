@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { supabase, supabaseUrl, supabaseAnonKey } from '../supabase-config'
 import {
   RegistrationStartRequest,
   RegistrationStartResponse,
@@ -21,11 +22,9 @@ export class RegistrationAPI {
   private supabaseUrl: string
   private supabaseKey: string
 
-  constructor(supabaseUrl: string, supabaseAnonKey: string) {
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Supabase URL and Anon Key are required')
-    }
-    this.supabase = createClient(supabaseUrl, supabaseAnonKey)
+  constructor() {
+    // Use the existing Supabase client instead of creating a new one
+    this.supabase = supabase
     this.supabaseUrl = supabaseUrl
     this.supabaseKey = supabaseAnonKey
   }
