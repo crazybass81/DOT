@@ -49,13 +49,13 @@ async function testSupabaseAuth() {
     const isApproved = await supabaseAuthService.isApproved();
     console.log(`- Approval status: ${isApproved ? 'Approved' : 'Not approved'}\n`);
 
-    // Test 6: Migration Statistics
+    // Test 6: Migration Statistics (not yet implemented)
     console.log('✅ Test 6: Migration Statistics');
     // const migrationStats = await migrationService.getMigrationStats();
-    console.log(`- Total employees: ${migrationStats.totalEmployees}`);
-    console.log(`- Migrated employees: ${migrationStats.migratedEmployees}`);
-    console.log(`- Pending migration: ${migrationStats.pendingMigration}`);
-    console.log(`- Migration progress: ${migrationStats.migrationProgress}%\n`);
+    // console.log(`- Total employees: ${migrationStats.totalEmployees}`);
+    // console.log(`- Migrated employees: ${migrationStats.migratedEmployees}`);
+    // console.log(`- Pending migration: ${migrationStats.pendingMigration}`);
+    // console.log(`- Migration progress: ${migrationStats.migrationProgress}%\n`);
 
     // Test 7: Unified Auth Service Feature Flags
     console.log('✅ Test 7: Unified Auth Service Configuration');
