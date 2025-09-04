@@ -148,7 +148,7 @@ export class RealtimeConnectionManager {
           // Apply debouncing if specified
           if (options.debounceMs) {
             this.debounceCallback(
-              `attendance_${payload.new?.id || payload.old?.id}`,
+              `attendance_${(payload.new as any)?.id || (payload.old as any)?.id}`,
               () => callback(event),
               options.debounceMs
             );
