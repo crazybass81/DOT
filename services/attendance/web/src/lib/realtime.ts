@@ -196,8 +196,8 @@ export class RealtimeConnectionManager {
         },
         (payload: RealtimePostgresChangesPayload<any>) => {
           // Only emit events for approval status changes
-          const newStatus = payload.new?.approval_status;
-          const oldStatus = payload.old?.approval_status;
+          const newStatus = (payload.new as any)?.approval_status;
+          const oldStatus = (payload.old as any)?.approval_status;
           
           if (newStatus !== oldStatus) {
             const event: AttendanceRealtimeEvent = {
