@@ -4,6 +4,8 @@
 
 ### Core Documentation
 - [**Project Overview**](../README.md) - Main project README with architecture and features
+- [**API Reference**](./API.md) - Complete REST API documentation with examples
+- [**OpenAPI Specification**](./openapi.yml) - Machine-readable API specification (Swagger)
 - [**Supabase Setup Guide**](./SUPABASE_SETUP.md) - Complete Supabase configuration and deployment
 
 ### Feature Documentation
