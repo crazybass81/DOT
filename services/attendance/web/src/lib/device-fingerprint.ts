@@ -14,6 +14,10 @@ export interface DeviceFingerprint {
   webglRenderer?: string;
 }
 
+export async function generateDeviceFingerprint(): Promise<string> {
+  return DeviceFingerprintService.generateFingerprint();
+}
+
 export class DeviceFingerprintService {
   static async generateFingerprint(): Promise<string> {
     const fingerprint = await this.collectDeviceInfo();
