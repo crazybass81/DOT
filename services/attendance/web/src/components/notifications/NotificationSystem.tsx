@@ -154,12 +154,7 @@ export const NotificationSystem: React.FC<NotificationSystemProps> = ({
     });
   }, []);
 
-  // Expose methods for external use
-  React.useImperativeHandle(React.createRef(), () => ({
-    addNotification,
-    removeNotification,
-    clearAll
-  }));
+  // Methods are exposed through the component's internal state
 
   return (
     <>
