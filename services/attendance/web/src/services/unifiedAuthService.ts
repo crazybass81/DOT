@@ -169,7 +169,7 @@ export class UnifiedAuthService {
    */
   async requestPasswordReset(email: string): Promise<AuthResult> {
     try {
-      const result = await supabaseAuthService.resetPasswordForEmail(email);
+      await supabaseAuthService.resetPassword(email);
       
       return {
         success: result.success,
