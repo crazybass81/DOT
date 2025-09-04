@@ -172,8 +172,7 @@ export class UnifiedAuthService {
       await supabaseAuthService.resetPassword(email);
       
       return {
-        success: result.success,
-        error: result.error
+        success: true
       };
     } catch (error: any) {
       console.error('Password reset request error:', error);
