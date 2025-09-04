@@ -18,9 +18,13 @@ import {
 
 export class RegistrationAPI {
   private supabase: SupabaseClient
+  private supabaseUrl: string
+  private supabaseKey: string
 
   constructor(supabaseUrl: string, supabaseAnonKey: string) {
     this.supabase = createClient(supabaseUrl, supabaseAnonKey)
+    this.supabaseUrl = supabaseUrl
+    this.supabaseKey = supabaseAnonKey
   }
 
   /**
