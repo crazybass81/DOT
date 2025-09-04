@@ -130,7 +130,8 @@ export class UnifiedAuthService {
     try {
       const supabaseUser = await supabaseAuthService.getCurrentUser();
       if (supabaseUser) {
-        return await this.mapSupabaseUserToUnified(supabaseUser);
+        const unifiedUser = await this.mapSupabaseUserToUnified(supabaseUser);
+        return unifiedUser || null;
       }
       return null;
     } catch (error) {
