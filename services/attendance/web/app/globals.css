@@ -49,7 +49,7 @@
   
   /* Card Styles */
   .card {
-    @apply rounded-xl border bg-card shadow-sm p-6;
+    @apply rounded-xl border bg-gray-50 shadow-sm p-6;
   }
   
   /* Input Styles */
