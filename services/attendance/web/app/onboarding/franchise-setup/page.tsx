@@ -6,6 +6,18 @@ import { useRouter } from 'next/navigation'
 export default function FranchiseSetupPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    
+    // 여기에 실제 API 호출 추가 가능
+    // 지금은 바로 대시보드로 이동
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 500)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto">
