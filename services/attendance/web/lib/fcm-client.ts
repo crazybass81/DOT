@@ -296,7 +296,7 @@ export class FCMClient {
         requireInteraction: payload.requireInteraction,
         silent: payload.silent,
         tag: payload.tag,
-        timestamp: payload.timestamp || Date.now()
+
       })
     } catch (error) {
       console.error('Failed to show notification:', error)
