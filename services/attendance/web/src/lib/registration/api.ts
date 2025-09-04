@@ -1,21 +1,48 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { supabase, supabaseUrl, supabaseAnonKey } from '../supabase-config'
-import {
-  RegistrationStartRequest,
-  RegistrationStartResponse,
-  AgeVerificationRequest,
-  AgeVerificationResponse,
-  BusinessVerificationRequest,
-  BusinessVerificationResponse,
-  RoleSelectionRequest,
-  RoleSelectionResponse,
-  RegistrationCompleteRequest,
-  RegistrationCompleteResponse,
-  PersonalAccount,
-  Organization,
-  UserRole,
-  RegistrationFlow,
-} from './types'
+
+export interface RegistrationData {
+  email: string
+  phone: string
+  fullName: string
+  birthDate: string
+  registrationType: 'personal' | 'business_owner' | 'corporation_founder' | 'franchise_founder'
+  password: string
+}
+
+export interface Organization {
+  id: string
+  name: string
+  code: string
+  biz_number?: string
+  biz_type: 'PERSONAL' | 'CORP' | 'FRANCHISE'
+  is_active: boolean
+  metadata?: any
+  created_at: string
+}
+
+export interface Employee {
+  id: string
+  auth_user_id: string
+  organization_id?: string
+  email: string
+  phone: string
+  name: string
+  birth_date?: string
+  role: 'EMPLOYEE' | 'MANAGER' | 'ADMIN' | 'MASTER_ADMIN'
+  approval_status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  is_active: boolean
+  created_at: string
+}
+
+export interface UserRole {
+  id: string
+  employee_id: string
+  organization_id?: string
+  role_type: 'WORKER' | 'ADMIN' | 'MANAGER' | 'FRANCHISE'
+  is_active: boolean
+  granted_at: string
+}
 
 export class RegistrationAPI {
   private supabase: SupabaseClient
@@ -23,32 +50,31 @@ export class RegistrationAPI {
   private supabaseKey: string
 
   constructor() {
-    // Use the existing Supabase client instead of creating a new one
     this.supabase = supabase
     this.supabaseUrl = supabaseUrl
     this.supabaseKey = supabaseAnonKey
   }
 
   /**
-   * Check if email or phone is already registered
+   * 이메일/전화번호 중복 확인
    */
   async checkAvailability(email: string, phone: string): Promise<{
     emailAvailable: boolean
     phoneAvailable: boolean
     existingAccount: boolean
   }> {
-    // Check in employees table for existing accounts
+    // employees 테이블에서 중복 확인
     const { data: emailCheck } = await this.supabase
       .from('employees')
       .select('id')
       .eq('email', email)
-      .single()
+      .maybeSingle()
 
     const { data: phoneCheck } = await this.supabase
       .from('employees')
       .select('id')
       .eq('phone', phone)
-      .single()
+      .maybeSingle()
 
     return {
       emailAvailable: !emailCheck,
@@ -58,418 +84,285 @@ export class RegistrationAPI {
   }
 
   /**
-   * Start registration flow
+   * 나이 계산
    */
-  async startRegistration(
-    request: RegistrationStartRequest
-  ): Promise<RegistrationStartResponse> {
-    try {
-      const response = await fetch(
-        `${this.supabaseUrl}/functions/v1/register-user-v2/start`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabaseKey}`,
-          },
-          body: JSON.stringify(request),
-        }
-      )
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        flowId: '',
-        sessionId: '',
-        requiresAgeVerification: false,
-        requiresParentConsent: false,
-        nextStep: '',
-        error: error instanceof Error ? error.message : '오류가 발생했습니다',
-      }
-    }
-  }
-
-  /**
-   * Verify age through various methods
-   */
-  async verifyAge(
-    request: AgeVerificationRequest
-  ): Promise<AgeVerificationResponse> {
-    try {
-      const response = await fetch(
-        `${this.supabaseUrl}/functions/v1/register-user-v2/verify-age`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabaseKey}`,
-          },
-          body: JSON.stringify(request),
-        }
-      )
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        verified: false,
-        nextStep: '',
-        error: error instanceof Error ? error.message : '오류가 발생했습니다',
-      }
-    }
-  }
-
-  /**
-   * Verify business registration
-   */
-  async verifyBusiness(
-    request: BusinessVerificationRequest
-  ): Promise<BusinessVerificationResponse> {
-    try {
-      const response = await fetch(
-        `${this.supabaseUrl}/functions/v1/register-user-v2/verify-business`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabaseKey}`,
-          },
-          body: JSON.stringify(request),
-        }
-      )
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        verified: false,
-        nextStep: '',
-        error: error instanceof Error ? error.message : '오류가 발생했습니다',
-      }
-    }
-  }
-
-  /**
-   * Select user role
-   */
-  async selectRole(
-    request: RoleSelectionRequest
-  ): Promise<RoleSelectionResponse> {
-    try {
-      const response = await fetch(
-        `${this.supabaseUrl}/functions/v1/register-user-v2/select-role`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabaseKey}`,
-          },
-          body: JSON.stringify(request),
-        }
-      )
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        roleSelected: 'worker',
-        nextStep: '',
-        error: error instanceof Error ? error.message : '오류가 발생했습니다',
-      }
-    }
-  }
-
-  /**
-   * Complete registration
-   */
-  async completeRegistration(
-    request: RegistrationCompleteRequest
-  ): Promise<RegistrationCompleteResponse> {
-    try {
-      const response = await fetch(
-        `${this.supabaseUrl}/functions/v1/register-user-v2/complete`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabaseKey}`,
-          },
-          body: JSON.stringify(request),
-        }
-      )
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        accountId: '',
-        authUserId: '',
-        role: 'worker',
-        message: '',
-        error: error instanceof Error ? error.message : '오류가 발생했습니다',
-      }
-    }
-  }
-
-  /**
-   * Get registration flow status
-   */
-  async getFlowStatus(flowId: string): Promise<RegistrationFlow | null> {
-    const { data, error } = await this.supabase
-      .from('registration_flows')
-      .select('*')
-      .eq('id', flowId)
-      .single()
-
-    if (error) {
-      console.error('Error fetching flow status:', error)
-      return null
-    }
-
-    return data
-  }
-
-  /**
-   * Get user's current account
-   */
-  async getCurrentAccount(): Promise<PersonalAccount | null> {
-    const { data: { user } } = await this.supabase.auth.getUser()
+  calculateAge(birthDate: string): number {
+    const birth = new Date(birthDate)
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
     
-    if (!user) return null
-
-    const { data, error } = await this.supabase
-      .from('personal_accounts')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .single()
-
-    if (error) {
-      console.error('Error fetching account:', error)
-      return null
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
     }
-
-    return data
+    
+    return age
   }
 
   /**
-   * Get user's roles
+   * 회원가입 처리
    */
-  async getUserRoles(accountId: string): Promise<UserRole[]> {
-    const { data, error } = await this.supabase
-      .from('user_roles')
-      .select(`
-        *,
-        organizations:organization_id(*)
-      `)
-      .eq('account_id', accountId)
-      .eq('is_active', true)
-
-    if (error) {
-      console.error('Error fetching user roles:', error)
-      return []
-    }
-
-    return data || []
-  }
-
-  /**
-   * Get organizations
-   */
-  async getOrganizations(): Promise<Organization[]> {
-    const { data, error } = await this.supabase
-      .from('organizations_v2')
-      .select('*')
-      .eq('is_active', true)
-
-    if (error) {
-      console.error('Error fetching organizations:', error)
-      return []
-    }
-
-    return data || []
-  }
-
-  /**
-   * Get organization by code
-   */
-  async getOrganizationByCode(code: string): Promise<Organization | null> {
-    const { data, error } = await this.supabase
-      .from('organizations_v2')
-      .select('*')
-      .eq('code', code)
-      .single()
-
-    if (error) {
-      console.error('Error fetching organization:', error)
-      return null
-    }
-
-    return data
-  }
-
-  /**
-   * Add role to existing user
-   */
-  async addRole(
-    accountId: string,
-    roleType: string,
-    organizationId?: string,
-    createOrg?: {
-      name: string
-      type: string
-      businessNumber?: string
-    }
-  ): Promise<{ success: boolean; error?: string }> {
+  async register(data: RegistrationData): Promise<{
+    success: boolean
+    user?: any
+    employee?: Employee
+    organization?: Organization
+    error?: string
+  }> {
     try {
-      // If creating new organization
-      if (createOrg) {
-        const { data: org, error: orgError } = await this.supabase
-          .from('organizations_v2')
+      // 1. 나이 확인
+      const age = this.calculateAge(data.birthDate)
+      if (age < 15) {
+        return { success: false, error: '만 15세 미만은 가입할 수 없습니다.' }
+      }
+
+      // 2. Supabase Auth 계정 생성
+      const { data: authUser, error: authError } = await this.supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.fullName,
+            phone: data.phone,
+          }
+        }
+      })
+
+      if (authError || !authUser.user) {
+        console.error('Auth error:', authError)
+        return { success: false, error: authError?.message || '계정 생성 실패' }
+      }
+
+      // 3. 조직 생성 (개인사업자/법인/가맹본부인 경우)
+      let organization: Organization | undefined
+      let role: 'EMPLOYEE' | 'ADMIN' = 'EMPLOYEE'
+      let roleType: 'WORKER' | 'ADMIN' = 'WORKER'
+
+      if (data.registrationType !== 'personal') {
+        const bizType = data.registrationType === 'business_owner' ? 'PERSONAL' :
+                       data.registrationType === 'corporation_founder' ? 'CORP' :
+                       'FRANCHISE'
+
+        const orgCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+
+        const { data: newOrg, error: orgError } = await this.supabase
+          .from('organizations')
           .insert({
-            name: createOrg.name,
-            type: createOrg.type,
-            business_number: createOrg.businessNumber,
-            owner_account_id: accountId,
-            code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+            name: `${data.fullName}의 ${bizType === 'PERSONAL' ? '개인사업' : bizType === 'CORP' ? '법인' : '가맹본부'}`,
+            code: orgCode,
+            biz_type: bizType,
+            is_active: true,
+            metadata: {
+              founder_id: authUser.user.id,
+              founded_at: new Date().toISOString()
+            }
           })
           .select()
           .single()
 
-        if (orgError) throw orgError
-        organizationId = org.id
+        if (orgError) {
+          console.error('Organization creation error:', orgError)
+          // Auth 계정 삭제
+          await this.supabase.auth.admin.deleteUser(authUser.user.id)
+          return { success: false, error: '조직 생성 실패' }
+        }
+
+        organization = newOrg
+        role = 'ADMIN'
+        roleType = 'ADMIN'
       }
 
-      // Add the role
-      const { error: roleError } = await this.supabase
-        .from('user_roles')
+      // 4. employees 테이블에 추가
+      const { data: employee, error: empError } = await this.supabase
+        .from('employees')
         .insert({
-          account_id: accountId,
-          organization_id: organizationId,
-          role: roleType,
+          auth_user_id: authUser.user.id,
+          organization_id: organization?.id,
+          email: data.email,
+          phone: data.phone,
+          name: data.fullName,
+          birth_date: data.birthDate,
+          role: role,
+          approval_status: organization ? 'APPROVED' : 'PENDING',
           is_active: true,
+          approved_at: organization ? new Date().toISOString() : null
         })
+        .select()
+        .single()
 
-      if (roleError) throw roleError
+      if (empError) {
+        console.error('Employee creation error:', empError)
+        // Auth 계정 삭제
+        await this.supabase.auth.admin.deleteUser(authUser.user.id)
+        return { success: false, error: '직원 정보 생성 실패' }
+      }
 
-      return { success: true }
+      // 5. user_roles 테이블에 역할 추가
+      if (organization) {
+        const { error: roleError } = await this.supabase
+          .from('user_roles')
+          .insert({
+            employee_id: employee.id,
+            organization_id: organization.id,
+            role_type: roleType,
+            is_active: true,
+            granted_at: new Date().toISOString(),
+            granted_by: employee.id // 자기 자신이 부여
+          })
+
+        if (roleError) {
+          console.error('Role assignment error:', roleError)
+        }
+      }
+
+      // 6. 청소년인 경우 계약 정보에 표시
+      if (age < 18) {
+        // contracts 테이블에 청소년 표시를 위한 준비
+        // 실제 계약은 나중에 생성됨
+        await this.supabase
+          .from('employees')
+          .update({
+            metadata: {
+              ...employee.metadata,
+              is_teen: true,
+              requires_parent_consent: true
+            }
+          })
+          .eq('id', employee.id)
+      }
+
+      return {
+        success: true,
+        user: authUser.user,
+        employee,
+        organization
+      }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
+      console.error('Registration error:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '회원가입 처리 중 오류가 발생했습니다.'
+      }
     }
   }
 
   /**
-   * Request parent consent for teen registration
+   * 기존 사용자 로그인
    */
-  async requestParentConsent(
-    flowId: string,
-    parentPhone: string,
-    parentName: string
-  ): Promise<{ success: boolean; consentUrl?: string; error?: string }> {
+  async login(email: string, password: string): Promise<{
+    success: boolean
+    user?: any
+    employee?: Employee
+    roles?: UserRole[]
+    error?: string
+  }> {
     try {
-      // Generate consent URL
-      const consentUrl = `${window.location.origin}/parent-consent/${flowId}`
+      const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-      // In production, send SMS to parent
-      // For now, we'll just return the URL
-      console.log(`Would send SMS to ${parentPhone} for ${parentName}`)
-      console.log(`Consent URL: ${consentUrl}`)
+      if (authError || !authData.user) {
+        return { success: false, error: authError?.message || '로그인 실패' }
+      }
 
-      // Update flow with parent info
+      // 직원 정보 조회
+      const { data: employee } = await this.supabase
+        .from('employees')
+        .select('*')
+        .eq('auth_user_id', authData.user.id)
+        .single()
+
+      if (!employee) {
+        return { success: false, error: '직원 정보를 찾을 수 없습니다.' }
+      }
+
+      // 역할 정보 조회
+      const { data: roles } = await this.supabase
+        .from('user_roles')
+        .select('*')
+        .eq('employee_id', employee.id)
+        .eq('is_active', true)
+
+      return {
+        success: true,
+        user: authData.user,
+        employee,
+        roles: roles || []
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '로그인 처리 중 오류가 발생했습니다.'
+      }
+    }
+  }
+
+  /**
+   * 조직 코드로 조회
+   */
+  async getOrganizationByCode(code: string): Promise<Organization | null> {
+    const { data, error } = await this.supabase
+      .from('organizations')
+      .select('*')
+      .eq('code', code)
+      .eq('is_active', true)
+      .single()
+
+    if (error) {
+      console.error('Organization fetch error:', error)
+      return null
+    }
+
+    return data
+  }
+
+  /**
+   * 기존 직원에게 역할 추가
+   */
+  async addRole(
+    employeeId: string,
+    organizationId: string,
+    roleType: 'WORKER' | 'ADMIN' | 'MANAGER' | 'FRANCHISE'
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
       const { error } = await this.supabase
-        .from('registration_flows')
-        .update({
-          flow_data: {
-            parentConsent: {
-              parentName,
-              parentPhone,
-              consentRequested: true,
-              consentUrl,
-            },
-          },
+        .from('user_roles')
+        .insert({
+          employee_id: employeeId,
+          organization_id: organizationId,
+          role_type: roleType,
+          is_active: true,
+          granted_at: new Date().toISOString(),
+          granted_by: employeeId // 임시로 자기 자신
         })
-        .eq('id', flowId)
 
       if (error) throw error
 
-      return { success: true, consentUrl }
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
-    }
-  }
-
-  /**
-   * Verify parent consent
-   */
-  async verifyParentConsent(
-    flowId: string,
-    consentCode: string
-  ): Promise<{ success: boolean; verified: boolean; error?: string }> {
-    try {
-      // In production, verify the consent code
-      // For now, we'll accept any 6-digit code
-      const isValid = /^\d{6}$/.test(consentCode)
-
-      if (isValid) {
-        // Update flow as verified
-        const { error } = await this.supabase
-          .from('registration_flows')
-          .update({
-            current_step: 'role_selection',
-            flow_data: {
-              parentConsent: {
-                verified: true,
-                verifiedAt: new Date().toISOString(),
-              },
-            },
-          })
-          .eq('id', flowId)
-
-        if (error) throw error
+      // employees 테이블의 role도 업데이트 (필요한 경우)
+      if (roleType === 'ADMIN') {
+        await this.supabase
+          .from('employees')
+          .update({ role: 'ADMIN' })
+          .eq('id', employeeId)
+      } else if (roleType === 'MANAGER') {
+        await this.supabase
+          .from('employees')
+          .update({ role: 'MANAGER' })
+          .eq('id', employeeId)
       }
 
-      return { success: true, verified: isValid }
-    } catch (error) {
-      return { success: false, verified: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
-    }
-  }
-
-  /**
-   * Resend verification code
-   */
-  async resendVerification(
-    flowId: string,
-    type: 'age' | 'parent'
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      // In production, resend SMS or email
-      console.log(`Resending ${type} verification for flow ${flowId}`)
-      
       return { success: true }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '역할 추가 실패'
+      }
     }
   }
 
   /**
-   * Cancel registration flow
-   */
-  async cancelRegistration(flowId: string): Promise<{ success: boolean }> {
-    const { error } = await this.supabase
-      .from('registration_flows')
-      .delete()
-      .eq('id', flowId)
-
-    return { success: !error }
-  }
-
-  /**
-   * Validate password strength
+   * 비밀번호 유효성 검사
    */
   validatePassword(password: string): {
     isValid: boolean
@@ -478,19 +371,19 @@ export class RegistrationAPI {
     const errors: string[] = []
 
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters')
+      errors.push('비밀번호는 최소 8자 이상이어야 합니다')
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter')
+      errors.push('대문자를 포함해야 합니다')
     }
     if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter')
+      errors.push('소문자를 포함해야 합니다')
     }
     if (!/[0-9]/.test(password)) {
-      errors.push('Password must contain at least one number')
+      errors.push('숫자를 포함해야 합니다')
     }
     if (!/[!@#$%^&*]/.test(password)) {
-      errors.push('Password must contain at least one special character')
+      errors.push('특수문자를 포함해야 합니다')
     }
 
     return {
@@ -500,32 +393,69 @@ export class RegistrationAPI {
   }
 
   /**
-   * Mock NICE API verification (for development)
+   * 현재 로그인한 사용자 정보 조회
    */
-  async mockNiceVerification(data: any): Promise<boolean> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+  async getCurrentUser(): Promise<{
+    user: any
+    employee: Employee | null
+    roles: UserRole[]
+    organizations: Organization[]
+  } | null> {
+    const { data: { user } } = await this.supabase.auth.getUser()
     
-    // Always return true in development
-    return true
+    if (!user) return null
+
+    // 직원 정보 조회
+    const { data: employee } = await this.supabase
+      .from('employees')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .single()
+
+    if (!employee) {
+      return { user, employee: null, roles: [], organizations: [] }
+    }
+
+    // 역할 조회
+    const { data: roles } = await this.supabase
+      .from('user_roles')
+      .select('*')
+      .eq('employee_id', employee.id)
+      .eq('is_active', true)
+
+    // 조직 정보 조회
+    const orgIds = roles?.map(r => r.organization_id).filter(Boolean) || []
+    let organizations: Organization[] = []
+    
+    if (orgIds.length > 0) {
+      const { data: orgs } = await this.supabase
+        .from('organizations')
+        .select('*')
+        .in('id', orgIds)
+      
+      organizations = orgs || []
+    }
+
+    return {
+      user,
+      employee,
+      roles: roles || [],
+      organizations
+    }
   }
 
   /**
-   * Mock NTS API verification (for development)
+   * 로그아웃
    */
-  async mockNtsVerification(businessNumber: string): Promise<{
-    isValid: boolean
-    businessName: string
-    representativeName: string
-  }> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Return mock data
-    return {
-      isValid: true,
-      businessName: '테스트 사업장',
-      representativeName: '홍길동',
-    }
+  async logout(): Promise<void> {
+    await this.supabase.auth.signOut()
+  }
+
+  /**
+   * 세션 확인
+   */
+  async checkSession(): Promise<boolean> {
+    const { data: { session } } = await this.supabase.auth.getSession()
+    return !!session
   }
 }
