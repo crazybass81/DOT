@@ -160,7 +160,7 @@ export const useRealtimeApprovals = (
 
   // Transform realtime event to approval event
   const transformToApprovalEvent = useCallback((event: AttendanceRealtimeEvent): ApprovalEvent | null => {
-    if (event.table !== 'employee_approvals' && event.table !== 'employees') {
+    if (event.table !== 'employee_approvals') {
       return null;
     }
 
