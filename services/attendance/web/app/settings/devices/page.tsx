@@ -168,7 +168,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       console.error('Error registering device:', error)
-      alert('Failed to register device: ' + error.message)
+      alert('Failed to register device: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setRegistering(false)
     }
