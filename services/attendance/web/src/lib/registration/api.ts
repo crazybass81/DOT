@@ -83,7 +83,7 @@ export class RegistrationAPI {
         requiresAgeVerification: false,
         requiresParentConsent: false,
         nextStep: '',
-        error: error.message,
+        error: error instanceof Error ? error.message : '오류가 발생했습니다',
       }
     }
   }
@@ -114,7 +114,7 @@ export class RegistrationAPI {
         success: false,
         verified: false,
         nextStep: '',
-        error: error.message,
+        error: error instanceof Error ? error.message : '오류가 발생했습니다',
       }
     }
   }
@@ -145,7 +145,7 @@ export class RegistrationAPI {
         success: false,
         verified: false,
         nextStep: '',
-        error: error.message,
+        error: error instanceof Error ? error.message : '오류가 발생했습니다',
       }
     }
   }
@@ -176,7 +176,7 @@ export class RegistrationAPI {
         success: false,
         roleSelected: 'worker',
         nextStep: '',
-        error: error.message,
+        error: error instanceof Error ? error.message : '오류가 발생했습니다',
       }
     }
   }
@@ -209,7 +209,7 @@ export class RegistrationAPI {
         authUserId: '',
         role: 'worker',
         message: '',
-        error: error.message,
+        error: error instanceof Error ? error.message : '오류가 발생했습니다',
       }
     }
   }
