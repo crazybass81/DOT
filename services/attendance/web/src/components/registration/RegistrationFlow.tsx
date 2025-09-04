@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { RegistrationAPI } from '@/lib/registration/api'
 import { RegistrationFlowData, calculateAge } from '@/lib/registration/types'
+import { supabaseUrl, supabaseAnonKey } from '@/lib/supabase-config'
 import BasicInfoStep from './BasicInfoStep'
 import AgeVerificationStep from './AgeVerificationStep'
 import ParentConsentStep from './ParentConsentStep'
@@ -9,11 +10,6 @@ import BusinessVerificationStep from './BusinessVerificationStep'
 import RoleSelectionStep from './RoleSelectionStep'
 import PasswordStep from './PasswordStep'
 import CompletionStep from './CompletionStep'
-
-interface RegistrationFlowProps {
-  supabaseUrl: string
-  supabaseAnonKey: string
-}
 
 export type RegistrationStep = 
   | 'basic_info'
@@ -24,10 +20,7 @@ export type RegistrationStep =
   | 'password'
   | 'completion'
 
-const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
-  supabaseUrl,
-  supabaseAnonKey,
-}) => {
+const RegistrationFlow: React.FC = () => {
   const router = useRouter()
   const [api] = useState(() => new RegistrationAPI(supabaseUrl, supabaseAnonKey))
   
