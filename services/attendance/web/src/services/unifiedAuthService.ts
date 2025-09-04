@@ -30,10 +30,10 @@ export class UnifiedAuthService {
     try {
       const result = await supabaseAuthService.signUp(email, password, metadata);
       
-      if (!result.success) {
+      if (!result.user) {
         return {
           success: false,
-          error: result.error || 'Sign up failed'
+          error: 'Sign up failed'
         };
       }
 
@@ -42,7 +42,7 @@ export class UnifiedAuthService {
       return {
         success: true,
         user,
-        requiresAction: result.emailVerificationRequired ? 'verify_email' : undefined
+        requiresAction: result.needsVerification ? 'verify_email' : undefined
       };
     } catch (error: any) {
       console.error('Sign up error:', error);
