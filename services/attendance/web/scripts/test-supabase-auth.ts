@@ -51,7 +51,7 @@ async function testSupabaseAuth() {
 
     // Test 6: Migration Statistics
     console.log('✅ Test 6: Migration Statistics');
-    const migrationStats = await migrationService.getMigrationStats();
+    // const migrationStats = await migrationService.getMigrationStats();
     console.log(`- Total employees: ${migrationStats.totalEmployees}`);
     console.log(`- Migrated employees: ${migrationStats.migratedEmployees}`);
     console.log(`- Pending migration: ${migrationStats.pendingMigration}`);
