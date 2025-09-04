@@ -1,0 +1,114 @@
+{
+  "service": {
+    "name": "attendance",
+    "displayName": "Attendance Service",
+    "type": "microservice",
+    "version": "1.2.0",
+    "description": "QR 코드 기반 근태관리 시스템"
+  },
+  "documentation": {
+    "autoUpdate": true,
+    "documents": {
+      "readme": "./README.md",
+      "changelog": "./CHANGELOG.md",
+      "api": "./API.md",
+      "architecture": "./ARCHITECTURE.md",
+      "development": "./DEVELOPMENT.md",
+      "deployment": "./DEPLOYMENT.md",
+      "testing": "./TESTING.md"
+    },
+    "features": "./docs/features/",
+    "guides": "./docs/guides/",
+    "diagrams": "./docs/diagrams/",
+    "decisions": "./docs/decisions/"
+  },
+  "monitoring": {
+    "watchPatterns": [
+      "web/**/*.{ts,tsx,js,jsx}",
+      "mobile/**/*.dart",
+      "supabase/**/*.sql",
+      "docs/**/*.md",
+      "*.md"
+    ],
+    "ignorePaths": [
+      "**/node_modules/**",
+      "**/build/**",
+      "**/.next/**",
+      "**/android/**",
+      "**/ios/**",
+      "**/.dart_tool/**"
+    ]
+  },
+  "autoGenerate": {
+    "api": {
+      "enabled": true,
+      "sources": [
+        "web/app/api/**/*.ts",
+        "supabase/functions/**/*.ts"
+      ],
+      "output": "./API.md",
+      "format": "markdown"
+    },
+    "changelog": {
+      "enabled": true,
+      "source": "git",
+      "output": "./CHANGELOG.md",
+      "format": "keepachangelog"
+    },
+    "architecture": {
+      "enabled": true,
+      "sources": [
+        "web/app/**",
+        "mobile/lib/**",
+        "supabase/**"
+      ],
+      "output": "./ARCHITECTURE.md",
+      "updateOnStructureChange": true
+    }
+  },
+  "validation": {
+    "enabled": true,
+    "checks": {
+      "apiConsistency": true,
+      "documentLinks": true,
+      "diagramSync": true,
+      "codeExamples": true,
+      "versionSync": true
+    }
+  },
+  "integration": {
+    "parentDocs": {
+      "readme": "../../README.md",
+      "api": "../../API_SPECIFICATION.md",
+      "changelog": "../../CHANGELOG.md",
+      "architecture": "../../ARCHITECTURE.md"
+    },
+    "syncRules": {
+      "api": {
+        "prefix": "/attendance",
+        "autoMerge": true
+      },
+      "changelog": {
+        "includeInParent": true,
+        "prefix": "[Attendance]"
+      }
+    }
+  },
+  "notifications": {
+    "breakingChanges": true,
+    "apiChanges": true,
+    "architectureChanges": true,
+    "testFailures": true
+  },
+  "ci": {
+    "preCommit": {
+      "validateDocs": true,
+      "updateChangelog": true,
+      "checkLinks": true
+    },
+    "preMerge": {
+      "syncParentDocs": true,
+      "generateReports": true
+    }
+  }
+}
