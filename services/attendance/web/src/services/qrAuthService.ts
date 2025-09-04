@@ -69,7 +69,7 @@ class QRAuthService {
   /**
    * QR 코드 유효성 검증
    */
-  private validateQRCode(qrData: QRCodeData): boolean {
+  private async validateQRCode(qrData: QRCodeData): Promise<boolean> {
     // 타임스탬프 검증 (5분 이내)
     const timestamp = new Date(qrData.timestamp);
     const now = new Date();
