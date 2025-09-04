@@ -87,7 +87,7 @@ const RoleSelectionStep: React.FC<RoleSelectionStepProps> = ({
     setError('')
 
     try {
-      let finalOrgCode = organizationCode
+      let finalOrgCode: string | undefined = organizationCode
 
       if (joinMethod === 'create') {
         // For business owners creating new organization
