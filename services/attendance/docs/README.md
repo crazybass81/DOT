@@ -25,8 +25,10 @@
 - [**Database Schema**](./architecture/database_schema_extension.md) - PostgreSQL schema design
 - [**Mobile Stack**](./architecture/mobile_recommended_stack.md) - Flutter app architecture
 
-### Testing
+### Testing & Performance
 - [**QR Deep Link Testing**](./testing/test_qr_deeplink.md) - Testing QR code functionality
+- [**Performance Benchmarks**](../tests/benchmarks/database-performance.test.ts) - Database query performance tests
+- [**Unit Tests**](../tests/) - Comprehensive test suite with security validation
 
 ## 🚀 Quick Start
 
