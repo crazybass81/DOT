@@ -80,7 +80,7 @@ export class FCMClient {
         this.fingerprint = await generateDeviceFingerprint()
 
         // Set up message listener
-        onMessage(this.messaging, (payload) => {
+        onMessage(this.messaging, (payload: any) => {
           this.handleForegroundMessage(payload)
         })
       } catch (error) {
