@@ -143,7 +143,7 @@ export class RegistrationAPI {
       let role: 'EMPLOYEE' | 'ADMIN' = 'EMPLOYEE'
       let roleType: 'WORKER' | 'ADMIN' = 'WORKER'
 
-      if (data.registrationType !== 'personal') {
+      if (data.registrationType !== 'personal' && data.businessInfo) {
         const bizType = data.registrationType === 'business_owner' ? 'PERSONAL' :
                        data.registrationType === 'corporation_founder' ? 'CORP' :
                        'FRANCHISE'
@@ -153,13 +153,15 @@ export class RegistrationAPI {
         const { data: newOrg, error: orgError } = await this.supabase
           .from('organizations')
           .insert({
-            name: `${data.fullName}의 ${bizType === 'PERSONAL' ? '개인사업' : bizType === 'CORP' ? '법인' : '가맹본부'}`,
+            name: data.businessInfo.name,
             code: orgCode,
+            biz_number: data.businessInfo.bizNumber,
             biz_type: bizType,
             is_active: true,
             metadata: {
               founder_id: authUser.user.id,
-              founded_at: new Date().toISOString()
+              founded_at: new Date().toISOString(),
+              address: data.businessInfo.address || null
             }
           })
           .select()
