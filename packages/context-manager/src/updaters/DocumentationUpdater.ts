@@ -139,7 +139,7 @@ export class DocumentationUpdater extends EventEmitter {
     return {
       filePath: docPath,
       sections,
-      priority: this.calculatePriority(analysis),
+      priority: this.calculateUpdatePriority(analysis),
       type: docType as any
     };
   }
