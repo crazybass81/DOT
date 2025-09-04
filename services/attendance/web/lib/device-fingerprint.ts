@@ -143,7 +143,7 @@ function getWebGLFingerprint(): { webgl: string; webGL: any } {
     const version = (gl as any).getParameter ? (gl as any).getParameter((gl as any).VERSION) || 'unknown' : 'unknown'
     const shadingLanguageVersion = (gl as any).getParameter ? (gl as any).getParameter((gl as any).SHADING_LANGUAGE_VERSION) || 'unknown' : 'unknown'
     
-    const extensions = gl.getSupportedExtensions() || []
+    const extensions = (gl as any).getSupportedExtensions ? (gl as any).getSupportedExtensions() || [] : []
 
     // Draw WebGL scene for fingerprinting
     const vertexShader = gl.createShader(gl.VERTEX_SHADER)!
