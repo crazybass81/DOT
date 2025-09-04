@@ -191,7 +191,7 @@ export class FCMClient {
         deviceId: this.fingerprint?.deviceId || '',
         requiresVerification: false,
         message: 'Registration failed',
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
