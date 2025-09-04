@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { RegistrationAPI } from '@/lib/registration/api'
 import { RegistrationFlowData, calculateAge } from '@/lib/registration/types'
-import { supabaseUrl, supabaseAnonKey } from '@/lib/supabase-config'
 import BasicInfoStep from './BasicInfoStep'
 import AgeVerificationStep from './AgeVerificationStep'
 import ParentConsentStep from './ParentConsentStep'
@@ -22,7 +21,7 @@ export type RegistrationStep =
 
 const RegistrationFlow: React.FC = () => {
   const router = useRouter()
-  const [api] = useState(() => new RegistrationAPI(supabaseUrl, supabaseAnonKey))
+  const [api] = useState(() => new RegistrationAPI())
   
   const [currentStep, setCurrentStep] = useState<RegistrationStep>('basic_info')
   const [flowId, setFlowId] = useState<string | null>(null)
