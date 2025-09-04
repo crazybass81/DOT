@@ -185,18 +185,27 @@ Both web and mobile applications connect to the same backend:
 
 ## 📊 Database Schema
 
-Using Supabase (PostgreSQL) with relational design:
+PostgreSQL 15 with 11 core tables and Row Level Security:
 
 ```sql
--- Main tables
-- attendance_records
-- employees
-- schedules
-- organizations
-- departments
+-- Core Tables (11)
+1. organizations      # 다중 테넌트 조직 관리
+2. users             # 시스템 사용자 (role 포함)
+3. employees         # 직원 프로필
+4. attendance        # 근태 기록
+5. shifts            # 근무 시프트 정의
+6. locations         # 체크인/아웃 위치
+7. permissions       # 역할별 권한 정의
+8. role_templates    # 커스텀 역할 템플릿
+9. notifications     # 알림 메시지
+10. audit_logs       # 감사 로그
+11. sync_queue       # 오프라인 동기화 큐
 
--- Row Level Security (RLS) enabled for all tables
--- Real-time subscriptions available
+-- Security Features
+- Row Level Security (RLS) on all tables
+- JWT-based authentication
+- Organization-based data isolation
+- Real-time subscriptions with filters
 ```
 
 ## 🚦 CI/CD
