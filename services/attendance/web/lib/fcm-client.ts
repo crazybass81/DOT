@@ -113,7 +113,7 @@ export class FCMClient {
       }
 
       // Get FCM token
-      const { getToken } = await import('firebase/messaging')
+      const { getToken } = await import('firebase/messaging' as any)
       const token = await getToken(this.messaging, {
         vapidKey: this.config.vapidKey,
         serviceWorkerRegistration: this.serviceWorkerRegistration
