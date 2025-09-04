@@ -250,3 +250,95 @@ src/
 3. Verify formatting: `npm run format:check`
 4. Run type checking: `npm run typecheck`
 5. Test production build: `npm run build`
+
+## AI-Driven Development Principles
+AI에 전적으로 의존하는 개발 방식에 최적화된 원칙들
+
+### 핵심 철학
+- 개발 지식 불필요: 모든 기술적 결정은 AI가 수행
+- 단순성 최우선: AI가 이해하고 수정하기 쉬운 구조
+- 예시 중심: 코드보다 예시와 설명이 중요
+
+### 1. Single File Principle
+- 관련 로직은 모두 한 파일에 작성
+- AI가 전체 컨텍스트를 한번에 파악 가능
+- 파일 간 의존성 최소화
+
+### 2. Explicit Intent Comments
+```python
+def function_name():
+    """
+    이 함수가 해야 할 일:
+    1. [구체적인 동작 1]
+    2. [구체적인 동작 2]
+    TODO: [나중에 추가할 기능]
+    WARNING: [주의사항]
+    """
+    pass  # AI가 구현
+```
+
+### 3. Example-Driven Development
+```javascript
+const EXAMPLES = {
+  input: { /* 입력 예시 */ },
+  output: { /* 원하는 출력 예시 */ }
+};
+// "AI, make function that transforms input to output"
+```
+
+### 4. Natural Language Contracts
+```python
+REQUIREMENTS = """
+- 유저는 이메일로 로그인할 수 있다
+- 로그인하면 토큰을 받는다
+- 토큰은 24시간 유효하다
+"""
+# "AI, implement all requirements"
+```
+
+### 5. Error Message Driven Development
+```javascript
+function todoFunction() {
+  throw new Error("TODO: Connect to database");
+  throw new Error("TODO: Add validation");
+  throw new Error("TODO: Return formatted response");
+}
+// AI가 각 TODO를 순차적으로 해결
+```
+
+### 6. Working Code Collection
+- proven-patterns/ 폴더에 작동하는 코드 보관
+- AI가 필요시 복사해서 사용
+- 새로운 패턴은 검증 후 추가
+
+### 7. State-First Design
+```javascript
+const AppState = {
+  currentUser: null,
+  isLoggedIn: false,
+  actions: {
+    login: "Set currentUser and isLoggedIn=true",
+    logout: "Clear currentUser and isLoggedIn=false"
+  }
+};
+// AI가 액션 설명을 보고 구현
+```
+
+### AI 협업 워크플로우
+1. **Describe**: 원하는 기능을 자연어로 설명
+2. **Generate**: AI가 초기 구현 생성
+3. **Test**: 실행하고 에러 메시지 복사
+4. **Fix**: AI에게 에러 메시지 전달하여 수정
+5. **Iterate**: 작동할 때까지 반복
+
+### 금지 사항 (AI가 알아서 처리)
+- 복잡한 디자인 패턴 고민 ❌
+- 성능 최적화 고민 ❌
+- 보안 구현 고민 ❌
+- 코드 구조 고민 ❌
+
+### 권장 사항
+- 명확한 예시 제공 ✅
+- 에러 메시지 그대로 복사 ✅
+- 원하는 결과 설명 ✅
+- 작동하는 코드 재사용 ✅
