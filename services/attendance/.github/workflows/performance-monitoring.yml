@@ -1,0 +1,201 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: supabase/postgres:15.1.0.117
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 54322:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for baseline comparison
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd services/attendance
+          npm ci
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase services
+        run: |
+          cd services/attendance
+          supabase start
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Run migrations
+        run: |
+          cd services/attendance
+          npm run migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:54322/postgres
+
+      - name: Download previous benchmark results
+        uses: actions/cache@v3
+        id: benchmark-cache
+        with:
+          path: services/attendance/benchmark-results
+          key: benchmarks-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            benchmarks-${{ runner.os }}-
+
+      - name: Run performance benchmarks
+        run: |
+          cd services/attendance
+          npm run benchmark:compare || npm run benchmark:save
+        env:
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:54322/postgres
+          BENCHMARK_ITERATIONS: 50
+          BENCHMARK_WARMUP: 5
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: services/attendance/benchmark-results/
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Find the latest benchmark result
+            const resultsDir = 'services/attendance/benchmark-results';
+            const files = fs.readdirSync(resultsDir)
+              .filter(f => f.startsWith('benchmark-') && f.endsWith('.json'))
+              .sort().reverse();
+            
+            if (files.length === 0) {
+              console.log('No benchmark results found');
+              return;
+            }
+            
+            const latestResult = JSON.parse(
+              fs.readFileSync(path.join(resultsDir, files[0]), 'utf8')
+            );
+            
+            // Format the comment
+            let comment = '## 📊 Performance Benchmark Results\n\n';
+            
+            // Overall status
+            const passing = latestResult.summary.criticalPassing === latestResult.summary.criticalTotal;
+            const statusEmoji = passing ? '✅' : '⚠️';
+            const status = passing ? 'PASSED' : 'NEEDS ATTENTION';
+            
+            comment += `### ${statusEmoji} Status: ${status}\n\n`;
+            comment += `- **Critical Tests Passing:** ${latestResult.summary.criticalPassing}/${latestResult.summary.criticalTotal}\n`;
+            comment += `- **Average P95:** ${latestResult.summary.averageP95.toFixed(2)}ms\n`;
+            comment += `- **Slowest Query:** ${latestResult.summary.slowestQuery}\n\n`;
+            
+            // Top 5 results
+            comment += '### Top 5 Query Performance\n\n';
+            comment += '| Query | P95 (ms) | Target (ms) | Status |\n';
+            comment += '|-------|----------|-------------|--------|\n';
+            
+            latestResult.results
+              .sort((a, b) => a.p95 - b.p95)
+              .slice(0, 5)
+              .forEach(r => {
+                const status = r.p95 <= r.expectedP95 ? '✅' : '⚠️';
+                comment += `| ${r.description} | ${r.p95.toFixed(2)} | ${r.expectedP95} | ${status} |\n`;
+              });
+            
+            // Queries needing optimization
+            const slow = latestResult.results.filter(r => r.p95 > r.expectedP95);
+            if (slow.length > 0) {
+              comment += '\n### ⚠️ Queries Needing Optimization\n\n';
+              slow.forEach(r => {
+                const overBy = ((r.p95 - r.expectedP95) / r.expectedP95 * 100).toFixed(0);
+                comment += `- **${r.description}**: ${r.p95.toFixed(2)}ms (${overBy}% over target)\n`;
+              });
+            }
+            
+            comment += '\n---\n';
+            comment += `*Benchmark ran with ${latestResult.config.iterations} iterations per query*\n`;
+            comment += `*[View full results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;
+            
+            // Post the comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Check performance regression
+        run: |
+          cd services/attendance
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Find latest result
+            const resultsDir = 'benchmark-results';
+            const files = fs.readdirSync(resultsDir)
+              .filter(f => f.startsWith('benchmark-') && f.endsWith('.json'))
+              .sort().reverse();
+            
+            if (files.length === 0) process.exit(0);
+            
+            const latest = JSON.parse(fs.readFileSync(path.join(resultsDir, files[0])));
+            
+            // Check if any critical queries failed their targets
+            const criticalFailures = latest.results
+              .filter(r => r.critical && r.p95 > r.expectedP95);
+            
+            if (criticalFailures.length > 0) {
+              console.error('❌ Performance regression detected!');
+              criticalFailures.forEach(r => {
+                console.error(\`  - \${r.description}: \${r.p95.toFixed(2)}ms (target: \${r.expectedP95}ms)\`);
+              });
+              process.exit(1);
+            }
+            
+            console.log('✅ All critical performance targets met');
+          "
+
+      - name: Store benchmark comparison
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd services/attendance
+          npm run benchmark:save
