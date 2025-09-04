@@ -64,9 +64,10 @@ export class FCMClient {
         throw new Error('Browser does not support push notifications')
       }
 
-      // Import Firebase dynamically
-      const { initializeApp } = await import('firebase/app')
-      const { getMessaging, getToken, onMessage } = await import('firebase/messaging')
+      // Import Firebase dynamically (only if available)
+      try {
+        const { initializeApp } = await import('firebase/app')
+        const { getMessaging, getToken, onMessage } = await import('firebase/messaging')
 
       // Initialize Firebase
       const app = initializeApp(this.config)
