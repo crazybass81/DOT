@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Enterprise-grade context consistency management system",
   "main": "dist/index.js",
+  "bin": {
+    "context-manager": "./dist/cli.js"
+  },
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
