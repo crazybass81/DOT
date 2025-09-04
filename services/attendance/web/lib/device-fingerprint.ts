@@ -153,24 +153,25 @@ function getWebGLFingerprint(): { webgl: string; webGL: any } {
       glCtx.compileShader(vertexShader)
 
       const fragmentShader = glCtx.createShader(glCtx.FRAGMENT_SHADER)!
-    gl.shaderSource(fragmentShader, 'precision mediump float;void main(){gl_FragColor=vec4(1,0,0.5,1);}')
-    gl.compileShader(fragmentShader)
+      glCtx.shaderSource(fragmentShader, 'precision mediump float;void main(){gl_FragColor=vec4(1,0,0.5,1);}')
+      glCtx.compileShader(fragmentShader)
 
-    const program = gl.createProgram()!
-    gl.attachShader(program, vertexShader)
-    gl.attachShader(program, fragmentShader)
-    gl.linkProgram(program)
-    gl.useProgram(program)
+      const program = glCtx.createProgram()!
+      glCtx.attachShader(program, vertexShader)
+      glCtx.attachShader(program, fragmentShader)
+      glCtx.linkProgram(program)
+      glCtx.useProgram(program)
 
-    const buffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 0, 1, 1, -1]), gl.STATIC_DRAW)
+      const buffer = glCtx.createBuffer()
+      glCtx.bindBuffer(glCtx.ARRAY_BUFFER, buffer)
+      glCtx.bufferData(glCtx.ARRAY_BUFFER, new Float32Array([-1, -1, 0, 1, 1, -1]), glCtx.STATIC_DRAW)
 
-    const positionLocation = gl.getAttribLocation(program, 'a_position')
-    gl.enableVertexAttribArray(positionLocation)
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0)
+      const positionLocation = glCtx.getAttribLocation(program, 'a_position')
+      glCtx.enableVertexAttribArray(positionLocation)
+      glCtx.vertexAttribPointer(positionLocation, 2, glCtx.FLOAT, false, 0, 0)
 
-    gl.drawArrays(gl.TRIANGLES, 0, 3)
+      glCtx.drawArrays(glCtx.TRIANGLES, 0, 3)
+    }
 
     const fingerprint = canvas.toDataURL()
 
