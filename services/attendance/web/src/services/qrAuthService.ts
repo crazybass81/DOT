@@ -81,9 +81,9 @@ class QRAuthService {
     }
     
     // 서명 검증
-    const verified = await this.verifyHMACSignature(qrData, signature)
+    const verified = await this.verifyHMACSignature(qrData, signature);
     
-    return true;
+    return verified;
   }
 
   /**
