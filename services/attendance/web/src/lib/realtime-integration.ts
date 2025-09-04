@@ -209,7 +209,7 @@ export const recoverFromConnectionError = async (
   organizationId: string,
   subscriptions: Array<{
     type: 'attendance' | 'approvals';
-    callback: Function;
+    callback: (event: AttendanceRealtimeEvent) => void;
     options?: any;
   }>
 ) => {
