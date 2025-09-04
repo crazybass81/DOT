@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
       setUserName(user.name || user.email);
       // TODO: Get actual organization ID from user
-      setOrganizationId(user.organizationId || 'default-org');
+      setOrganizationId((user as any).organizationId || 'default-org');
       setLoading(false);
     };
 
