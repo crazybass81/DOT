@@ -42,7 +42,7 @@ export class DeviceFingerprintService {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       if (gl) {
-        const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
+        const debugInfo = (gl as any).getExtension ? (gl as any).getExtension('WEBGL_debug_renderer_info') : null;
         if (debugInfo) {
           info.webglVendor = (gl as any).getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
           info.webglRenderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
