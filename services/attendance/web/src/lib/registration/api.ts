@@ -8,6 +8,11 @@ export interface RegistrationData {
   birthDate: string
   registrationType: 'personal' | 'business_owner' | 'corporation_founder' | 'franchise_founder'
   password: string
+  businessInfo?: {
+    name: string
+    bizNumber: string
+    address?: string
+  }
 }
 
 export interface Organization {
