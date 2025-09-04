@@ -177,10 +177,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
           isAdmin: false,
           user: {
             id: user.id,
-            name: user.employee.name,
+            name: user.employee?.name || '',
             email: user.email,
-            role: user.employee.role,
-            approval_status: user.employee.approval_status
+            role: user.employee?.role || '',
+            approval_status: user.employee?.approval_status || 'pending'
           },
           error: '관리자 권한이 필요합니다.' 
         }));
@@ -199,10 +199,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
           isAdmin: isAdmin,
           user: {
             id: user.id,
-            name: user.employee.name,
+            name: user.employee?.name || '',
             email: user.email,
-            role: user.employee.role,
-            approval_status: user.employee.approval_status
+            role: user.employee?.role || '',
+            approval_status: user.employee?.approval_status || 'pending'
           },
           error: null
         });
