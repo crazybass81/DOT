@@ -4,8 +4,8 @@ import { Suspense } from 'react'
 import dynamic from 'next/dynamic'
 
 // Dynamic import to avoid SSR issues with Supabase
-const RegistrationFlow = dynamic(
-  () => import('@/components/registration/RegistrationFlow'),
+const SimpleRegistration = dynamic(
+  () => import('@/components/registration/SimpleRegistration'),
   { 
     ssr: false,
     loading: () => (
