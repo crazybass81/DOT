@@ -69,20 +69,26 @@ export class FCMClient {
         const { initializeApp } = await import('firebase/app')
         const { getMessaging, getToken, onMessage } = await import('firebase/messaging')
 
-      // Initialize Firebase
-      const app = initializeApp(this.config)
-      this.messaging = getMessaging(app)
+        // Initialize Firebase
+        const app = initializeApp(this.config)
+        this.messaging = getMessaging(app)
 
-      // Register service worker
-      await this.registerServiceWorker()
+        // Register service worker
+        await this.registerServiceWorker()
 
-      // Generate device fingerprint
-      this.fingerprint = await generateDeviceFingerprint()
+        // Generate device fingerprint
+        this.fingerprint = await generateDeviceFingerprint()
 
-      // Set up message listener
-      onMessage(this.messaging, (payload) => {
-        this.handleForegroundMessage(payload)
-      })
+        // Set up message listener
+        onMessage(this.messaging, (payload) => {
+          this.handleForegroundMessage(payload)
+        })
+      } catch (error) {
+        console.warn('Firebase not available, FCM disabled:', error)
+        // FCM will be disabled but app will continue to work
+        this.fingerprint = await generateDeviceFingerprint()
+        return false
+      }
 
       this.isInitialized = true
     } catch (error) {
