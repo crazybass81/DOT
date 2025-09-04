@@ -62,12 +62,12 @@ export class RegistrationAPI {
   ): Promise<RegistrationStartResponse> {
     try {
       const response = await fetch(
-        `${this.supabase.supabaseUrl}/functions/v1/register-user-v2/start`,
+        `${this.supabaseUrl}/functions/v1/register-user-v2/start`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabase.supabaseKey}`,
+            Authorization: `Bearer ${this.supabaseKey}`,
           },
           body: JSON.stringify(request),
         }
