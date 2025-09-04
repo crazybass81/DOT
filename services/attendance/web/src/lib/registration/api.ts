@@ -68,33 +68,12 @@ export class RegistrationAPI {
     phoneAvailable: boolean
     existingAccount: boolean
   }> {
-    // Supabase Auth에서만 이메일 중복 확인
-    // employees 테이블 접근 시 500 에러 발생하므로 제거
-    try {
-      // 가짜 로그인 시도로 이메일 존재 여부 확인
-      const { error } = await this.supabase.auth.signInWithPassword({
-        email: email,
-        password: 'test_check_123'
-      })
-      
-      // "Invalid login credentials" = 이메일은 존재하나 비밀번호 틀림
-      // "Email not confirmed" = 이메일 존재하나 미인증
-      // 다른 에러 = 이메일 없음
-      const emailExists = error?.message?.includes('Invalid login credentials') ||
-                         error?.message?.includes('Email not confirmed')
-      
-      return {
-        emailAvailable: !emailExists,
-        phoneAvailable: true, // 전화번호 체크는 일단 스킵
-        existingAccount: emailExists
-      }
-    } catch {
-      // 에러 시 사용 가능으로 처리
-      return {
-        emailAvailable: true,
-        phoneAvailable: true,
-        existingAccount: false
-      }
+    // 현재는 중복 체크를 스킵하고 항상 사용 가능으로 반환
+    // Supabase는 회원가입 시 자동으로 중복 이메일을 체크함
+    return {
+      emailAvailable: true,
+      phoneAvailable: true,
+      existingAccount: false
     }
   }
 
