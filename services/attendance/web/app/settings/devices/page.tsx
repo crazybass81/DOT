@@ -125,8 +125,7 @@ export default function DevicesPage() {
       }
 
       // Generate device fingerprint
-      const fingerprint = await generateDeviceFingerprint()
-      const deviceId = fingerprint
+      const deviceId = await generateDeviceFingerprint()
 
       // Get FCM token (simulate for now)
       const fcmToken = `fcm_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -143,14 +142,14 @@ export default function DevicesPage() {
           fcmToken,
           deviceId,
           deviceInfo: {
-            name: `${fingerprint.platform} - ${fingerprint.browser}`,
+            name: `${navigator.platform} - ${navigator.userAgent.split(' ')[0]}`,
             type: getDeviceType(),
-            platform: fingerprint.platform,
-            browser: fingerprint.browser,
-            appVersion: fingerprint.appVersion,
-            osVersion: fingerprint.osVersion
+            platform: navigator.platform,
+            browser: navigator.userAgent.split(' ')[0],
+            appVersion: '1.0.0',
+            osVersion: navigator.platform
           },
-          fingerprintData: fingerprint,
+          fingerprintData: deviceId,
           location: await getCurrentLocation()
         })
       })
