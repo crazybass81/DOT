@@ -66,8 +66,8 @@ export class FCMClient {
 
       // Import Firebase dynamically (only if available)
       try {
-        const { initializeApp } = await import('firebase/app')
-        const { getMessaging, getToken, onMessage } = await import('firebase/messaging')
+        const { initializeApp } = await import('firebase/app' as any)
+        const { getMessaging, getToken, onMessage } = await import('firebase/messaging' as any)
 
         // Initialize Firebase
         const app = initializeApp(this.config)
