@@ -272,7 +272,8 @@ export class UnifiedAuthService {
    */
   async updateProfile(updates: { name?: string; metadata?: Record<string, any> }): Promise<AuthResult> {
     try {
-      const result = await supabaseAuthService.updateUser(updates);
+      // updateUser method not implemented in supabaseAuthService
+      throw new Error('Profile update not yet implemented');
       
       if (!result.success) {
         return {
