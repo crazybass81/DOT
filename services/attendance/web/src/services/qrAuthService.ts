@@ -80,8 +80,8 @@ class QRAuthService {
       return false;
     }
     
-    // 서명 검증
-    const verified = await this.verifyHMACSignature(qrData, signature);
+    // 서명 검증 (signature는 qrData에 포함되어 있어야 함)
+    const verified = await this.verifyHMACSignature(qrData, qrData.signature || '');
     
     return verified;
   }
