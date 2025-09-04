@@ -158,7 +158,7 @@ program
 
       orchestrator.on('breaking:changes', (data) => {
         console.log('\n⚠️  BREAKING CHANGES DETECTED:');
-        for (const change of data.analysis.changes.filter(c => c.impactLevel === 'breaking')) {
+        for (const change of data.analysis.changes.filter((c: any) => c.impactLevel === 'breaking')) {
           console.log(`  - ${change.filePath}`);
         }
       });
