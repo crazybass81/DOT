@@ -432,7 +432,7 @@ export class RegistrationAPI {
 
       return { success: true, verified: isValid }
     } catch (error) {
-      return { success: false, verified: false, error: error.message }
+      return { success: false, verified: false, error: error instanceof Error ? error.message : '오류가 발생했습니다' }
     }
   }
 
