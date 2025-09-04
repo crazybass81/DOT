@@ -125,6 +125,50 @@ X-Organization-ID: {organization_id} (for non-master admins)
 }
 ```
 
+## 📊 Report Generation
+
+### POST /functions/v1/attendance-report
+근태 보고서 생성 (권한 기반 필터링)
+
+**Required Role:** `manager` or higher
+
+**Request:**
+```json
+{
+  "startDate": "2025-01-01",
+  "endDate": "2025-01-31",
+  "employeeIds": ["emp_uuid1", "emp_uuid2"],  // Optional
+  "departmentFilter": "주방",                // Optional
+  "reportType": "summary|detailed|export"
+}
+```
+
+**Response (Summary):**
+```json
+{
+  "success": true,
+  "report": {
+    "type": "summary",
+    "period": {
+      "startDate": "2025-01-01",
+      "endDate": "2025-01-31"
+    },
+    "statistics": {
+      "totalDays": 620,
+      "totalEmployees": 25,
+      "attendanceByStatus": {
+        "present": 500,
+        "late": 80,
+        "absent": 40
+      },
+      "totalLateMinutes": 450,
+      "totalOvertimeMinutes": 1200,
+      "averageAttendanceRate": 93.5
+    }
+  }
+}
+```
+
 ## 📊 Records Management
 
 ### GET /api/attendance/records
