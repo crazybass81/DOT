@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS organizations (
 -- =====================================================
 CREATE TABLE IF NOT EXISTS employees (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
     employee_code VARCHAR(50),
     name VARCHAR(200) NOT NULL,
