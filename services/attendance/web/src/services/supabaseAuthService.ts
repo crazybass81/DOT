@@ -24,6 +24,7 @@ export interface AuthState {
 }
 
 export class SupabaseAuthService {
+  public readonly supabase = supabase;
   private authStateChangeCallbacks: ((event: AuthChangeEvent, session: Session | null) => void)[] = [];
 
   constructor() {
