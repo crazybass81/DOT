@@ -18,14 +18,6 @@ const nextConfig = {
       }
     ];
   },
-  // 외부 디바이스 접근 허용
-  webpackDevMiddleware: config => {
-    config.watchOptions = {
-      poll: 1000,
-      aggregateTimeout: 300,
-    }
-    return config
-  },
 };
 
 export default nextConfig;
