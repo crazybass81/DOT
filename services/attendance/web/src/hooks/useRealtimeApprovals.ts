@@ -334,13 +334,27 @@ export const useRealtimeApprovals = (
   const refreshData = useCallback(async () => {
     try {
       setError(null);
-      // TODO: Implement actual data fetch from API
-      // For now, we'll rely on real-time updates
+      // Fetch initial data from API
       console.log('[useRealtimeApprovals] Refreshing data for organization:', organizationId);
       
-      // In a real implementation, you would fetch initial data here:
-      // const initialData = await employeeService.getEmployees(organizationId);
-      // setData(prevData => ({ ...prevData, employees: initialData, stats: calculateStats(initialData) }));
+      const response = await fetch(`/api/employees?organizationId=${organizationId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const initialData = await response.json();
+        setData(prevData => ({ 
+          ...prevData, 
+          employees: initialData.employees || [],
+          stats: calculateStats(initialData.employees || [])
+        }));
+      } else {
+        throw new Error('Failed to fetch employees data');
+      }
     } catch (err) {
       console.error('[useRealtimeApprovals] Error refreshing data:', err);
       setError(`Failed to refresh data: ${err instanceof Error ? err.message : 'Unknown error'}`);
