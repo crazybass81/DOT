@@ -96,7 +96,7 @@ export class RegistrationAPI {
   ): Promise<AgeVerificationResponse> {
     try {
       const response = await fetch(
-        `${this.supabase.supabaseUrl}/functions/v1/register-user-v2/verify-age`,
+        `${this.supabaseUrl}/functions/v1/register-user-v2/verify-age`,
         {
           method: 'POST',
           headers: {
@@ -127,7 +127,7 @@ export class RegistrationAPI {
   ): Promise<BusinessVerificationResponse> {
     try {
       const response = await fetch(
-        `${this.supabase.supabaseUrl}/functions/v1/register-user-v2/verify-business`,
+        `${this.supabaseUrl}/functions/v1/register-user-v2/verify-business`,
         {
           method: 'POST',
           headers: {
@@ -158,7 +158,7 @@ export class RegistrationAPI {
   ): Promise<RoleSelectionResponse> {
     try {
       const response = await fetch(
-        `${this.supabase.supabaseUrl}/functions/v1/register-user-v2/select-role`,
+        `${this.supabaseUrl}/functions/v1/register-user-v2/select-role`,
         {
           method: 'POST',
           headers: {
@@ -189,7 +189,7 @@ export class RegistrationAPI {
   ): Promise<RegistrationCompleteResponse> {
     try {
       const response = await fetch(
-        `${this.supabase.supabaseUrl}/functions/v1/register-user-v2/complete`,
+        `${this.supabaseUrl}/functions/v1/register-user-v2/complete`,
         {
           method: 'POST',
           headers: {
