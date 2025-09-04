@@ -101,7 +101,7 @@ export class RegistrationAPI {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabase.supabaseKey}`,
+            Authorization: `Bearer ${this.supabaseKey}`,
           },
           body: JSON.stringify(request),
         }
@@ -132,7 +132,7 @@ export class RegistrationAPI {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabase.supabaseKey}`,
+            Authorization: `Bearer ${this.supabaseKey}`,
           },
           body: JSON.stringify(request),
         }
@@ -163,7 +163,7 @@ export class RegistrationAPI {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabase.supabaseKey}`,
+            Authorization: `Bearer ${this.supabaseKey}`,
           },
           body: JSON.stringify(request),
         }
@@ -194,7 +194,7 @@ export class RegistrationAPI {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.supabase.supabaseKey}`,
+            Authorization: `Bearer ${this.supabaseKey}`,
           },
           body: JSON.stringify(request),
         }
