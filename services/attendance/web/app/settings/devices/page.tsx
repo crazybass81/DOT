@@ -168,7 +168,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       console.error('Error registering device:', error)
-      alert('Failed to register device: ' + (error instanceof Error ? error.message : 'Unknown error'))
+      alert('Failed to register device: ' + (error instanceof Error ? (error instanceof Error ? error.message : 'Unknown error') : 'Unknown error'))
     } finally {
       setRegistering(false)
     }
@@ -204,7 +204,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       console.error('Error verifying device:', error)
-      alert('Failed to verify device: ' + (error instanceof Error ? error.message : 'Unknown error'))
+      alert('Failed to verify device: ' + (error instanceof Error ? (error instanceof Error ? error.message : 'Unknown error') : 'Unknown error'))
     }
   }
 
@@ -258,7 +258,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       console.error('Error deactivating device:', error)
-      alert('Failed to deactivate device: ' + error.message)
+      alert('Failed to deactivate device: ' + (error instanceof Error ? error.message : 'Unknown error'))
     }
   }
 
@@ -292,7 +292,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       console.error('Error sending notification:', error)
-      alert('Failed to send notification: ' + error.message)
+      alert('Failed to send notification: ' + (error instanceof Error ? error.message : 'Unknown error'))
     }
   }
 
