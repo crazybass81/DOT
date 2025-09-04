@@ -156,18 +156,29 @@ attendance/
 - **JWT 토큰**: Supabase Auth 제공
 - **리프레시 토큰**: 자동 갱신
 - **세션 관리**: 서버 사이드 세션
+- **Multi-factor Authentication**: TOTP 기반 2FA 지원
 
-### 인가 (Authorization)
+### 인가 (Authorization) - 4단계 계층 구조
 - **Row Level Security (RLS)**: 데이터베이스 레벨 보안
 - **역할 기반 접근 제어 (RBAC)**:
-  - `admin`: 전체 관리
-  - `manager`: 팀 관리
-  - `employee`: 개인 근태
+  - `master_admin`: 시스템 전체 관리, 조직 생성/삭제
+  - `admin`: 조직 내 전체 관리, 직원 관리
+  - `manager`: 팀 관리, 근태 승인
+  - `worker`: 개인 근태 관리
+
+### 권한 매트릭스
+| 역할 | 조직 | 사용자 | 직원 | 근태 | 시프트 | 보고서 |
+|------|------|--------|------|------|--------|--------|
+| Master Admin | CRUD | CRUD | CRUD | CRUD | CRUD | Full |
+| Admin | R | CRU | CRUD | CRUD | CRUD | Full |
+| Manager | R | R | RU | CRU/Approve | R/Assign | View |
+| Worker | R | R(Self) | R(Self) | CR(Self) | R | - |
 
 ### 데이터 보호
 - **HTTPS**: 모든 통신 암호화
-- **암호화**: 민감 데이터 암호화 저장
-- **감사 로그**: 모든 변경사항 기록
+- **암호화**: bcrypt 기반 패스워드 해싱
+- **감사 로그**: 모든 변경사항 audit_logs 테이블 기록
+- **Multi-tenant Isolation**: organization_id 기반 완벽한 데이터 분리
 
 ## 📊 성능 최적화
 
