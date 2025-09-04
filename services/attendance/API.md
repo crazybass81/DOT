@@ -4,16 +4,24 @@
 
 ### Service URL
 ```
-Production: https://api.dot-platform.com/attendance
-Staging: https://staging-api.dot-platform.com/attendance
-Development: http://localhost:3000/api/attendance
+Production: https://{project_id}.supabase.co/functions/v1/{function_name}
+Staging: https://{staging_project_id}.supabase.co/functions/v1/{function_name}
+Development: http://localhost:54321/functions/v1/{function_name}
 ```
 
 ### Authentication
 ```http
 Authorization: Bearer {supabase_jwt_token}
 Content-Type: application/json
+X-Organization-ID: {organization_id} (for non-master admins)
 ```
+
+### Available Edge Functions
+- `/auth-signup` - User registration with role assignment
+- `/attendance-check` - Check-in/out operations
+- `/attendance-report` - Generate attendance reports
+- `/permission-check` - Verify user permissions
+- `/shift-management` - Manage employee shifts
 
 ## 🔐 Authentication Endpoints
 
