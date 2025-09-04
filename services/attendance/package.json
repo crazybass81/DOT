@@ -16,7 +16,11 @@
     "migrate": "supabase migration up",
     "migrate:create": "supabase migration new",
     "functions:serve": "supabase functions serve",
-    "functions:deploy": "supabase functions deploy"
+    "functions:deploy": "supabase functions deploy",
+    "benchmark": "tsx scripts/run-benchmarks.ts",
+    "benchmark:compare": "tsx scripts/run-benchmarks.ts --compare",
+    "benchmark:save": "tsx scripts/run-benchmarks.ts --save-baseline",
+    "test:benchmark": "jest tests/benchmarks --testTimeout=120000"
   },
   "keywords": [
     "attendance",
