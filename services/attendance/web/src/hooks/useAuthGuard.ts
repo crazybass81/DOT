@@ -115,10 +115,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.employee.name,
+              name: user.employee?.name || '',
               email: user.email,
-              role: user.employee.role,
-              approval_status: user.employee.approval_status
+              role: user.employee?.role || '',
+              approval_status: user.employee?.approval_status || 'pending'
             },
             error: '승인 대기 중입니다.' 
           }));
@@ -132,10 +132,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.employee.name,
+              name: user.employee?.name || '',
               email: user.email,
-              role: user.employee.role,
-              approval_status: user.employee.approval_status
+              role: user.employee?.role || '',
+              approval_status: user.employee?.approval_status || 'pending'
             },
             error: '등록이 거절되었습니다.' 
           }));
@@ -152,10 +152,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.employee.name,
+              name: user.employee?.name || '',
               email: user.email,
-              role: user.employee.role,
-              approval_status: user.employee.approval_status
+              role: user.employee?.role || '',
+              approval_status: user.employee?.approval_status || 'pending'
             },
             error: '계정이 비활성화되었습니다.' 
           }));
