@@ -24,7 +24,7 @@ export default function LoginPage() {
         const { data: employee } = await supabaseAuthService.supabase
           .from('employees')
           .select('role')
-          .eq('id', result.user.id)
+          .eq('id', (result as any).user.id)
           .single();
         
         if (employee?.role === 'MASTER_ADMIN') {
