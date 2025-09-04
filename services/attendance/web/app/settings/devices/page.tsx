@@ -126,7 +126,7 @@ export default function DevicesPage() {
 
       // Generate device fingerprint
       const fingerprint = await generateDeviceFingerprint()
-      const deviceId = fingerprint.deviceId
+      const deviceId = fingerprint
 
       // Get FCM token (simulate for now)
       const fcmToken = `fcm_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
