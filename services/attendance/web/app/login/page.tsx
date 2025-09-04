@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     try {
       const result = await supabaseAuthService.signIn(email, password);
-      if (result && result.user) {
+      if (result && (result as any).user) {
         // Check user role from database
         const { data: employee } = await supabaseAuthService.supabase
           .from('employees')
