@@ -87,7 +87,7 @@ export class FCMClient {
         console.warn('Firebase not available, FCM disabled:', error)
         // FCM will be disabled but app will continue to work
         this.fingerprint = await generateDeviceFingerprint()
-        return false
+        // Just return without a value for void function
       }
 
       this.isInitialized = true
