@@ -105,7 +105,96 @@ export class RegistrationAPI {
   }
 
   /**
-   * 회원가입 처리
+   * 기본 회원가입 (역할 없이)
+   */
+  async registerBasicAccount(data: {
+    email: string
+    password: string
+    fullName: string
+    phone: string
+    birthDate: string
+  }): Promise<{
+    success: boolean
+    user?: any
+    employee?: Employee
+    error?: string
+  }> {
+    try {
+      // 1. 나이 확인
+      const age = this.calculateAge(data.birthDate)
+      if (age < 15) {
+        return { success: false, error: '만 15세 미만은 가입할 수 없습니다.' }
+      }
+
+      // 2. Supabase Auth 계정 생성
+      const { data: authUser, error: authError } = await this.supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.fullName,
+            phone: data.phone,
+          }
+        }
+      })
+
+      if (authError || !authUser.user) {
+        console.error('Auth error:', authError)
+        return { success: false, error: authError?.message || '계정 생성 실패' }
+      }
+
+      // 3. employees 테이블에 추가 (역할 없이, 대기 상태)
+      const { data: employee, error: empError } = await this.supabase
+        .from('employees')
+        .insert({
+          auth_user_id: authUser.user.id,
+          email: data.email,
+          phone: data.phone,
+          name: data.fullName,
+          birth_date: data.birthDate,
+          role: 'EMPLOYEE',
+          approval_status: 'PENDING',
+          is_active: true
+        })
+        .select()
+        .single()
+
+      if (empError) {
+        console.error('Employee creation error:', empError)
+        // Auth 계정 삭제
+        await this.supabase.auth.admin.deleteUser(authUser.user.id)
+        return { success: false, error: '직원 정보 생성 실패' }
+      }
+
+      // 4. 청소년인 경우 메타데이터에 표시
+      if (age < 18) {
+        await this.supabase
+          .from('employees')
+          .update({
+            metadata: {
+              is_teen: true,
+              requires_parent_consent: true
+            }
+          })
+          .eq('id', employee.id)
+      }
+
+      return {
+        success: true,
+        user: authUser.user,
+        employee
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '회원가입 처리 중 오류가 발생했습니다.'
+      }
+    }
+  }
+
+  /**
+   * 회원가입 처리 (기존 - 전체)
    */
   async register(data: RegistrationData): Promise<{
     success: boolean
