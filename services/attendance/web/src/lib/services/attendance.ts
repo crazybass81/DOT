@@ -110,8 +110,12 @@ export class AttendanceService {
           break;
 
         case 'wifi':
-          // TODO: Implement WiFi verification
-          verificationResult = { valid: true, message: 'WiFi 검증 (구현 예정)' };
+          // WiFi verification implementation
+          const wifiResult = await this.verifyWiFiConnection(data.businessId);
+          verificationResult = {
+            valid: wifiResult.valid,
+            message: wifiResult.message
+          };
           break;
 
         case 'manual':
