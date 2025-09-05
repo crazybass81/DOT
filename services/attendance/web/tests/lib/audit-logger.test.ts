@@ -2,9 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { AuditLogger, AuditAction, AuditResult } from '../../src/lib/audit-logger';
-
-// Supabase 클라이언트 모킹
+// Supabase 클라이언트 모킹을 먼저 정의
 const mockSupabaseClient = {
   from: jest.fn(() => ({
     insert: jest.fn().mockResolvedValue({ error: null }),
@@ -21,6 +19,8 @@ const mockSupabaseClient = {
 jest.mock('../../src/lib/supabase/server', () => ({
   createClient: jest.fn(() => mockSupabaseClient)
 }));
+
+import { AuditLogger, AuditAction, AuditResult } from '../../src/lib/audit-logger';
 
 describe('AuditLogger', () => {
   let auditLogger: AuditLogger;
