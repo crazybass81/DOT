@@ -95,7 +95,8 @@ describe('🔴 RED Phase: 조직별 통계 대시보드 컴포넌트 테스트',
       
       const trendElements = screen.getAllByText('+5.2%');
       expect(trendElements.length).toBeGreaterThan(0);
-      expect(screen.getByTestId('trend-up')).toBeInTheDocument();
+      const trendUpElements = screen.getAllByTestId('trend-up');
+      expect(trendUpElements.length).toBeGreaterThan(0);
     });
 
     it('should handle loading state', () => {
