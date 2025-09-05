@@ -384,6 +384,34 @@ export class SupabaseAuthService {
           // 에러가 있어도 기본 정보로 계속 진행
         } else {
           console.log('No employee record found for user:', supabaseUser.id);
+          // employee 레코드가 없으면 자동 생성
+          try {
+            const { data: newEmployee, error: createError } = await supabase
+              .from('employees')
+              .insert({
+                user_id: supabaseUser.id,
+                email: supabaseUser.email!,
+                name: supabaseUser.user_metadata?.full_name || 
+                      supabaseUser.user_metadata?.name || 
+                      supabaseUser.email?.split('@')[0] || 
+                      '사용자',
+                position: 'worker',  // 기본 역할
+                is_active: true
+              })
+              .select()
+              .single();
+
+            if (!createError && newEmployee) {
+              console.log('Employee record auto-created:', newEmployee.id);
+              baseUser.role = newEmployee.position || 'worker';
+              baseUser.employee = newEmployee;
+              baseUser.name = newEmployee.name || baseUser.name;
+            } else if (createError) {
+              console.log('Failed to auto-create employee record:', createError.message);
+            }
+          } catch (autoCreateError) {
+            console.log('Error auto-creating employee record:', autoCreateError);
+          }
         }
       } catch (empError) {
         console.log('Employee table access error, continuing with basic info');
