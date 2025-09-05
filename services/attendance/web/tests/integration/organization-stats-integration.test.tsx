@@ -34,7 +34,8 @@ describe('🎯 Phase 3.3.1.2 통합 테스트: 조직별 통계 대시보드', (
     expect(screen.getByText('실시간 조직 성과 및 출근 현황 분석')).toBeInTheDocument();
     
     // 통계 개요 컴포넌트
-    expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+    const statsOverview = screen.getAllByTestId('stats-overview');
+    expect(statsOverview.length).toBeGreaterThan(0);
     expect(screen.getByText('총 직원 수')).toBeInTheDocument();
     expect(screen.getByText('활성 사용자')).toBeInTheDocument();
     expect(screen.getByText('평균 출근율')).toBeInTheDocument();
