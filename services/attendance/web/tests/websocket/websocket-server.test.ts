@@ -93,21 +93,24 @@ describe('WebSocketServer', () => {
       const organizationId = 'test-org-1';
       const testMessage = { type: 'attendance_update', data: 'test-data' };
 
-      socketServer.on('connection', (socket) => {
-        socket.join(`org:${organizationId}`);
+      // 먼저 인증 후 조직 채널에 참여
+      clientSocket.on('authenticated', (response) => {
+        expect(response.success).toBe(true);
         
-        // 조직 채널에 메시지 수신 대기
-        socket.on('org_message_received', (message) => {
+        // 조직 메시지 수신 대기
+        clientSocket.on('org_message_received', (message) => {
           expect(message.type).toBe(testMessage.type);
           expect(message.data).toBe(testMessage.data);
           done();
         });
+
+        // 메시지 브로드캐스트
+        setTimeout(() => {
+          webSocketManager.broadcastToOrganization(organizationId, 'org_message_received', testMessage);
+        }, 100);
       });
 
-      setTimeout(() => {
-        // 조직 채널로 메시지 브로드캐스트
-        socketServer.to(`org:${organizationId}`).emit('org_message_received', testMessage);
-      }, 100);
+      clientSocket.emit('authenticate', { userId: 'test-user', organizationId });
     });
   });
 
