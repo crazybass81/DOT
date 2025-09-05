@@ -1,0 +1,105 @@
+// 사업자등록번호 검증 서비스
+export interface BusinessVerificationResult {
+  isValid: boolean;
+  businessName?: string;
+  representativeName?: string;
+  status?: string;
+  error?: string;
+}
+
+export const businessVerificationService = {
+  /**
+   * 사업자등록번호 검증
+   * @param registrationNumber 사업자등록번호 (하이픈 포함/미포함 모두 지원)
+   */
+  async verifyBusinessRegistration(registrationNumber: string): Promise<BusinessVerificationResult> {
+    // 기본적인 포맷 검증
+    const cleanNumber = registrationNumber.replace(/[-]/g, '');
+    
+    if (cleanNumber.length !== 10) {
+      return {
+        isValid: false,
+        error: '사업자등록번호는 10자리여야 합니다.'
+      };
+    }
+
+    if (!/^\d{10}$/.test(cleanNumber)) {
+      return {
+        isValid: false,
+        error: '사업자등록번호는 숫자만 입력 가능합니다.'
+      };
+    }
+
+    // 체크섬 검증 (사업자등록번호 검증 알고리즘)
+    const weights = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+    let sum = 0;
+
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cleanNumber[i]) * weights[i];
+    }
+
+    const remainder = sum % 10;
+    const checkDigit = remainder === 0 ? 0 : 10 - remainder;
+
+    if (checkDigit !== parseInt(cleanNumber[9])) {
+      return {
+        isValid: false,
+        error: '유효하지 않은 사업자등록번호입니다.'
+      };
+    }
+
+    try {
+      // TODO: 실제 API 연동 (국세청 사업자등록번호 조회 API)
+      // 현재는 Mock 데이터 반환
+      return {
+        isValid: true,
+        businessName: '테스트 사업체',
+        representativeName: '홍길동',
+        status: 'active'
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        error: '사업자등록번호 조회 중 오류가 발생했습니다.'
+      };
+    }
+  },
+
+  /**
+   * 법인등록번호 검증
+   * @param registrationNumber 법인등록번호
+   */
+  async verifyCorporationRegistration(registrationNumber: string): Promise<BusinessVerificationResult> {
+    // 기본적인 포맷 검증
+    const cleanNumber = registrationNumber.replace(/[-]/g, '');
+    
+    if (cleanNumber.length !== 13) {
+      return {
+        isValid: false,
+        error: '법인등록번호는 13자리여야 합니다.'
+      };
+    }
+
+    if (!/^\d{13}$/.test(cleanNumber)) {
+      return {
+        isValid: false,
+        error: '법인등록번호는 숫자만 입력 가능합니다.'
+      };
+    }
+
+    try {
+      // TODO: 실제 API 연동
+      return {
+        isValid: true,
+        businessName: '테스트 법인',
+        representativeName: '김대표',
+        status: 'active'
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        error: '법인등록번호 조회 중 오류가 발생했습니다.'
+      };
+    }
+  }
+};
