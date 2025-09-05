@@ -28,6 +28,7 @@ interface ToastContextType {
   showWarning: (title: string, message: string) => void;
   showInfo: (title: string, message: string) => void;
   showNotification: (notification: RealtimeNotification) => void;
+  removeToast: (id: string) => void;
   clearAll: () => void;
   getToasts: () => ToastData[];
 }
