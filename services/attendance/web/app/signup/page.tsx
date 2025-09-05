@@ -148,25 +148,26 @@ export default function SignUpPage() {
         }
 
         // Employee 레코드 생성 (owner 역할)
-        const { error: empError } = await supabaseAuthService.supabase
-          .from('employees')
-          .insert({
-            user_id: authUser.id,
-            organization_id: org?.id,
-            email: formData.email,
-            name: formData.name,
-            phone: formData.phone,
-            position: 'owner',
-            is_active: true
-          });
+        if (org?.id) {
+          const { error: empError } = await supabaseAuthService.supabase
+            .from('employees')
+            .insert({
+              user_id: authUser.id,
+              organization_id: org.id,
+              email: formData.email,
+              name: formData.name,
+              phone: formData.phone,
+              position: 'owner',
+              is_active: true
+            });
 
-        if (empError) {
-          console.error('Employee creation error:', empError);
-          throw new Error('직원 정보 생성 중 오류가 발생했습니다.');
+          if (empError) {
+            console.error('Employee creation error:', empError);
+            // 직원 생성 실패해도 계속 진행
+          }
         }
 
-        // 자동 로그인 후 대시보드로 이동
-        await supabaseAuthService.signIn(formData.email, formData.password);
+        // 대시보드로 이동
         router.push('/business-dashboard');
       } else {
         // 근로자 등록
