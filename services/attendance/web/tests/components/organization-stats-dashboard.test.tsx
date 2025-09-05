@@ -93,7 +93,8 @@ describe('🔴 RED Phase: 조직별 통계 대시보드 컴포넌트 테스트',
     it('should show trend indicators', () => {
       render(<OrganizationStatsOverview data={mockStatsData.overview} />);
       
-      expect(screen.getByText('+5.2%')).toBeInTheDocument();
+      const trendElements = screen.getAllByText('+5.2%');
+      expect(trendElements.length).toBeGreaterThan(0);
       expect(screen.getByTestId('trend-up')).toBeInTheDocument();
     });
 
