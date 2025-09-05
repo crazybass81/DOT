@@ -10,6 +10,7 @@ const customJestConfig = {
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   testMatch: [
     '<rootDir>/tests/**/*.test.{js,ts,tsx}',
     '<rootDir>/src/**/*.test.{js,ts,tsx}'
@@ -23,7 +24,10 @@ const customJestConfig = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/tests/database/', // SQL 테스트는 제외
-  ]
+  ],
+  transform: {
+    '^.+\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
+  }
 };
 
 module.exports = createJestConfig(customJestConfig);
