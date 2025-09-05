@@ -637,6 +637,11 @@ export class NotificationManager {
    */
   async markMultipleAsRead(notificationIds: string[], userId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      // 빈 배열 체크
+      if (!notificationIds || notificationIds.length === 0) {
+        return { success: false, error: '알림 ID 목록이 비어있습니다.' };
+      }
+
       const readRecords = notificationIds.map(id => ({
         notification_id: id,
         user_id: userId,
@@ -660,6 +665,158 @@ export class NotificationManager {
       return { 
         success: false, 
         error: error instanceof Error ? error.message : '알 수 없는 오류' 
+      };
+    }
+  }
+
+  /**
+   * 사용자의 모든 읽지 않은 알림을 읽음 처리
+   */
+  async markAllAsRead(userId: string, organizationId?: string): Promise<{ success: boolean; markedCount?: number; error?: string }> {
+    try {
+      // 먼저 읽지 않은 알림 목록을 조회
+      const unreadNotifications = await this.getUserNotifications(userId, {
+        unreadOnly: true,
+        organizationId,
+        limit: 1000 // 대량 처리를 위해 제한
+      });
+
+      if (!unreadNotifications.success || !unreadNotifications.notifications) {
+        return { success: false, error: '읽지 않은 알림 조회 실패' };
+      }
+
+      const notificationIds = unreadNotifications.notifications
+        .filter(n => n.id && !n.readAt)
+        .map(n => n.id!);
+
+      if (notificationIds.length === 0) {
+        return { success: true, markedCount: 0 };
+      }
+
+      // 일괄 읽음 처리
+      const result = await this.markMultipleAsRead(notificationIds, userId);
+      
+      if (result.success) {
+        return { success: true, markedCount: notificationIds.length };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('전체 알림 읽음 표시 중 오류:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '알 수 없는 오류'
+      };
+    }
+  }
+
+  /**
+   * 읽지 않은 알림 개수 조회
+   */
+  async getUnreadCount(userId: string, organizationId?: string): Promise<{ success: boolean; count?: number; error?: string }> {
+    try {
+      let query = this.supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .or(`target_users.cs.{${userId}},target_organizations.is.null`);
+
+      if (organizationId) {
+        query = query.contains('target_organizations', [organizationId]);
+      }
+
+      // user_notifications와 LEFT JOIN하여 읽지 않은 것만 조회
+      const { count, error } = await query
+        .is('user_notifications.read_at', null);
+
+      if (error) {
+        console.error('읽지 않은 알림 개수 조회 실패:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, count: count || 0 };
+    } catch (error) {
+      console.error('읽지 않은 알림 개수 조회 중 오류:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '알 수 없는 오류'
+      };
+    }
+  }
+
+  /**
+   * 읽음 상태가 포함된 사용자 알림 조회
+   */
+  async getUserNotificationsWithReadStatus(userId: string, query: NotificationQuery = {}): Promise<{
+    success: boolean;
+    notifications?: any[];
+    totalCount?: number;
+    error?: string;
+  }> {
+    try {
+      const {
+        limit = 20,
+        offset = 0,
+        type,
+        unreadOnly = false,
+        organizationId,
+        dateFrom,
+        dateTo
+      } = query;
+
+      // notifications와 user_notifications를 LEFT JOIN하여 읽음 상태 포함
+      let supabaseQuery = this.supabase
+        .from('notifications')
+        .select(`
+          *,
+          user_notifications!left(read_at)
+        `)
+        .or(`target_users.cs.{${userId}},target_organizations.is.null`)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (type) {
+        supabaseQuery = supabaseQuery.eq('type', type);
+      }
+
+      if (unreadOnly) {
+        supabaseQuery = supabaseQuery.is('user_notifications.read_at', null);
+      }
+
+      if (organizationId) {
+        supabaseQuery = supabaseQuery.contains('target_organizations', [organizationId]);
+      }
+
+      if (dateFrom) {
+        supabaseQuery = supabaseQuery.gte('created_at', dateFrom.toISOString());
+      }
+
+      if (dateTo) {
+        supabaseQuery = supabaseQuery.lte('created_at', dateTo.toISOString());
+      }
+
+      const { data, error, count } = await supabaseQuery;
+
+      if (error) {
+        console.error('알림 조회 실패:', error);
+        return { success: false, error: error.message };
+      }
+
+      // 읽음 상태 정보를 알림 객체에 병합
+      const notificationsWithReadStatus = data?.map(notification => ({
+        ...notification,
+        readAt: notification.user_notifications?.[0]?.read_at || null
+      })) || [];
+
+      return {
+        success: true,
+        notifications: notificationsWithReadStatus,
+        totalCount: count || 0
+      };
+    } catch (error) {
+      console.error('알림 조회 중 오류:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '알 수 없는 오류'
       };
     }
   }
