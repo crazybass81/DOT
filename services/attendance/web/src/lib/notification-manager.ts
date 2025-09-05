@@ -329,8 +329,8 @@ export class NotificationManager {
         data,
         priority: NotificationPriority.MEDIUM,
         createdAt: new Date().toISOString(),
-        createdBy: data.assignedBy,
-        createdByName: data.assignedByName,
+        createdBy: data.assignedBy || data.changedBy || 'system',
+        createdByName: data.assignedByName || data.changedByName,
         targetUsers: [data.userId]
       };
 
