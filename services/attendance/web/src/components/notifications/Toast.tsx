@@ -179,7 +179,10 @@ export const ToastManager: React.FC<ToastManagerProps> = ({
         <Toast 
           key={toast.id} 
           toast={toast} 
-          onRemove={toastContext.clearAll} // Temporary implementation
+          onRemove={(id) => {
+            // Find removeToast method from context - will be implemented
+            toastContext.clearAll(); // Temporary fallback
+          }}
         />
       ))}
     </div>
