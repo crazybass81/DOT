@@ -121,7 +121,10 @@ export const useNotificationBatch = (
       }
       // 남은 배치가 있으면 즉시 처리
       if (pendingReads.size > 0 && !processingRef.current) {
-        processBatch();
+        // 비동기 처리를 위해 Promise를 생성하지만 기다리지 않음
+        processBatch().catch(error => {
+          console.error('Failed to process batch on unmount:', error);
+        });
       }
     };
   }, [pendingReads, processBatch]);
