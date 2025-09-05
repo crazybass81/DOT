@@ -57,42 +57,7 @@ jest.mock('./src/lib/supabase-config', () => ({
   }
 }));
 
-// Mock Supabase server client
-jest.mock('./src/lib/supabase/server', () => ({
-  createClient: jest.fn(() => ({
-    from: jest.fn(() => ({
-      select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      neq: jest.fn().mockReturnThis(),
-      gt: jest.fn().mockReturnThis(),
-      gte: jest.fn().mockReturnThis(),
-      lt: jest.fn().mockReturnThis(),
-      lte: jest.fn().mockReturnThis(),
-      in: jest.fn().mockReturnThis(),
-      or: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      range: jest.fn().mockReturnThis(),
-      single: jest.fn(),
-      maybeSingle: jest.fn(),
-    })),
-    auth: {
-      getUser: jest.fn(),
-      getSession: jest.fn(),
-    }
-  }))
-}));
-
-// Mock RBAC middleware
-jest.mock('./src/middleware/rbac-middleware', () => ({
-  withRBAC: jest.fn((handler, options) => (request) => {
-    // 테스트에서 사용할 mock user를 request에 추가
-    return handler(request, global.mockUser || { id: 'test-user', is_master_admin: false });
-  })
-}));
+// Global mocks will be handled in individual test files
 
 // Mock Next.js Response
 global.NextResponse = {
