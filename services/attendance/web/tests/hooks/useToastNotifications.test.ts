@@ -19,9 +19,8 @@ jest.mock('@/lib/realtime', () => ({
 }));
 
 // Test wrapper with ToastProvider
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <ToastProvider>{children}</ToastProvider>
-);
+const wrapper = ({ children }: { children: React.ReactNode }) => 
+  React.createElement(ToastProvider, null, children);
 
 describe('useToastNotifications Hook', () => {
   beforeEach(() => {
