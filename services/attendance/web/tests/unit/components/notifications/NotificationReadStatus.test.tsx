@@ -61,13 +61,13 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
     jest.clearAllMocks();
     
     // 기본 API 응답 설정
-    mockedNotificationManager.getUserNotifications.mockResolvedValue({
+    mockNotificationManager.getUserNotifications.mockResolvedValue({
       success: true,
       notifications: mockNotifications,
       totalCount: 3,
     });
 
-    mockedNotificationManager.markAsRead.mockResolvedValue({
+    mockNotificationManager.markAsRead.mockResolvedValue({
       success: true,
     });
   });
@@ -106,7 +106,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
       await user.click(unreadNotification);
 
       // markAsRead 호출 확인
-      expect(mockedNotificationManager.markAsRead).toHaveBeenCalledWith('notif-1', mockUserId);
+      expect(mockNotificationManager.markAsRead).toHaveBeenCalledWith('notif-1', mockUserId);
       
       // UI가 즉시 업데이트되어야 함 (낙관적 업데이트)
       await waitFor(() => {
@@ -143,12 +143,12 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
       await user.click(readNotification);
 
       // markAsRead가 호출되지 않아야 함
-      expect(mockedNotificationManager.markAsRead).not.toHaveBeenCalledWith('notif-2', mockUserId);
+      expect(mockNotificationManager.markAsRead).not.toHaveBeenCalledWith('notif-2', mockUserId);
     });
 
     it('읽음 처리 실패 시 UI 상태를 원래대로 복원해야 함', async () => {
       // API 실패 상황 모킹
-      mockedNotificationManager.markAsRead.mockRejectedValueOnce(new Error('Network error'));
+      mockNotificationManager.markAsRead.mockRejectedValueOnce(new Error('Network error'));
 
       const user = userEvent.setup();
 
@@ -183,7 +183,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
   describe('전체 읽음 처리', () => {
     it('모든 읽음 버튼 클릭 시 모든 읽지 않은 알림이 읽음 상태로 변경되어야 함', async () => {
       // markAllAsRead 메서드 모킹
-      mockedNotificationManager.markAllAsRead = jest.fn().mockResolvedValue({
+      mockNotificationManager.markAllAsRead = jest.fn().mockResolvedValue({
         success: true,
         markedCount: 2,
       });
@@ -210,7 +210,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
       await user.click(markAllButton);
 
       // markAllAsRead 호출 확인
-      expect(mockedNotificationManager.markAllAsRead).toHaveBeenCalledWith(mockUserId, mockOrgId);
+      expect(mockNotificationManager.markAllAsRead).toHaveBeenCalledWith(mockUserId, mockOrgId);
 
       // 읽지 않은 알림 카운트가 0이 되어야 함
       await waitFor(() => {
@@ -226,7 +226,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
         readAt: '2024-01-15T10:00:00Z'
       }));
 
-      mockedNotificationManager.getUserNotifications.mockResolvedValue({
+      mockNotificationManager.getUserNotifications.mockResolvedValue({
         success: true,
         notifications: allReadNotifications,
         totalCount: 3,
@@ -319,7 +319,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
         createdBy: 'system',
       }));
 
-      mockedNotificationManager.getUserNotifications.mockResolvedValue({
+      mockNotificationManager.getUserNotifications.mockResolvedValue({
         success: true,
         notifications: manyUnreadNotifications,
         totalCount: 100,
@@ -402,7 +402,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
   describe('성능 최적화 - 배치 처리', () => {
     it('여러 알림을 빠르게 클릭했을 때 배치로 처리되어야 함', async () => {
       // markMultipleAsRead 메서드 모킹
-      mockedNotificationManager.markMultipleAsRead.mockResolvedValue({
+      mockNotificationManager.markMultipleAsRead.mockResolvedValue({
         success: true,
       });
 
@@ -434,21 +434,21 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
 
       // 배치 처리 완료까지 대기
       await waitFor(() => {
-        expect(mockedNotificationManager.markMultipleAsRead).toHaveBeenCalledWith(
+        expect(mockNotificationManager.markMultipleAsRead).toHaveBeenCalledWith(
           ['notif-1', 'notif-3'],
           mockUserId
         );
       }, { timeout: 200 });
 
       // 개별 markAsRead는 호출되지 않아야 함
-      expect(mockedNotificationManager.markAsRead).not.toHaveBeenCalled();
+      expect(mockNotificationManager.markAsRead).not.toHaveBeenCalled();
     });
   });
 
   describe('오프라인 처리', () => {
     it('오프라인 상황에서는 로컬 상태만 업데이트하고 온라인 시 동기화해야 함', async () => {
       // 네트워크 오프라인 상황 모킹
-      mockedNotificationManager.markAsRead.mockRejectedValue(new Error('Network Error'));
+      mockNotificationManager.markAsRead.mockRejectedValue(new Error('Network Error'));
 
       const user = userEvent.setup();
 
