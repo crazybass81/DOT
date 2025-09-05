@@ -9,6 +9,8 @@ import { NotificationMessage } from '@/lib/notification-manager';
  * This file can be removed in production - it's for demonstration purposes only
  */
 export const ToastExamples: React.FC = () => {
+  const [lastNotificationClick, setLastNotificationClick] = useState<NotificationMessage | null>(null);
+  
   // Basic toast hooks
   const {
     showSuccess,
