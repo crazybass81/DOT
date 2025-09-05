@@ -139,6 +139,30 @@ export const ToastExamples: React.FC = () => {
           </div>
         </div>
 
+        <div className="border p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-3">Notification Center Demo</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-gray-600">
+                Click the bell icon to see the notification dropdown →
+              </p>
+              {lastNotificationClick && (
+                <p className="text-sm text-green-600 mt-2">
+                  Last clicked: {lastNotificationClick.title}
+                </p>
+              )}
+            </div>
+            <NotificationCenter
+              userId="demo-user"
+              organizationId="demo-org"
+              onNotificationClick={(notification) => {
+                setLastNotificationClick(notification);
+                showInfo('Notification Clicked', `You clicked: ${notification.title}`);
+              }}
+            />
+          </div>
+        </div>
+
         <div className="border p-4 rounded-lg bg-gray-50">
           <h3 className="text-lg font-semibold mb-3">Usage Instructions</h3>
           <div className="text-sm space-y-2">
