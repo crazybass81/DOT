@@ -48,7 +48,10 @@ describe('WebSocketServer', () => {
     });
 
     test('서버가 클라이언트 연결을 감지할 수 있어야 함', (done) => {
-      socketServer.on('connection', (socket) => {
+      const socketServer = webSocketManager.getSocketIOServer();
+      expect(socketServer).toBeDefined();
+      
+      socketServer!.on('connection', (socket) => {
         expect(socket.id).toBeDefined();
         expect(socket.connected).toBe(true);
         done();
