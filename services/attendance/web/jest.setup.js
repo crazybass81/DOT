@@ -62,12 +62,26 @@ jest.mock('./src/lib/supabase/server', () => ({
   createClient: jest.fn(() => ({
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockResolvedValue({ error: null }),
+      insert: jest.fn().mockResolvedValue({ 
+        data: { id: 'test-notification-id' }, 
+        error: null 
+      }),
       update: jest.fn().mockReturnThis(),
       delete: jest.fn().mockReturnThis(),
+      upsert: jest.fn().mockResolvedValue({ error: null }),
       eq: jest.fn().mockReturnThis(),
-      single: jest.fn(),
+      single: jest.fn().mockResolvedValue({ 
+        data: { id: 'test-notification-id' }, 
+        error: null 
+      }),
       maybeSingle: jest.fn(),
+      or: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      contains: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
     })),
     auth: {
       getUser: jest.fn(),
