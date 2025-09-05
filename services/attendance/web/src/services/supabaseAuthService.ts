@@ -355,30 +355,48 @@ export class SupabaseAuthService {
    */
   private async mapSupabaseUserToUser(supabaseUser: SupabaseUser): Promise<User | null> {
     try {
-      // 기본 사용자 정보만 사용 (employees 테이블 조회 제거)
+      // 기본 사용자 정보 설정
       const baseUser: User = {
         id: supabaseUser.id,
         email: supabaseUser.email!,
         name: supabaseUser.user_metadata?.full_name || 
               supabaseUser.user_metadata?.name || 
               supabaseUser.email?.split('@')[0] || 
-              '사용자',
-        role: 'EMPLOYEE' // 기본 역할
+              '사용자'
       };
 
-      // employees 테이블 조회 완전히 제거 (500 에러 방지)
-      console.log('User mapped successfully:', baseUser.email);
-      
+      // employees 테이블에서 사용자 정보 가져오기
+      try {
+        const { data: employee, error } = await supabase
+          .from('employees')
+          .select('id, name, email, phone, position, department, organization_id, is_active')
+          .eq('user_id', supabaseUser.id)
+          .maybeSingle(); // single() 대신 maybeSingle() 사용 (없어도 에러 안남)
+
+        if (!error && employee) {
+          // employee 정보가 있으면 추가
+          baseUser.role = employee.position || 'EMPLOYEE';
+          baseUser.employee = employee;
+          baseUser.name = employee.name || baseUser.name;
+          console.log('Employee data loaded:', employee.name);
+        } else if (error) {
+          console.log('Employee query error:', error.message);
+          // 에러가 있어도 기본 정보로 계속 진행
+        } else {
+          console.log('No employee record found for user:', supabaseUser.id);
+        }
+      } catch (empError) {
+        console.log('Employee table access error, continuing with basic info');
+      }
+
       return baseUser;
     } catch (error) {
       console.error('Error mapping Supabase user:', error);
+      // 최악의 경우에도 기본 정보는 반환
       return {
         id: supabaseUser.id,
         email: supabaseUser.email!,
-        name: supabaseUser.user_metadata?.full_name || 
-              supabaseUser.user_metadata?.name || 
-              supabaseUser.email?.split('@')[0] || 
-              '사용자'
+        name: supabaseUser.email?.split('@')[0] || '사용자'
       };
     }
   }
