@@ -167,6 +167,11 @@ describe('NotificationCenter', () => {
     test('should display notification items with correct content', async () => {
       render(<NotificationCenter userId="1" />);
       
+      // Wait for initial load
+      await waitFor(() => {
+        expect(mockNotificationManager.getUserNotifications).toHaveBeenCalled();
+      });
+      
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
         fireEvent.click(bellIcon);
