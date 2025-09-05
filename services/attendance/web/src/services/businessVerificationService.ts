@@ -49,15 +49,38 @@ export const businessVerificationService = {
     }
 
     try {
-      // TODO: 실제 API 연동 (국세청 사업자등록번호 조회 API)
-      // 현재는 Mock 데이터 반환
-      return {
-        isValid: true,
-        businessName: '테스트 사업체',
-        representativeName: '홍길동',
-        status: 'active'
-      };
+      // 국세청 사업자 상태조회 API 연동
+      const response = await fetch('/api/business-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          businessRegistrationNumber: cleanNumber
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API 요청 실패');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return {
+          isValid: true,
+          businessName: data.businessName,
+          representativeName: data.representativeName,
+          status: data.status
+        };
+      } else {
+        return {
+          isValid: false,
+          error: data.message || '사업자등록번호를 찾을 수 없습니다.'
+        };
+      }
     } catch (error) {
+      console.error('Business verification error:', error);
       return {
         isValid: false,
         error: '사업자등록번호 조회 중 오류가 발생했습니다.'
