@@ -61,14 +61,20 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
     jest.clearAllMocks();
     
     // 기본 API 응답 설정
-    mockNotificationManager.getUserNotifications.mockResolvedValue({
-      success: true,
-      notifications: mockNotifications,
-      totalCount: 3,
+    mockNotificationManager.getUserNotifications.mockImplementation(async () => {
+      console.log('Mock getUserNotifications called');
+      return {
+        success: true,
+        notifications: mockNotifications,
+        totalCount: 3,
+      };
     });
 
-    mockNotificationManager.markAsRead.mockResolvedValue({
-      success: true,
+    mockNotificationManager.markAsRead.mockImplementation(async () => {
+      console.log('Mock markAsRead called');
+      return {
+        success: true,
+      };
     });
   });
 
