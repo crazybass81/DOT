@@ -1,6 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
+/**
+ * @jest-environment jsdom
+ */
+
 import { rbacMiddleware, createRBACHandler, PermissionCheck } from '../../src/middleware/rbac-middleware';
 import { RoleType } from '../../src/types/multi-role';
+
+// Next.js 모킹
+jest.mock('next/server', () => ({
+  NextRequest: class MockNextRequest {
+    constructor(url, options = {}) {
+      this.url = url;
+      this.method = options.method || 'GET';
+      this.headers = new Map();
+      if (options.headers) {
+        Object.entries(options.headers).forEach(([key, value]) => {
+          this.headers.set(key.toLowerCase(), value);
+        });
+      }
+    }
+  },
+  NextResponse: {
+    json: (data, options = {}) => ({
+      json: () => Promise.resolve(data),
+      status: options.status || 200
+    }),
+    next: (options = {}) => ({
+      json: () => Promise.resolve({ success: true }),
+      status: 200,
+      ...options
+    })
+  }
+}));
 
 // Mock Supabase
 jest.mock('../../src/lib/supabase-config', () => ({
