@@ -194,17 +194,17 @@ describe('useToastNotifications Hook', () => {
       let approvalCallback: Function | undefined;
       let notificationCallback: Function | undefined;
 
-      mockSubscribeToAttendance.mockImplementation((orgId, callback, options) => {
+      mockRealtimeManager.subscribeToAttendance.mockImplementation((orgId, callback, options) => {
         attendanceCallback = callback;
         return 'attendance-channel';
       });
 
-      mockSubscribeToApprovals.mockImplementation((orgId, callback, options) => {
+      mockRealtimeManager.subscribeToApprovals.mockImplementation((orgId, callback, options) => {
         approvalCallback = callback;
         return 'approval-channel';
       });
 
-      mockSubscribeToNotifications.mockImplementation((userId, callback) => {
+      mockRealtimeManager.subscribeToNotifications.mockImplementation((userId, callback) => {
         notificationCallback = callback;
         return 'notification-channel';
       });
