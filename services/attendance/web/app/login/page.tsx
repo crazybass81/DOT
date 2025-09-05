@@ -1,28 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabaseAuthService } from '@/services/supabaseAuthService';
-import { Mail, Lock, Shield, Building2, ChevronRight, QrCode } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [isFindIdPwModalOpen, setFindIdPwModalOpen] = useState(false);
+  const idInputRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Mock 계정 데이터 (테스트용)
+  const testAccounts = [
+    { type: '관리자', id: 'archt723@gmail.com', password: 'Master123!@#' },
+    { type: '사업자', id: 'crazybass81@naver.com', password: 'Test123!' }
+  ];
+
+  const filteredAccounts = id
+    ? testAccounts.filter(acc => acc.id.toLowerCase().includes(id.toLowerCase()))
+    : testAccounts;
+
+  const handleAccountSelect = (account: { id: string, password?: string }) => {
+    setId(account.id);
+    if (account.password) {
+      setPassword(account.password);
+    }
+    setShowAutocomplete(false);
+    setError('');
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (idInputRef.current && !idInputRef.current.contains(event.target as Node)) {
+        setShowAutocomplete(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const user = await supabaseAuthService.signIn(email, password);
+      const user = await supabaseAuthService.signIn(id, password);
       
       if (user) {
-        console.log('로그인 성공, 사용자 정보:', user);
-        
         // employee 정보에서 position과 organization 확인
         const { data: employee } = await supabaseAuthService.supabase
           .from('employees')
@@ -30,14 +62,10 @@ export default function LoginPage() {
           .eq('user_id', user.id)
           .single();
         
-        console.log('Employee 정보:', employee);
-        
         // 역할에 따라 다른 대시보드로 리다이렉트
         if (employee?.position === 'owner' || employee?.position === 'admin') {
-          // 사업자(owner/admin)는 사업자 대시보드로
           router.push('/business-dashboard');
         } else {
-          // 워커는 워커 대시보드로
           router.push('/worker-dashboard');
         }
       } else {
@@ -45,189 +73,198 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message || '로그인에 실패했습니다');
+      setError(err.message || '아이디 또는 비밀번호가 일치하지 않습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const fillTestAccount = () => {
-    setEmail('archt723@gmail.com');
-    setPassword('Master123!@#');
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background Decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-40 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '4s' }}></div>
+    <div className="relative min-h-screen overflow-hidden bg-slate-50">
+      {/* Blob Animations */}
+      <div className="absolute inset-0 z-0">
+        <div className="blob blob-admin-1"></div>
+        <div className="blob blob-admin-2"></div>
+        <div className="blob blob-admin-3"></div>
+        <div className="blob blob-admin-4"></div>
+        <div className="blob blob-admin-5"></div>
       </div>
 
-      <div className="relative z-10 max-w-md w-full">
-        {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg mb-4">
-            <Building2 className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            DOT 근태관리
-          </h1>
-          <p className="mt-2 text-gray-600">통합 인증 시스템 · Supabase</p>
-        </div>
-
-        {/* Login Card */}
-        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-            로그인
-          </h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                <p className="text-sm text-red-600 flex items-center">
-                  <span className="mr-2">⚠️</span>
-                  {error}
-                </p>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                이메일
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="w-5 h-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="your@email.com"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                비밀번호
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="w-5 h-5 text-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center">
-                <input type="checkbox" className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-                <span className="ml-2 text-gray-600">로그인 유지</span>
-              </label>
-              <a href="/auth/reset-password" className="text-indigo-600 hover:text-indigo-500">
-                비밀번호 찾기
-              </a>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  로그인 중...
-                </span>
-              ) : '로그인'}
-            </button>
-          </form>
-
-          {/* Test Account Quick Fill */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-center mb-3">
-              <span className="text-xs text-gray-500 bg-white px-2">테스트 계정</span>
-            </div>
-            
-            <button
-              type="button"
-              onClick={fillTestAccount}
-              className="w-full p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200 hover:border-indigo-300 transition-all group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-800">Master Administrator</p>
-                    <p className="text-xs text-gray-500">archt723@gmail.com</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
-              </div>
-            </button>
-
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-800 text-center">
-                💡 모든 권한을 가진 마스터 계정으로 시스템 전체를 관리할 수 있습니다
-              </p>
-            </div>
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-blue-700">DOT ATTENDANCE</h1>
+            <p className="text-lg text-slate-600 mt-1">출퇴근 관리 시스템</p>
           </div>
 
-          {/* QR Code Login Option */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-gray-600">
-                직원이신가요?
+          <div className="bg-white/70 backdrop-blur-sm border border-white/30 rounded-lg shadow-xl p-6">
+            <form className="space-y-4" onSubmit={handleLoginSubmit}>
+              <div className="relative" ref={idInputRef}>
+                <input
+                  type="text"
+                  placeholder="ID"
+                  id="id"
+                  name="id"
+                  required
+                  autoComplete="off"
+                  value={id}
+                  onChange={(e) => {
+                    setId(e.target.value);
+                    if (!showAutocomplete) setShowAutocomplete(true);
+                    setError('');
+                  }}
+                  onFocus={() => setShowAutocomplete(true)}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                {showAutocomplete && filteredAccounts.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-300 rounded-md shadow-lg">
+                    <ul className="py-1 max-h-48 overflow-y-auto">
+                      {filteredAccounts.map(account => (
+                        <li
+                          key={`${account.type}-${account.id}`}
+                          className="px-3 py-2 cursor-pointer hover:bg-slate-100 flex justify-between items-center"
+                          onClick={() => handleAccountSelect(account)}
+                          onMouseDown={(e) => e.preventDefault()}
+                        >
+                          <span>{account.id}</span>
+                          <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                            account.type === '관리자' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {account.type}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <input
+                type="password"
+                placeholder="비밀번호"
+                id="password"
+                name="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+
+              <p className="text-xs text-slate-500 pt-1 px-1">
+                근로자는 ID(이름), PW(생년월일 8자리)로 로그인하세요.
               </p>
+
+              {error && (
+                <p className="text-sm text-red-500 text-center -my-1 whitespace-pre-wrap">{error}</p>
+              )}
+
               <button
-                type="button"
-                onClick={() => router.push('/attendance/qr')}
-                className="w-full py-2 px-4 bg-white border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all flex items-center justify-center"
+                type="submit"
+                disabled={loading}
+                className="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <QrCode className="w-4 h-4 mr-2" />
-                QR 코드로 출퇴근하기
+                {loading ? '로그인 중...' : '로그인'}
+              </button>
+            </form>
+
+            <div className="text-center pt-4 text-sm text-slate-700">
+              <Link href="/signup" className="font-semibold text-blue-600 hover:underline">
+                회원가입
+              </Link>
+              <span className="mx-2 text-slate-400">|</span>
+              <button
+                onClick={() => setFindIdPwModalOpen(true)}
+                className="font-semibold text-blue-600 hover:underline"
+              >
+                ID/PW 찾기
               </button>
             </div>
           </div>
         </div>
-
-        {/* Sign Up Link */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            계정이 없으신가요?{' '}
-            <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-              회원가입
-            </a>
-          </p>
-        </div>
-
-        {/* Footer Info */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
-            © 2024 DOT Attendance System
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            Powered by Supabase Auth
-          </p>
-        </div>
       </div>
+
+      {/* Find ID/PW Modal */}
+      {isFindIdPwModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold">아이디/비밀번호 찾기</h3>
+              <button
+                onClick={() => setFindIdPwModalOpen(false)}
+                className="text-slate-500 hover:text-slate-800"
+              >
+                <span className="text-xl" role="img" aria-label="Close">❌</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600 bg-slate-100 p-3 rounded-md">
+                  계정 정보를 포함하여 아래 메일로 문의주시면 최대한 빠르게 답변드리겠습니다.
+                </p>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  setFindIdPwModalOpen(false);
+                }}>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="dev-email" className="block text-sm font-medium text-slate-700 mb-1">
+                        받는 사람
+                      </label>
+                      <input
+                        id="dev-email"
+                        type="email"
+                        value="developer@dot-attendance.com"
+                        disabled
+                        className="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="find-email" className="block text-sm font-medium text-slate-700 mb-1">
+                        회신받을 메일 주소
+                      </label>
+                      <input
+                        id="find-email"
+                        type="email"
+                        required
+                        placeholder="example@company.com"
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="find-message" className="block text-sm font-medium text-slate-700 mb-1">
+                        문의 내용
+                      </label>
+                      <textarea
+                        id="find-message"
+                        required
+                        rows={3}
+                        placeholder="가입 시 입력한 이름, 회사명, 연락처 등을 입력해주세요."
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      ></textarea>
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                      <button
+                        type="button"
+                        onClick={() => setFindIdPwModalOpen(false)}
+                        className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded-md hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                      >
+                        메일 보내기
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
