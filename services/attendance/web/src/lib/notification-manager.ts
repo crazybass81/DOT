@@ -325,7 +325,7 @@ export class NotificationManager {
       const notification: NotificationMessage = {
         type: NotificationType.ROLE_ASSIGNED,
         title: '새 역할 할당',
-        message: `${data.organizationName || '조직'}에서 ${data.newRole} 역할이 부여되었습니다. 할당자: ${data.assignedByName}`,
+        message: `${data.organizationName || '조직'}에서 ${data.newRole} 역할이 부여되었습니다. 할당자: ${data.assignedByName || data.changedByName}`,
         data,
         priority: NotificationPriority.MEDIUM,
         createdAt: new Date().toISOString(),
