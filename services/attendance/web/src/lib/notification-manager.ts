@@ -149,6 +149,18 @@ export interface OrganizationAnnouncementData extends NotificationData {
   createdByName: string;
 }
 
+// 조직 상태 변경 데이터
+export interface OrganizationStatusChangeData extends NotificationData {
+  organizationId: string;
+  organizationName: string;
+  previousStatus: string;
+  newStatus: string;
+  reason?: string;
+  changedBy: string;
+  changedByName: string;
+  targetUsers: string[];
+}
+
 // 알림 조회 옵션
 export interface NotificationQuery {
   limit?: number;
