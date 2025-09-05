@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useToast } from './Toast';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
+import { NotificationCenter } from './NotificationCenter';
+import { NotificationMessage } from '@/lib/notification-manager';
 
 /**
  * Example component demonstrating how to use the Toast notification system
