@@ -40,7 +40,7 @@ jest.mock('./src/lib/supabase-config', () => ({
   supabase: {
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockResolvedValue({ error: null }),
       update: jest.fn().mockReturnThis(),
       delete: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
@@ -55,6 +55,25 @@ jest.mock('./src/lib/supabase-config', () => ({
       signOut: jest.fn(),
     }
   }
+}));
+
+// Mock Supabase Server Client
+jest.mock('./src/lib/supabase/server', () => ({
+  createClient: jest.fn(() => ({
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockResolvedValue({ error: null }),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn(),
+      maybeSingle: jest.fn(),
+    })),
+    auth: {
+      getUser: jest.fn(),
+      getSession: jest.fn(),
+    }
+  }))
 }));
 
 // Global mocks will be handled in individual test files
