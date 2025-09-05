@@ -96,8 +96,10 @@ export interface RoleChangeData extends NotificationData {
   organizationId: string;
   oldRole?: string;
   newRole: string;
-  changedBy: string;
-  changedByName: string;
+  changedBy?: string;
+  changedByName?: string;
+  assignedBy?: string;
+  assignedByName?: string;
 }
 
 // 조직 초대 데이터
