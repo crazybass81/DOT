@@ -276,12 +276,10 @@ export class RegistrationAPI {
         const { error: roleError } = await this.supabase
           .from('user_roles')
           .insert({
-            employee_id: employee.id,
+            user_id: authUser.user.id,  // employee_id -> user_id
             organization_id: organization.id,
-            role_type: roleType,
-            is_active: true,
-            granted_at: new Date().toISOString(),
-            granted_by: employee.id // 자기 자신이 부여
+            role: roleType === 'ADMIN' ? 'admin' : 'worker',  // role_type -> role
+            is_active: true
           })
 
         if (roleError) {
