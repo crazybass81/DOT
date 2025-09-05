@@ -342,7 +342,7 @@ export class RegistrationAPI {
       const { data: employee } = await this.supabase
         .from('employees')
         .select('*')
-        .eq('auth_user_id', authData.user.id)
+        .eq('user_id', authData.user.id)  // auth_user_id -> user_id
         .single()
 
       if (!employee) {
