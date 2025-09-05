@@ -171,8 +171,10 @@ export default function BusinessDashboard() {
                   <div>
                     <p className="text-sm text-gray-600">사업자 유형</p>
                     <p className="text-xl font-bold text-gray-900">
-                      {organization.biz_type === 'PERSONAL' ? '개인사업자' : 
-                       organization.biz_type === 'CORP' ? '법인' : '가맹본부'}
+                      {organization.biz_type ? (
+                        organization.biz_type === 'PERSONAL' ? '개인사업자' : 
+                        organization.biz_type === 'CORP' ? '법인' : '가맹본부'
+                      ) : '개인사업자'}
                     </p>
                   </div>
                   <Settings className="h-12 w-12 text-gray-600 opacity-20" />
