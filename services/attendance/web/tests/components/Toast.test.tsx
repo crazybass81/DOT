@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Toast, ToastManager } from '@/components/notifications/Toast';
+import { Toast, ToastManager, ToastProvider } from '@/components/notifications/Toast';
 
 // Mock timers
 jest.useFakeTimers();
