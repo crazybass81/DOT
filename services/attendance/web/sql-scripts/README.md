@@ -16,8 +16,11 @@
 ### 실행해야 할 스크립트
 
 #### 1. 회원가입 RLS 정책 수정 (필수!)
+
+⚠️ **중요**: `fix-signup-rls-simple.sql` 파일을 사용하세요!
+
 ```bash
-# 파일: fix-signup-rls-policies.sql
+# 파일: fix-signup-rls-simple.sql
 ```
 
 이 스크립트는 다음 작업을 수행합니다:
