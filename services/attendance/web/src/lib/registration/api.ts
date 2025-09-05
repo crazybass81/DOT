@@ -589,9 +589,7 @@ export class RegistrationAPI {
         .from('employees')
         .update({
           organization_id: organization.id,
-          role: 'ADMIN',
-          approval_status: 'APPROVED',
-          approved_at: new Date().toISOString()
+          position: 'owner'  // 법인 설립자는 owner
         })
         .eq('id', employee.id)
 
