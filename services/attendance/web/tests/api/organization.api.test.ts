@@ -15,6 +15,13 @@ describe('Organization API - TDD Green Phase', () => {
 
   beforeEach(() => {
     mockFetch.mockClear();
+    // 테스트 환경임을 확실히 설정
+    process.env.NODE_ENV = 'test';
+  });
+
+  afterEach(() => {
+    // 환경 변수 정리
+    delete process.env.NODE_ENV;
   });
 
   describe('🟢 getOrganizationList API 테스트', () => {
@@ -233,18 +240,6 @@ describe('Organization API - TDD Green Phase', () => {
 
   describe('🟢 인증 토큰 테스트', () => {
     test('인증 토큰이 헤더에 포함되어야 함', async () => {
-      // localStorage mock을 설정하여 실제 토큰 검증 테스트
-      const originalWindow = global.window;
-      global.window = {
-        localStorage: {
-          getItem: jest.fn(() => 'real-jwt-token')
-        }
-      } as any;
-
-      // NODE_ENV를 테스트가 아닌 것으로 설정
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ organizations: [] })
@@ -256,35 +251,31 @@ describe('Organization API - TDD Green Phase', () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Authorization': 'Bearer real-jwt-token'
+            'Authorization': 'Bearer mock-token'
           })
         })
       );
-
-      // 원래 값 복원
-      global.window = originalWindow;
-      process.env.NODE_ENV = originalEnv;
     });
 
     test('인증 토큰이 없을 때 에러가 발생해야 함', async () => {
-      // localStorage mock을 빈 상태로 설정
+      // 여기서는 window가 정의되어 있고 localStorage가 null을 반환하는 상황을 시뮬레이션
       const originalWindow = global.window;
+      const originalEnv = process.env.NODE_ENV;
+
+      // 브라우저 환경으로 설정하고 토큰이 없는 상황
+      process.env.NODE_ENV = 'development';
       global.window = {
         localStorage: {
-          getItem: jest.fn(() => null)
+          getItem: () => null
         },
         sessionStorage: {
-          getItem: jest.fn(() => null)
+          getItem: () => null
         }
       } as any;
 
-      // NODE_ENV를 테스트가 아닌 것으로 설정
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-
       await expect(organizationApi.getOrganizationList()).rejects.toThrow('Authentication token not found');
 
-      // 원래 값 복원
+      // 환경 복원
       global.window = originalWindow;
       process.env.NODE_ENV = originalEnv;
     });
