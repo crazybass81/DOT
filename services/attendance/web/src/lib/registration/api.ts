@@ -223,14 +223,14 @@ export class RegistrationAPI {
           .from('organizations')
           .insert({
             name: data.businessInfo.name,
-            code: orgCode,
-            is_active: true,
             metadata: {
-              business_type: bizType,  // metadata에 타입 저장
+              code: orgCode,  // metadata에 저장
+              business_type: bizType,
               business_number: data.businessInfo.bizNumber,
               founder_id: authUser.user.id,
               founded_at: new Date().toISOString(),
-              address: data.businessInfo.address || null
+              address: data.businessInfo.address || null,
+              is_active: true
             }
           })
           .select()
