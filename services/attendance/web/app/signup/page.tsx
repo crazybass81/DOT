@@ -114,11 +114,12 @@ export default function SignUpPage() {
 
     try {
       // 1. Create auth user
-      const authUser = await supabaseAuthService.signUp(formData.email, formData.password);
+      const authResult = await supabaseAuthService.signUp(formData.email, formData.password);
       
-      if (!authUser) {
+      if (!authResult?.user) {
         throw new Error('회원가입에 실패했습니다.');
       }
+      const authUser = authResult.user;
 
       // 2. Create profile based on user type
       if (formData.userType === 'business') {
