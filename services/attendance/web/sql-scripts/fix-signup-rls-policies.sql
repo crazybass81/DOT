@@ -46,14 +46,6 @@ ON employees FOR INSERT
 WITH CHECK (
     -- Allow users to create their own employee record
     auth.uid() = user_id
-    OR
-    -- Allow admins/owners to create employees in their organization
-    EXISTS (
-        SELECT 1 FROM employees e 
-        WHERE e.user_id = auth.uid() 
-        AND e.organization_id = NEW.organization_id
-        AND e.position IN ('owner', 'admin')
-    )
 );
 
 CREATE POLICY "Employees - Users can view their own record" 
