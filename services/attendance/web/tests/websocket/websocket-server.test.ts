@@ -170,36 +170,16 @@ describe('WebSocketServer', () => {
 
   describe('에러 처리', () => {
     test('잘못된 인증 데이터를 처리할 수 있어야 함', (done) => {
-      socketServer.on('connection', (socket) => {
-        socket.on('authenticate', (authData) => {
-          if (!authData.userId) {
-            socket.emit('auth_error', { 
-              error: 'Missing userId',
-              code: 'INVALID_AUTH_DATA'
-            });
-            done();
-          }
-        });
-      });
-
       clientSocket.on('auth_error', (error) => {
         expect(error.error).toBe('Missing userId');
         expect(error.code).toBe('INVALID_AUTH_DATA');
+        done();
       });
 
       clientSocket.emit('authenticate', { invalidData: true });
     });
 
     test('서버 오류 시 클라이언트에게 적절한 에러 메시지를 전달해야 함', (done) => {
-      socketServer.on('connection', (socket) => {
-        socket.on('test_error', () => {
-          socket.emit('server_error', {
-            error: 'Internal server error',
-            code: 'SERVER_ERROR'
-          });
-        });
-      });
-
       clientSocket.on('server_error', (error) => {
         expect(error.error).toBe('Internal server error');
         expect(error.code).toBe('SERVER_ERROR');
