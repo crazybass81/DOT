@@ -6,16 +6,16 @@ import { NotificationCenter } from '@/components/notifications/NotificationCente
 import { notificationManager } from '@/lib/notification-manager';
 
 // NotificationManager 모킹
-jest.mock('@/lib/notification-manager', () => ({
-  notificationManager: {
-    getUserNotifications: jest.fn(),
-    markAsRead: jest.fn(),
-    markAllAsRead: jest.fn(),
-    markMultipleAsRead: jest.fn(),
-  },
-}));
+const mockNotificationManager = {
+  getUserNotifications: jest.fn(),
+  markAsRead: jest.fn(),
+  markAllAsRead: jest.fn(),
+  markMultipleAsRead: jest.fn(),
+};
 
-const mockedNotificationManager = notificationManager as jest.Mocked<typeof notificationManager>;
+jest.mock('@/lib/notification-manager', () => ({
+  notificationManager: mockNotificationManager,
+}));
 
 describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
   const mockUserId = 'user-123';
