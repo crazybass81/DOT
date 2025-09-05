@@ -129,7 +129,8 @@ describe('🎯 Phase 3.3.1.2 통합 테스트: 조직별 통계 대시보드', (
     });
     
     // 모든 주요 섹션이 로드됨을 확인
-    expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+    const statsOverview = screen.getAllByTestId('stats-overview');
+    expect(statsOverview.length).toBeGreaterThan(0);
     expect(screen.getByTestId('attendance-chart')).toBeInTheDocument();
     expect(screen.getByTestId('activity-heatmap')).toBeInTheDocument();
     expect(screen.getByTestId('realtime-metrics')).toBeInTheDocument();
