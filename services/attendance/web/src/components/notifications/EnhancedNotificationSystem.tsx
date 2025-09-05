@@ -13,6 +13,8 @@ interface EnhancedNotificationSystemProps {
   enableSounds?: boolean;
   enableRealtimeIntegration?: boolean;
   enableLegacyNotifications?: boolean;
+  enableNotificationCenter?: boolean;
+  onNotificationCenterClick?: (notification: NotificationMessage) => void;
   className?: string;
 }
 
