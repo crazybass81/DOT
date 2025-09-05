@@ -141,20 +141,15 @@ describe('WebSocketServer', () => {
       const userId = 'test-user-1';
       let authCount = 0;
 
-      socketServer.on('connection', (socket) => {
-        socket.on('authenticate', (authData) => {
-          authCount++;
-          socket.join(`user:${authData.userId}`);
-          
-          if (authCount === 2) {
-            // 재연결 후 채널 참여 확인
-            const rooms = Array.from(socket.rooms);
-            expect(rooms).toContain(`user:${userId}`);
-            done();
-          }
-          
-          socket.emit('authenticated', { success: true });
-        });
+      clientSocket.on('authenticated', (response) => {
+        authCount++;
+        
+        if (authCount === 2) {
+          // 재연결 후 채널 참여 확인
+          expect(response.success).toBe(true);
+          expect(response.channels).toContain(`user:${userId}`);
+          done();
+        }
       });
 
       // 첫 번째 인증
