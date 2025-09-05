@@ -29,6 +29,7 @@
   "description": "DOT 근태관리 서비스",
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.56.1",
     "@types/node": "^24.3.0",
     "@types/qrcode": "^1.5.5",
