@@ -472,6 +472,79 @@ export class NotificationManager {
   }
 
   /**
+   * 조직 상태 변경 알림 전송
+   */
+  async sendOrganizationStatusChange(
+    data: OrganizationStatusChangeData,
+    type: NotificationType = NotificationType.ORGANIZATION_STATUS_CHANGED
+  ): Promise<{ success: boolean; notificationId?: string; error?: string }> {
+    try {
+      let title: string;
+      let message: string;
+      let priority: NotificationPriority;
+
+      // 상태 변경 타입에 따른 메시지 설정
+      switch (type) {
+        case NotificationType.ORGANIZATION_SUSPENDED:
+          title = '조직 정지 알림';
+          message = `${data.organizationName} 조직이 정지되었습니다.${data.reason ? ` 사유: ${data.reason}` : ''} 변경자: ${data.changedByName}`;
+          priority = NotificationPriority.URGENT;
+          break;
+        case NotificationType.ORGANIZATION_REACTIVATED:
+          title = '조직 재활성화 알림';
+          message = `${data.organizationName} 조직이 다시 활성화되었습니다. 변경자: ${data.changedByName}`;
+          priority = NotificationPriority.HIGH;
+          break;
+        default:
+          title = '조직 상태 변경 알림';
+          message = `${data.organizationName} 조직 상태가 ${data.previousStatus}에서 ${data.newStatus}로 변경되었습니다.${data.reason ? ` 사유: ${data.reason}` : ''} 변경자: ${data.changedByName}`;
+          priority = NotificationPriority.MEDIUM;
+      }
+
+      const notification: NotificationMessage = {
+        type,
+        title,
+        message,
+        data,
+        priority,
+        createdAt: new Date().toISOString(),
+        createdBy: data.changedBy,
+        createdByName: data.changedByName,
+        targetUsers: data.targetUsers,
+        targetOrganizations: [data.organizationId]
+      };
+
+      // 데이터베이스에 저장
+      const saveResult = await this.saveNotification(notification);
+      if (!saveResult.success) {
+        return { success: false, error: saveResult.error };
+      }
+
+      // 개별 사용자들에게 알림 전송
+      if (data.targetUsers && data.targetUsers.length > 0) {
+        data.targetUsers.forEach(userId => {
+          webSocketServer.sendToUser(userId, 'organization_status_notification', notification);
+        });
+      }
+
+      // 조직 전체에도 브로드캐스트
+      webSocketServer.broadcastToOrganization(
+        data.organizationId,
+        'organization_notification',
+        notification
+      );
+
+      return { success: true, notificationId: saveResult.notificationId };
+    } catch (error) {
+      console.error('조직 상태 변경 알림 전송 실패:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '알 수 없는 오류' 
+      };
+    }
+  }
+
+  /**
    * 조직별 공지사항 전송
    */
   async sendOrganizationAnnouncement(data: OrganizationAnnouncementData): Promise<{ success: boolean; notificationId?: string; error?: string }> {
