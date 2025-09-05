@@ -254,7 +254,7 @@ export default function SignUpPage() {
                   type="email"
                   label="이메일"
                   value={formData.email}
-                  onChange={(e) => updateFormData('email', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('email', e.target.value)}
                   placeholder="your@email.com"
                   required
                 />
@@ -262,7 +262,7 @@ export default function SignUpPage() {
                   type="password"
                   label="비밀번호"
                   value={formData.password}
-                  onChange={(e) => updateFormData('password', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('password', e.target.value)}
                   placeholder="8자 이상"
                   required
                 />
@@ -270,7 +270,7 @@ export default function SignUpPage() {
                   type="password"
                   label="비밀번호 확인"
                   value={formData.passwordConfirm}
-                  onChange={(e) => updateFormData('passwordConfirm', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('passwordConfirm', e.target.value)}
                   placeholder="비밀번호 재입력"
                   required
                 />
@@ -278,7 +278,7 @@ export default function SignUpPage() {
                   type="text"
                   label="이름"
                   value={formData.name}
-                  onChange={(e) => updateFormData('name', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('name', e.target.value)}
                   placeholder="홍길동"
                   required
                 />
@@ -286,7 +286,7 @@ export default function SignUpPage() {
                   type="tel"
                   label="전화번호"
                   value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('phone', e.target.value)}
                   placeholder="010-0000-0000"
                 />
               </div>
@@ -359,7 +359,7 @@ export default function SignUpPage() {
                   type="text"
                   label="상호명"
                   value={formData.businessName}
-                  onChange={(e) => updateFormData('businessName', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('businessName', e.target.value)}
                   placeholder="(주)회사명"
                   required
                 />
@@ -367,7 +367,7 @@ export default function SignUpPage() {
                   type="text"
                   label="사업자등록번호"
                   value={formData.businessNumber}
-                  onChange={(e) => updateFormData('businessNumber', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('businessNumber', e.target.value)}
                   placeholder="000-00-00000"
                   required
                 />
@@ -375,14 +375,14 @@ export default function SignUpPage() {
                   type="text"
                   label="대표자명"
                   value={formData.representativeName}
-                  onChange={(e) => updateFormData('representativeName', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('representativeName', e.target.value)}
                   placeholder="홍길동"
                 />
                 <Input
                   type="text"
                   label="사업장 주소"
                   value={formData.businessAddress}
-                  onChange={(e) => updateFormData('businessAddress', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('businessAddress', e.target.value)}
                   placeholder="서울시 강남구..."
                 />
               </div>
@@ -395,7 +395,7 @@ export default function SignUpPage() {
                   type="text"
                   label="조직 코드"
                   value={formData.organizationCode}
-                  onChange={(e) => updateFormData('organizationCode', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('organizationCode', e.target.value)}
                   placeholder="회사에서 제공받은 코드 입력"
                   required
                 />
@@ -403,13 +403,13 @@ export default function SignUpPage() {
                   type="date"
                   label="생년월일"
                   value={formData.birthdate}
-                  onChange={(e) => updateFormData('birthdate', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('birthdate', e.target.value)}
                 />
                 <Input
                   type="text"
                   label="부서"
                   value={formData.department}
-                  onChange={(e) => updateFormData('department', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('department', e.target.value)}
                   placeholder="개발팀"
                 />
               </div>
