@@ -59,7 +59,9 @@ describe('WebSocketServer', () => {
     });
 
     test('클라이언트 연결 해제를 처리할 수 있어야 함', (done) => {
-      socketServer.on('connection', (socket) => {
+      const socketServer = webSocketManager.getSocketIOServer();
+      
+      socketServer!.on('connection', (socket) => {
         socket.on('disconnect', (reason) => {
           expect(reason).toBeDefined();
           done();
