@@ -196,7 +196,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [userId, organizationId, maxNotifications, offset, readNotifications, notifications]);
+  }, [userId, organizationId, maxNotifications, offset, readNotifications]);
 
   // Initial load on mount to get unread count
   useEffect(() => {
