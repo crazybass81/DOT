@@ -3,34 +3,30 @@
  */
 
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
+import { WebSocketServerManager } from '../../src/lib/websocket-server';
 
 // WebSocket 서버 관리자 클래스 테스트
 describe('WebSocketServer', () => {
-  let httpServer: any;
-  let socketServer: SocketIOServer;
+  let webSocketManager: WebSocketServerManager;
   let clientSocket: ClientSocket;
   let serverPort: number;
 
-  beforeAll((done) => {
-    httpServer = createServer();
-    socketServer = new SocketIOServer(httpServer, {
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
-    });
-
-    httpServer.listen(() => {
-      serverPort = httpServer.address().port;
-      done();
+  beforeAll(async () => {
+    webSocketManager = WebSocketServerManager.getInstance();
+    const httpServer = createServer();
+    webSocketManager.initialize(httpServer);
+    
+    await new Promise<void>((resolve) => {
+      httpServer.listen(() => {
+        serverPort = (httpServer.address() as any).port;
+        resolve();
+      });
     });
   });
 
-  afterAll((done) => {
-    socketServer.close();
-    httpServer.close(done);
+  afterAll(async () => {
+    await webSocketManager.stop();
   });
 
   beforeEach((done) => {
