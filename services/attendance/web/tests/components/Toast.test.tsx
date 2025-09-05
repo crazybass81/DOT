@@ -167,7 +167,11 @@ describe('ToastManager Component', () => {
 
   describe('🔴 Red Phase - Failing Tests', () => {
     test('should render toast manager container', () => {
-      render(<ToastManager position="top-right" />);
+      render(
+        <ToastProvider position="top-right">
+          <div>Test</div>
+        </ToastProvider>
+      );
       
       const container = screen.getByTestId('toast-container');
       expect(container).toBeInTheDocument();
@@ -175,24 +179,34 @@ describe('ToastManager Component', () => {
     });
 
     test('should display multiple toasts in queue', () => {
-      const { container } = render(<ToastManager position="top-center" />);
+      const { container } = render(
+        <ToastProvider position="top-center">
+          <div>Test</div>
+        </ToastProvider>
+      );
       
-      // This test will fail initially as addToast method is not exposed
-      expect(container.firstChild).toHaveClass('top-center');
+      const toastContainer = screen.getByTestId('toast-container');
+      expect(toastContainer).toHaveClass('top-center');
     });
 
     test('should limit maximum number of toasts', () => {
-      render(<ToastManager maxToasts={3} position="bottom-left" />);
+      render(
+        <ToastProvider maxToasts={3} position="bottom-left">
+          <div>Test</div>
+        </ToastProvider>
+      );
       
-      // Test will fail as we need to implement queue management
       const container = screen.getByTestId('toast-container');
       expect(container).toBeInTheDocument();
     });
 
     test('should clear all toasts when clearAll is called', () => {
-      render(<ToastManager position="bottom-right" />);
+      render(
+        <ToastProvider position="bottom-right">
+          <div>Test</div>
+        </ToastProvider>
+      );
       
-      // Test will fail as clearAll method is not exposed
       const container = screen.getByTestId('toast-container');
       expect(container).toBeInTheDocument();
     });
