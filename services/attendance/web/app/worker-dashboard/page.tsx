@@ -159,6 +159,15 @@ export default function WorkerDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* 임시 디버그 버튼 - position 확인용 */}
+              {(employee?.position === 'admin' || employee?.position === 'owner') && (
+                <button
+                  onClick={() => router.push('/business-dashboard')}
+                  className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+                >
+                  사업자 대시보드로
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="flex items-center text-sm text-gray-700 hover:text-gray-900"
