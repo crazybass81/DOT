@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 // Mock Supabase
-jest.mock('@/lib/supabase-config', () => ({
+jest.mock('./src/lib/supabase-config', () => ({
   supabase: {
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),
