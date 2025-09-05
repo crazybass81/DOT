@@ -93,7 +93,7 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
 
       // 읽지 않은 알림 찾기
       await waitFor(() => {
-        expect(screen.getByTestId('notif-1')).toBeInTheDocument();
+        expect(screen.getByTestId('notification-item-notif-1')).toBeInTheDocument();
       });
 
       const unreadNotification = screen.getByTestId('notification-item-notif-1');
