@@ -378,18 +378,140 @@ export function clearPermissionCache(userId?: string) {
  * Next.js API Route용 권한 데코레이터
  */
 export function withRBAC(
-  permissionCheck: PermissionCheck,
-  handler: (request: NextRequest, context: { user: MultiRoleUser }) => Promise<NextResponse>
+  handler: (request: NextRequest, user: any) => Promise<NextResponse>,
+  permissionCheck: PermissionCheck
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
-    const rbacResult = await createRBACHandler(permissionCheck)(request);
-    
-    if (rbacResult.status !== 200) {
-      return rbacResult;
-    }
+    try {
+      // 인증 정보 추출
+      const authHeader = request.headers.get('authorization');
+      
+      if (!authHeader) {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        );
+      }
 
-    const rbacData = await rbacResult.json();
-    return handler(request, { user: rbacData.user });
+      const { user, error } = await extractUserFromToken(authHeader);
+      
+      if (error || !user) {
+        return NextResponse.json(
+          { error: 'Invalid token' },
+          { status: 401 }
+        );
+      }
+
+      // 사용자 역할 정보 조회
+      const userWithRoles = await getUserRoles(user.id);
+      
+      if (!userWithRoles) {
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        );
+      }
+
+      // 권한 검증
+      const permissionResult = checkPermissions(userWithRoles, permissionCheck);
+      
+      // 감사 로깅 (권한 검증 후)
+      if (permissionCheck.enableAuditLog) {
+        const actionType = request.method === 'GET' ? 'READ' : 
+                           request.method === 'POST' ? 'CREATE' :
+                           request.method === 'PUT' ? 'UPDATE' :
+                           request.method === 'DELETE' ? 'DELETE' : 'UNKNOWN';
+
+        // 감사 로그 비동기 실행 (응답 속도에 영향 없도록)
+        setImmediate(async () => {
+          try {
+            await auditLogger.log({
+              user_id: userWithRoles.id,
+              organization_id: permissionCheck.organizationId,
+              action: `API_${actionType}` as AuditAction,
+              result: permissionResult.granted ? AuditResult.SUCCESS : AuditResult.FAILURE,
+              resource_type: 'api_endpoint',
+              resource_id: request.url,
+              details: {
+                endpoint: request.url,
+                method: request.method,
+                required_roles: permissionCheck.requiredRoles,
+                user_roles: permissionResult.userRoles,
+                permission_granted: permissionResult.granted,
+                reason: permissionResult.reason
+              },
+              ip_address: request.headers.get('x-forwarded-for') || 
+                          request.headers.get('x-real-ip') || 
+                          'unknown',
+              user_agent: request.headers.get('user-agent') || 'unknown'
+            });
+          } catch (logError) {
+            console.error('Audit logging failed:', logError);
+          }
+        });
+      }
+
+      // 권한이 없으면 거부
+      if (!permissionResult.granted) {
+        // 권한 거부 로깅
+        if (permissionCheck.enableAuditLog) {
+          setImmediate(async () => {
+            try {
+              await auditLogger.logPermissionDenied(
+                userWithRoles.id,
+                `${request.method} ${request.url}`,
+                'api_endpoint',
+                request.url,
+                permissionCheck.organizationId
+              );
+            } catch (logError) {
+              console.error('Permission denied logging failed:', logError);
+            }
+          });
+        }
+
+        return NextResponse.json(
+          { 
+            error: 'Insufficient permissions',
+            details: permissionResult.reason
+          },
+          { status: 403 }
+        );
+      }
+
+      // 핸들러 실행
+      return handler(request, userWithRoles);
+
+    } catch (error) {
+      console.error('RBAC middleware error:', error);
+      
+      // 시스템 오류 로깅
+      if (permissionCheck.enableAuditLog) {
+        setImmediate(async () => {
+          try {
+            await auditLogger.log({
+              user_id: 'system',
+              action: 'SYSTEM_ERROR' as AuditAction,
+              result: AuditResult.FAILURE,
+              resource_type: 'api_endpoint',
+              resource_id: request.url,
+              details: {
+                error_message: error instanceof Error ? error.message : 'Unknown error',
+                endpoint: request.url,
+                method: request.method
+              }
+            });
+          } catch (logError) {
+            console.error('System error logging failed:', logError);
+          }
+        });
+      }
+
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
   };
 }
 
