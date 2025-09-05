@@ -21,15 +21,20 @@ class OrganizationApi {
       return 'mock-token';
     }
 
-    const token = localStorage.getItem('auth_token') || 
-                  sessionStorage.getItem('auth_token') ||
-                  localStorage.getItem('supabase.auth.token');
-                  
-    if (!token) {
-      throw new Error('Authentication token not found');
+    // 브라우저 환경에서 토큰 확인
+    if (typeof window !== 'undefined') {
+      const token = window.localStorage?.getItem('auth_token') || 
+                    window.sessionStorage?.getItem('auth_token') ||
+                    window.localStorage?.getItem('supabase.auth.token');
+                    
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      
+      return token;
     }
     
-    return token;
+    throw new Error('Authentication token not found');
   }
 
   private buildQueryString(params: OrganizationListParams): string {
