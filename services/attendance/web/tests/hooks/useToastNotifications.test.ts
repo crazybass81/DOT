@@ -4,17 +4,12 @@ import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { ToastProvider } from '@/components/notifications/Toast';
 
 // Mock the realtime manager
-const mockSubscribeToNotifications = jest.fn(() => 'notification-channel');
-const mockSubscribeToAttendance = jest.fn(() => 'attendance-channel');
-const mockSubscribeToApprovals = jest.fn(() => 'approval-channel');
-const mockUnsubscribe = jest.fn();
-
 jest.mock('@/lib/realtime', () => ({
   realtimeManager: {
-    subscribeToNotifications: mockSubscribeToNotifications,
-    subscribeToAttendance: mockSubscribeToAttendance,
-    subscribeToApprovals: mockSubscribeToApprovals,
-    unsubscribe: mockUnsubscribe
+    subscribeToNotifications: jest.fn(() => 'notification-channel'),
+    subscribeToAttendance: jest.fn(() => 'attendance-channel'),
+    subscribeToApprovals: jest.fn(() => 'approval-channel'),
+    unsubscribe: jest.fn()
   }
 }));
 
