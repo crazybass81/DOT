@@ -111,14 +111,38 @@ export const businessVerificationService = {
     }
 
     try {
-      // TODO: 실제 API 연동
-      return {
-        isValid: true,
-        businessName: '테스트 법인',
-        representativeName: '김대표',
-        status: 'active'
-      };
+      // 법원 법인등기 API 연동 (또는 NICE 평가정보 등)
+      const response = await fetch('/api/corporation-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          corporationRegistrationNumber: cleanNumber
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API 요청 실패');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return {
+          isValid: true,
+          businessName: data.businessName,
+          representativeName: data.representativeName,
+          status: data.status
+        };
+      } else {
+        return {
+          isValid: false,
+          error: data.message || '법인등록번호를 찾을 수 없습니다.'
+        };
+      }
     } catch (error) {
+      console.error('Corporation verification error:', error);
       return {
         isValid: false,
         error: '법인등록번호 조회 중 오류가 발생했습니다.'
