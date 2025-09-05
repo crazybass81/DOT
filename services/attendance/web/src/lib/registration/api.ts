@@ -224,10 +224,10 @@ export class RegistrationAPI {
           .insert({
             name: data.businessInfo.name,
             code: orgCode,
-            biz_number: data.businessInfo.bizNumber,
-            biz_type: bizType,
             is_active: true,
             metadata: {
+              business_type: bizType,  // metadata에 타입 저장
+              business_number: data.businessInfo.bizNumber,
               founder_id: authUser.user.id,
               founded_at: new Date().toISOString(),
               address: data.businessInfo.address || null
