@@ -198,15 +198,19 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   }, [userId, organizationId, maxNotifications, offset, readNotifications]);
 
-  // Load notifications when component mounts or dropdown opens
+  // Load notifications when component mounts
   useEffect(() => {
-    if (userId && (isOpen || notifications.length === 0)) {
-      const load = async () => {
-        await loadNotifications(true);
-      };
-      load();
+    if (userId) {
+      loadNotifications(true);
     }
-  }, [userId, isOpen, loadNotifications, notifications.length]);
+  }, [userId]);
+
+  // Load notifications when dropdown opens and no data
+  useEffect(() => {
+    if (isOpen && notifications.length === 0 && !isLoading) {
+      loadNotifications(true);
+    }
+  }, [isOpen, notifications.length, isLoading]);
 
   // Handle notification click
   const handleNotificationClick = async (notification: NotificationMessage) => {
