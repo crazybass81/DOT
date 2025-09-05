@@ -77,8 +77,8 @@ export default function BusinessSetupPage() {
         // 업데이트 실패해도 계속 진행
       }
 
-      // 대시보드로 이동
-      router.push('/dashboard')
+      // 사업자 대시보드로 이동
+      router.push('/business-dashboard')
     } catch (err: any) {
       console.error('Business setup error:', err)
       setError(err.message || '사업자 등록 중 오류가 발생했습니다')
