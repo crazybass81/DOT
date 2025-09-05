@@ -99,6 +99,12 @@ export default function BusinessSetupPage() {
           </p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow px-6 py-8 rounded-lg">
           <div>
             <label className="block text-sm font-medium text-gray-700">
