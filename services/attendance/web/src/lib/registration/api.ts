@@ -28,7 +28,7 @@ export interface Organization {
 
 export interface Employee {
   id: string
-  auth_user_id: string
+  user_id: string  // auth_user_id -> user_id
   organization_id?: string
   email: string
   phone: string
@@ -44,7 +44,7 @@ export interface UserRole {
   id: string
   employee_id: string
   organization_id?: string
-  role_type: 'WORKER' | 'ADMIN' | 'MANAGER' | 'FRANCHISE'
+  role: 'worker' | 'admin' | 'manager' | 'owner'  // role_type -> role
   is_active: boolean
   granted_at: string
 }
@@ -403,7 +403,7 @@ export class RegistrationAPI {
         .insert({
           employee_id: employeeId,
           organization_id: organizationId,
-          role_type: roleType,
+          role: roleType.toLowerCase() as 'worker' | 'admin' | 'manager' | 'owner',
           is_active: true,
           granted_at: new Date().toISOString(),
           granted_by: employeeId // 임시로 자기 자신
@@ -481,7 +481,7 @@ export class RegistrationAPI {
     const { data: employee } = await this.supabase
       .from('employees')
       .select('*')
-      .eq('auth_user_id', user.id)
+      .eq('user_id', user.id)  // auth_user_id -> user_id
       .single()
 
     if (!employee) {
