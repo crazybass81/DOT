@@ -144,7 +144,7 @@ export default function SignUpPage() {
         }
 
         // Employee 레코드 생성 (owner 역할)
-        await supabaseAuthService.supabase
+        const { error: empError } = await supabaseAuthService.supabase
           .from('employees')
           .insert({
             user_id: authUser.id,
@@ -155,6 +155,11 @@ export default function SignUpPage() {
             position: 'owner',
             is_active: true
           });
+
+        if (empError) {
+          console.error('Employee creation error:', empError);
+          throw new Error('직원 정보 생성 중 오류가 발생했습니다.');
+        }
 
         // 사업자 대시보드로 이동
         router.push('/business-dashboard');
