@@ -154,9 +154,9 @@ describe('Toast Integration Tests', () => {
         expect(screen.getByTestId('toast-count')).toHaveTextContent('4');
       });
 
-      // Fast-forward past default duration (5 seconds)
+      // Fast-forward past all durations (error toast is 7.5s, others 5s)
       act(() => {
-        jest.advanceTimersByTime(6000);
+        jest.advanceTimersByTime(8000);
       });
 
       await waitFor(() => {
