@@ -6,14 +6,16 @@ import { NotificationCenter } from '@/components/notifications/NotificationCente
 import { NotificationMessage, NotificationType, NotificationPriority } from '@/lib/notification-manager';
 
 // Mock notification manager
-const mockNotificationManager = {
-  getUserNotifications: jest.fn(),
-  markAsRead: jest.fn(),
-  markMultipleAsRead: jest.fn(),
-};
+const mockGetUserNotifications = jest.fn();
+const mockMarkAsRead = jest.fn();
+const mockMarkMultipleAsRead = jest.fn();
 
 jest.mock('@/lib/notification-manager', () => ({
-  notificationManager: mockNotificationManager,
+  notificationManager: {
+    getUserNotifications: mockGetUserNotifications,
+    markAsRead: mockMarkAsRead,
+    markMultipleAsRead: mockMarkMultipleAsRead,
+  },
   NotificationType: {
     ATTENDANCE_CHECK_IN: 'ATTENDANCE_CHECK_IN',
     ATTENDANCE_CHECK_OUT: 'ATTENDANCE_CHECK_OUT',
