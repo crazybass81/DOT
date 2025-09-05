@@ -31,7 +31,12 @@ export const useNotificationBatch = (
 
   // 배치 처리 실행
   const processBatch = useCallback(async () => {
-    if (processingRef.current || pendingReads.size === 0) {
+    if (processingRef.current) {
+      return;
+    }
+
+    const currentPendingReads = new Set(pendingReads);
+    if (currentPendingReads.size === 0) {
       return;
     }
 
@@ -39,7 +44,7 @@ export const useNotificationBatch = (
     setIsProcessing(true);
 
     try {
-      const idsToProcess = Array.from(pendingReads);
+      const idsToProcess = Array.from(currentPendingReads);
       setPendingReads(new Set());
 
       if (idsToProcess.length === 1) {
