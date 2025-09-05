@@ -94,11 +94,11 @@ echo -e "\n${BLUE}📋 Step 2: 코드 품질 검사${NC}"
 
 # TypeScript 타입 체크
 echo "🔍 TypeScript 타입 체크..."
-if npm run typecheck > /dev/null 2>&1; then
+if npx tsc --noEmit > /dev/null 2>&1; then
     echo "✅ TypeScript 타입 체크 통과"
 else
     echo -e "${RED}❌ TypeScript 타입 에러 발견${NC}"
-    npm run typecheck
+    npx tsc --noEmit
     exit 1
 fi
 
@@ -117,7 +117,7 @@ print_progress $CURRENT_STEP $TOTAL_STEPS "단위 테스트 실행"
 echo -e "\n${BLUE}📋 Step 3: 단위 테스트 실행${NC}"
 
 echo "🧪 Toast 알림 시스템 테스트..."
-TOAST_TEST_RESULT=$(npm test -- --testPathPattern="Toast.test" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
+TOAST_TEST_RESULT=$(npm test -- --testPathPatterns="Toast.test" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
 TOAST_SUCCESS=$(echo "$TOAST_TEST_RESULT" | jq -r '.success // false' 2>/dev/null || echo "false")
 
 if [ "$TOAST_SUCCESS" = "true" ]; then
@@ -127,7 +127,7 @@ else
 fi
 
 echo "🧪 NotificationCenter 테스트..."
-NC_TEST_RESULT=$(npm test -- --testPathPattern="NotificationCenter.test" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
+NC_TEST_RESULT=$(npm test -- --testPathPatterns="NotificationCenter.test" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
 NC_SUCCESS=$(echo "$NC_TEST_RESULT" | jq -r '.success // false' 2>/dev/null || echo "false")
 
 if [ "$NC_SUCCESS" = "true" ]; then
@@ -137,7 +137,7 @@ else
 fi
 
 echo "🧪 읽음/안읽음 상태 관리 테스트..."
-READ_STATUS_TEST_RESULT=$(npm test -- --testPathPattern="NotificationReadStatus" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
+READ_STATUS_TEST_RESULT=$(npm test -- --testPathPatterns="NotificationReadStatus" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
 READ_STATUS_SUCCESS=$(echo "$READ_STATUS_TEST_RESULT" | jq -r '.success // false' 2>/dev/null || echo "false")
 
 if [ "$READ_STATUS_SUCCESS" = "true" ]; then
@@ -153,7 +153,7 @@ print_progress $CURRENT_STEP $TOTAL_STEPS "통합 테스트 실행"
 echo -e "\n${BLUE}📋 Step 4: Phase 3.2.3 통합 테스트 실행${NC}"
 
 echo "🔗 시스템 통합 테스트 실행..."
-INTEGRATION_TEST_RESULT=$(npm test -- --testPathPattern="phase-3-2-3-integration" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
+INTEGRATION_TEST_RESULT=$(npm test -- --testPathPatterns="phase-3-2-3-integration" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
 INTEGRATION_SUCCESS=$(echo "$INTEGRATION_TEST_RESULT" | jq -r '.success // false' 2>/dev/null || echo "false")
 
 if [ "$INTEGRATION_SUCCESS" = "true" ]; then
@@ -169,7 +169,7 @@ print_progress $CURRENT_STEP $TOTAL_STEPS "성능 벤치마크 테스트"
 echo -e "\n${BLUE}📋 Step 5: 성능 벤치마크 테스트${NC}"
 
 echo "⚡ 성능 벤치마크 실행..."
-PERFORMANCE_TEST_RESULT=$(GENERATE_PERF_REPORT=true npm test -- --testPathPattern="notification-system-benchmarks" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
+PERFORMANCE_TEST_RESULT=$(GENERATE_PERF_REPORT=true npm test -- --testPathPatterns="notification-system-benchmarks" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
 PERFORMANCE_SUCCESS=$(echo "$PERFORMANCE_TEST_RESULT" | jq -r '.success // false' 2>/dev/null || echo "false")
 
 if [ "$PERFORMANCE_SUCCESS" = "true" ]; then
@@ -205,7 +205,7 @@ print_progress $CURRENT_STEP $TOTAL_STEPS "접근성 검증"
 echo -e "\n${BLUE}📋 Step 7: 접근성 (WCAG 2.1 AA) 검증${NC}"
 
 echo "♿ ARIA 속성 및 키보드 내비게이션 테스트..."
-ACCESSIBILITY_TEST_RESULT=$(npm test -- --testPathPattern="accessibility" --testNamePattern="접근성|Accessibility" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
+ACCESSIBILITY_TEST_RESULT=$(npm test -- --testPathPatterns="accessibility" --testNamePattern="접근성|Accessibility" --passWithNoTests --json 2>/dev/null || echo '{"success": false}')
 ACCESSIBILITY_SUCCESS=$(echo "$ACCESSIBILITY_TEST_RESULT" | jq -r '.success // false' 2>/dev/null || echo "false")
 
 if [ "$ACCESSIBILITY_SUCCESS" = "true" ]; then
@@ -252,7 +252,7 @@ print_progress $CURRENT_STEP $TOTAL_STEPS "코드 커버리지 분석"
 echo -e "\n${BLUE}📋 Step 10: 코드 커버리지 분석${NC}"
 
 echo "📊 코드 커버리지 측정..."
-COVERAGE_RESULT=$(npm run test:coverage -- --testPathPattern="notifications" --passWithNoTests 2>/dev/null || echo "")
+COVERAGE_RESULT=$(npm run test:coverage -- --testPathPatterns="notifications" --passWithNoTests 2>/dev/null || echo "")
 
 if [[ $COVERAGE_RESULT == *"All files"* ]]; then
     echo "✅ 코드 커버리지 측정 완료"
