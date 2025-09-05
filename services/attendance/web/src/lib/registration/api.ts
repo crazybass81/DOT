@@ -252,16 +252,14 @@ export class RegistrationAPI {
       const { data: employee, error: empError } = await this.supabase
         .from('employees')
         .insert({
-          auth_user_id: authUser.user.id,
+          user_id: authUser.user.id,  // auth_user_id -> user_id
           organization_id: organization?.id,
           email: data.email,
           phone: data.phone,
           name: data.fullName,
           birth_date: data.birthDate,
-          role: role,
-          approval_status: organization ? 'APPROVED' : 'PENDING',
-          is_active: true,
-          approved_at: organization ? new Date().toISOString() : null
+          position: role === 'ADMIN' ? 'admin' : 'worker',  // role -> position
+          is_active: true
         })
         .select()
         .single()
