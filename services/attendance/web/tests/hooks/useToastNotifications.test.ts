@@ -73,9 +73,9 @@ describe('useToastNotifications Hook', () => {
         { wrapper }
       );
 
-      expect(mockSubscribeToNotifications).not.toHaveBeenCalled();
-      expect(mockSubscribeToAttendance).not.toHaveBeenCalled();
-      expect(mockSubscribeToApprovals).not.toHaveBeenCalled();
+      expect(mockRealtimeManager.subscribeToNotifications).not.toHaveBeenCalled();
+      expect(mockRealtimeManager.subscribeToAttendance).not.toHaveBeenCalled();
+      expect(mockRealtimeManager.subscribeToApprovals).not.toHaveBeenCalled();
     });
 
     test('should cleanup subscriptions on unmount', () => {
@@ -86,9 +86,9 @@ describe('useToastNotifications Hook', () => {
 
       unmount();
 
-      expect(mockUnsubscribe).toHaveBeenCalledWith('notification-channel');
-      expect(mockUnsubscribe).toHaveBeenCalledWith('attendance-channel');
-      expect(mockUnsubscribe).toHaveBeenCalledWith('approval-channel');
+      expect(mockRealtimeManager.unsubscribe).toHaveBeenCalledWith('notification-channel');
+      expect(mockRealtimeManager.unsubscribe).toHaveBeenCalledWith('attendance-channel');
+      expect(mockRealtimeManager.unsubscribe).toHaveBeenCalledWith('approval-channel');
     });
 
     test('should use custom debounce settings', () => {
@@ -99,7 +99,7 @@ describe('useToastNotifications Hook', () => {
         { wrapper }
       );
 
-      expect(mockSubscribeToAttendance).toHaveBeenCalledWith(
+      expect(mockRealtimeManager.subscribeToAttendance).toHaveBeenCalledWith(
         'org-456',
         expect.any(Function),
         { debounceMs: 500 }
