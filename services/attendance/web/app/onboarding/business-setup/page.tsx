@@ -29,12 +29,12 @@ export default function BusinessSetupPage() {
       // 1. 조직(개인사업자) 생성
       const orgData: any = {
         name: formData.businessName,
-        code: `BIZ_${Date.now()}`,
-        is_active: true,
         metadata: {
+          code: `BIZ_${Date.now()}`,  // code도 metadata에 저장
           registered_by: user.id,
           registered_at: new Date().toISOString(),
-          business_type: 'PERSONAL'  // metadata에 저장
+          business_type: 'PERSONAL',
+          is_active: true
         }
       }
       
