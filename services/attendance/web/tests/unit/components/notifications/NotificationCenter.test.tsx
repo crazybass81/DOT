@@ -92,7 +92,7 @@ describe('NotificationCenter', () => {
       
       // Wait for the notification manager to be called and data to load
       await waitFor(() => {
-        expect(mockNotificationManager.getUserNotifications).toHaveBeenCalled();
+        expect(mockGetUserNotifications).toHaveBeenCalled();
       });
       
       await waitFor(() => {
