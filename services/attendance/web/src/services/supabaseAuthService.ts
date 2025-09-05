@@ -311,34 +311,29 @@ export class SupabaseAuthService {
         throw new Error('Not authenticated');
       }
 
-      // Check if employee record already exists
+      // Check if employee record already exists - user_id 컬럼 사용
       const { data: existingEmployee } = await supabase
         .from('employees')
         .select('*')
-        .eq('auth_user_id', session.user.id)
+        .eq('user_id', session.user.id)
         .single();
 
       if (existingEmployee) {
         return existingEmployee;
       }
 
-      // Create new employee record
+      // Create new employee record - 컬럼명 수정
       const { data: employee, error } = await supabase
         .from('employees')
         .insert({
-          auth_user_id: session.user.id,
-          organization_id: '00000000-0000-0000-0000-000000000001', // Default org
-          branch_id: employeeData.branchId || '00000000-0000-0000-0000-000000000002',
-          department_id: employeeData.departmentId || '00000000-0000-0000-0000-000000000003',
-          position_id: employeeData.positionId || '00000000-0000-0000-0000-000000000004',
+          user_id: session.user.id,  // auth_user_id → user_id
+          organization_id: null,  // 조직 없이 시작
           employee_code: employeeData.employeeCode,
           name: employeeData.name,
           email: session.user.email!,
           phone: employeeData.phone,
-          approval_status: 'PENDING',
-          role: 'EMPLOYEE',
-          is_master_admin: false,
-          is_active: false
+          position: 'EMPLOYEE',  // role → position
+          is_active: true
         })
         .select()
         .single();
