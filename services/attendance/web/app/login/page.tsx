@@ -18,21 +18,27 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await supabaseAuthService.signIn(email, password);
-      if (result && (result as any).user) {
-        // Check user role from database
+      const user = await supabaseAuthService.signIn(email, password);
+      
+      if (user) {
+        console.log('로그인 성공, 사용자 정보:', user);
+        
+        // employee 정보에서 position과 organization 확인
         const { data: employee } = await supabaseAuthService.supabase
           .from('employees')
-          .select('role')
-          .eq('id', (result as any).user.id)
+          .select('position, organization_id')
+          .eq('user_id', user.id)
           .single();
         
-        if (employee?.role === 'MASTER_ADMIN') {
-          router.push('/master-admin/dashboard');
-        } else if (employee?.role === 'ADMIN') {
-          router.push('/admin/dashboard');
+        console.log('Employee 정보:', employee);
+        
+        // 역할에 따라 다른 대시보드로 리다이렉트
+        if (employee?.position === 'owner' || employee?.position === 'admin') {
+          // 사업자(owner/admin)는 사업자 대시보드로
+          router.push('/business-dashboard');
         } else {
-          router.push('/dashboard');
+          // 워커는 워커 대시보드로
+          router.push('/worker-dashboard');
         }
       } else {
         setError('로그인에 실패했습니다');
