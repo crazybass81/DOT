@@ -18,8 +18,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) =>
   React.createElement(ToastProvider, null, children);
 
 describe('useToastNotifications Hook', () => {
+  let mockRealtimeManager: any;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // Get fresh mock reference
+    mockRealtimeManager = require('@/lib/realtime').realtimeManager;
   });
 
   describe('🔵 Refactor Phase - Hook Integration', () => {
