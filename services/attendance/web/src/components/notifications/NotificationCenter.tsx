@@ -178,10 +178,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           setOffset(prev => prev + result.notifications!.length);
         }
 
-        // Calculate unread count from all notifications
-        const allNotifications = reset ? result.notifications : [...notifications, ...result.notifications];
-        const unread = allNotifications.filter(n => !n.readAt && !readNotifications.has(n.id!));
-        setUnreadCount(unread.length);
+        // Calculate unread count only from new notifications
+        const unread = result.notifications.filter(n => !n.readAt && !readNotifications.has(n.id!));
+        if (reset) {
+          setUnreadCount(unread.length);
+        } else {
+          setUnreadCount(prev => prev + unread.length);
+        }
 
         // Check if there are more notifications
         setHasMore(result.notifications.length === maxNotifications);
