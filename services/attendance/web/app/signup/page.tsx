@@ -166,15 +166,20 @@ export default function SignUpPage() {
       } else {
         // 근로자 등록
         // 조직 코드로 organization 찾기
-        const { data: orgs } = await supabaseAuthService.supabase
+        const { data: orgs, error: findOrgError } = await supabaseAuthService.supabase
           .from('organizations')
           .select('id')
-          .eq('metadata->>code', formData.organizationCode);
+          .eq('code', formData.organizationCode);
 
-        const orgId = orgs?.[0]?.id;
+        if (findOrgError || !orgs || orgs.length === 0) {
+          console.error('Organization lookup error:', findOrgError);
+          throw new Error('유효하지 않은 조직 코드입니다.');
+        }
+
+        const orgId = orgs[0].id;
 
         // Employee 레코드 생성 (worker 역할)
-        await supabaseAuthService.supabase
+        const { error: empError } = await supabaseAuthService.supabase
           .from('employees')
           .insert({
             user_id: authUser.id,
@@ -189,6 +194,11 @@ export default function SignUpPage() {
             },
             is_active: true
           });
+
+        if (empError) {
+          console.error('Employee creation error:', empError);
+          throw new Error('직원 정보 생성 중 오류가 발생했습니다.');
+        }
 
         // 워커 대시보드로 이동
         router.push('/worker-dashboard');
