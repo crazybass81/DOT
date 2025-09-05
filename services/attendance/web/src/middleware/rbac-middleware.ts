@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../lib/supabase-config';
 import { RoleType, MultiRoleUser } from '../types/multi-role';
+import { auditLogger, AuditAction, AuditResult } from '../lib/audit-logger';
 
 // 권한 검증 설정 인터페이스
 export interface PermissionCheck {
