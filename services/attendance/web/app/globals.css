@@ -61,4 +61,143 @@
   .label {
     @apply text-sm font-medium text-gray-700;
   }
+  
+  /* Blob Animations */
+  .blob {
+    @apply absolute rounded-full opacity-60 mix-blend-multiply;
+    filter: blur(150px);
+  }
+  
+  /* Admin Blobs - Blue/Purple/Indigo/Teal */
+  .blob-admin-1 {
+    width: 600px; 
+    height: 600px; 
+    top: -100px; 
+    left: -150px;
+    background-color: #60a5fa; /* blue-400 */
+    animation: moveBlob1 20s infinite alternate ease-in-out;
+  }
+  
+  .blob-admin-2 {
+    width: 750px; 
+    height: 750px; 
+    bottom: -200px; 
+    right: -200px;
+    background-color: #818cf8; /* indigo-400 */
+    animation: moveBlob2 25s infinite alternate ease-in-out;
+  }
+  
+  .blob-admin-3 {
+    width: 550px; 
+    height: 550px; 
+    top: 5vh; 
+    right: 15vw;
+    background-color: #2dd4bf; /* teal-400 */
+    animation: moveBlob3 18s infinite alternate ease-in-out;
+  }
+  
+  .blob-admin-4 {
+    width: 500px; 
+    height: 500px; 
+    top: 50vh; 
+    left: -200px;
+    background-color: #3b82f6; /* blue-600 */
+    animation: moveBlob4 22s infinite alternate ease-in-out;
+  }
+  
+  .blob-admin-5 {
+    width: 450px; 
+    height: 450px; 
+    bottom: -10vh; 
+    left: 30vw;
+    background-color: #4f46e5; /* indigo-600 */
+    animation: moveBlob5 28s infinite alternate ease-in-out;
+  }
+  
+  /* Worker Blobs - Yellow/Orange/Red */
+  .blob-worker-1 {
+    width: 600px; 
+    height: 600px; 
+    top: -100px; 
+    left: -150px;
+    background-color: #fbbf24; /* amber-400 */
+    animation: moveBlob1 20s infinite alternate ease-in-out;
+  }
+  
+  .blob-worker-2 {
+    width: 750px; 
+    height: 750px; 
+    bottom: -200px; 
+    right: -200px;
+    background-color: #f97316; /* orange-500 */
+    animation: moveBlob2 25s infinite alternate ease-in-out;
+  }
+  
+  .blob-worker-3 {
+    width: 550px; 
+    height: 550px; 
+    top: 5vh; 
+    right: 15vw;
+    background-color: #f59e0b; /* amber-500 */
+    animation: moveBlob3 18s infinite alternate ease-in-out;
+  }
+  
+  .blob-worker-4 {
+    width: 500px; 
+    height: 500px; 
+    top: 50vh; 
+    left: -200px;
+    background-color: #ef4444; /* red-500 */
+    animation: moveBlob4 22s infinite alternate ease-in-out;
+  }
+  
+  .blob-worker-5 {
+    width: 450px; 
+    height: 450px; 
+    bottom: -10vh; 
+    left: 30vw;
+    background-color: #f87171; /* red-400 */
+    animation: moveBlob5 28s infinite alternate ease-in-out;
+  }
+}
+
+/* Blob Animation Keyframes */
+@keyframes moveBlob1 {
+  0% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(1.3) translate(30vw, -20vh); }
+  50% { transform: scale(0.9) translate(-10vw, 25vh); }
+  75% { transform: scale(1.2) translate(-20vw, -15vh); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+@keyframes moveBlob2 {
+  0% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(1.2) translate(-25vw, 10vh); }
+  50% { transform: scale(0.8) translate(15vw, -30vh); }
+  75% { transform: scale(1.1) translate(20vw, 20vh); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+@keyframes moveBlob3 {
+  0% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(0.9) translate(10vw, 30vh); }
+  50% { transform: scale(1.2) translate(-30vw, -10vh); }
+  75% { transform: scale(1) translate(15vw, -20vh); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+@keyframes moveBlob4 {
+  0% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(1.1) translate(20vw, 15vh); }
+  50% { transform: scale(0.9) translate(-15vw, -10vh); }
+  75% { transform: scale(1.2) translate(10vw, -25vh); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+@keyframes moveBlob5 {
+  0% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(0.8) translate(-20vw, -20vh); }
+  50% { transform: scale(1.2) translate(25vw, 10vh); }
+  75% { transform: scale(1) translate(-10vw, 20vh); }
+  100% { transform: scale(1) translate(0, 0); }
 }
