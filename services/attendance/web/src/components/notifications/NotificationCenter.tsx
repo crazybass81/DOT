@@ -201,16 +201,42 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   // Load notifications when component mounts
   useEffect(() => {
     if (userId) {
-      loadNotifications(true);
-    }
-  }, [userId]);
+      const loadData = async () => {
+        if (!userId) return;
 
-  // Load notifications when dropdown opens and no data
-  useEffect(() => {
-    if (isOpen && notifications.length === 0 && !isLoading) {
-      loadNotifications(true);
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          const result = await notificationManager.getUserNotifications(userId, {
+            limit: maxNotifications,
+            offset: 0,
+            organizationId
+          });
+
+          if (result.success && result.notifications) {
+            setNotifications(result.notifications);
+            setOffset(result.notifications.length);
+
+            // Calculate unread count
+            const unread = result.notifications.filter(n => !n.readAt);
+            setUnreadCount(unread.length);
+
+            // Check if there are more notifications
+            setHasMore(result.notifications.length === maxNotifications);
+          } else {
+            throw new Error(result.error || 'Failed to load notifications');
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      loadData();
     }
-  }, [isOpen, notifications.length, isLoading]);
+  }, [userId, organizationId, maxNotifications]);
 
   // Handle notification click
   const handleNotificationClick = async (notification: NotificationMessage) => {
