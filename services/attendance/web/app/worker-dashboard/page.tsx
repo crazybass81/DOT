@@ -154,7 +154,7 @@ export default function WorkerDashboard() {
                   워커 대시보드
                 </h1>
                 <p className="text-sm text-gray-600">
-                  {employee?.name || user?.name} 님
+                  {employee?.name || user?.name} 님 (Position: {employee?.position || 'unknown'})
                 </p>
               </div>
             </div>
