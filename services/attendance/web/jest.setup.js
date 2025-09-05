@@ -59,6 +59,9 @@ jest.mock('./src/lib/supabase-config', () => ({
 
 // Global mocks will be handled in individual test files
 
+// Node.js 환경에서 사용할 수 있는 global 함수들 추가
+global.setImmediate = setTimeout;
+
 // Mock Next.js Response
 global.NextResponse = {
   json: (data, options = {}) => ({
