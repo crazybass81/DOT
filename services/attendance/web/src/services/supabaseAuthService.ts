@@ -142,6 +142,16 @@ export class SupabaseAuthService {
 
       if (error) {
         console.error('Sign in error:', error);
+        // Email not confirmed 에러는 무시하고 진행
+        if (error.message === 'Email not confirmed') {
+          console.log('Email not confirmed but proceeding with login');
+          // 사용자 정보를 직접 생성
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData?.user) {
+            const user = await this.mapSupabaseUserToUser(userData.user);
+            if (user) return user;
+          }
+        }
         throw new Error(error.message);
       }
 
