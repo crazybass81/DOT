@@ -70,13 +70,13 @@ const mockNotifications: NotificationMessage[] = [
 describe('NotificationCenter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockNotificationManager.getUserNotifications.mockResolvedValue({
+    mockGetUserNotifications.mockResolvedValue({
       success: true,
       notifications: mockNotifications,
       totalCount: 3,
     });
-    mockNotificationManager.markAsRead.mockResolvedValue({ success: true });
-    mockNotificationManager.markMultipleAsRead.mockResolvedValue({ success: true });
+    mockMarkAsRead.mockResolvedValue({ success: true });
+    mockMarkMultipleAsRead.mockResolvedValue({ success: true });
   });
 
   describe('🔴 RED: Bell Icon and Badge Tests', () => {
