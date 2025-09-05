@@ -104,3 +104,74 @@ export interface UpdateOrganizationRequest {
   phone?: string;
   status?: OrganizationStatus;
 }
+
+// 상태 변경 관련 타입
+export interface OrganizationStatusChangeRequest {
+  organizationId: string;
+  newStatus: OrganizationStatus;
+  reason?: string;
+  changedBy: string;
+}
+
+export interface BulkOrganizationStatusChangeRequest {
+  organizationIds: string[];
+  newStatus: OrganizationStatus;
+  reason?: string;
+  changedBy: string;
+}
+
+export interface OrganizationStatusChangeResponse {
+  success: boolean;
+  organizationId: string;
+  previousStatus: OrganizationStatus;
+  newStatus: OrganizationStatus;
+  auditLogId: string;
+  notificationId?: string;
+  error?: string;
+}
+
+export interface BulkOrganizationStatusChangeResponse {
+  success: boolean;
+  results: OrganizationStatusChangeResponse[];
+  totalCount: number;
+  successCount: number;
+  failureCount: number;
+  errors: string[];
+}
+
+export interface OrganizationAuditLogEntry {
+  id: string;
+  organizationId: string;
+  action: string;
+  previousStatus?: OrganizationStatus;
+  newStatus?: OrganizationStatus;
+  changedBy: string;
+  changedByName: string;
+  reason?: string;
+  timestamp: Date;
+  ipAddress?: string;
+  userAgent?: string;
+  canUndo: boolean;
+  undoExpiresAt?: Date;
+}
+
+export interface OrganizationAuditLogResponse {
+  auditLogs: OrganizationAuditLogEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface UndoStatusChangeRequest {
+  auditLogId: string;
+  reason?: string;
+  undoneBy: string;
+}
+
+export interface UndoStatusChangeResponse {
+  success: boolean;
+  organizationId: string;
+  restoredStatus: OrganizationStatus;
+  auditLogId: string;
+  error?: string;
+}
