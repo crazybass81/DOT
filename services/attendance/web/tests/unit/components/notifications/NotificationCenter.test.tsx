@@ -88,6 +88,11 @@ describe('NotificationCenter', () => {
     test('should display unread notification count badge', async () => {
       render(<NotificationCenter userId="1" />);
       
+      // Wait for the notification manager to be called and data to load
+      await waitFor(() => {
+        expect(mockNotificationManager.getUserNotifications).toHaveBeenCalled();
+      });
+      
       await waitFor(() => {
         const badge = screen.getByTestId('notification-badge');
         expect(badge).toBeInTheDocument();
