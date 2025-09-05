@@ -47,7 +47,7 @@ jest.mock('../../src/lib/supabase-config', () => ({
 }));
 
 describe('RBAC 미들웨어', () => {
-  let mockRequest: Partial<NextRequest>;
+  let mockRequest: any;
   let mockUser: any;
 
   beforeEach(() => {
