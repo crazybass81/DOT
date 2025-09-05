@@ -75,8 +75,41 @@ testCases.forEach((testCase, index) => {
 console.log('\n🎉 Phase 1.1 TDD 검증 완료');
 console.log('📝 실제 데이터베이스 환경에서는 Supabase 콘솔에서 SQL을 실행하여 테스트하세요');
 
-// 4. 다음 단계 안내
-console.log('\n📋 다음 단계: Phase 1.2 - contracts 테이블 생성');
+// 4. Phase 1.2 테스트 추가
+const contractsTestFile = path.join(__dirname, 'database', 'contracts.test.sql');
+const contractsSchemaFile = path.join(__dirname, '..', 'sql-scripts', '02-create-contracts-table.sql');
+
+console.log('
+🧪 Phase 1.2: contracts 테이블 테스트');
+
+if (fs.existsSync(contractsTestFile) && fs.existsSync(contractsSchemaFile)) {
+  const contractsTestContent = fs.readFileSync(contractsTestFile, 'utf8');
+  const contractsSchemaContent = fs.readFileSync(contractsSchemaFile, 'utf8');
+  
+  // 계약 테이블 검증
+  const hasContractsTable = contractsSchemaContent.includes('CREATE TABLE') && contractsSchemaContent.includes('contracts');
+  const hasContractConstraints = contractsSchemaContent.includes('CHECK (contract_type IN') && contractsSchemaContent.includes('CHECK (status IN');
+  const hasWageValidation = contractsSchemaContent.includes('CHECK (wage_amount >= 0)');
+  const hasContractsRLS = contractsSchemaContent.includes('contracts ENABLE ROW LEVEL SECURITY');
+  const hasContractsUtilityFunctions = contractsSchemaContent.includes('get_active_contracts') && contractsSchemaContent.includes('expire_contracts');
+  
+  if (hasContractsTable && hasContractConstraints && hasWageValidation && hasContractsRLS && hasContractsUtilityFunctions) {
+    console.log('✅ Phase 1.2 contracts 테이블 검증 통과');
+  } else {
+    console.log('❌ Phase 1.2 contracts 테이블 검증 실패');
+    if (!hasContractsTable) console.log('  - contracts 테이블 생성문 누락');
+    if (!hasContractConstraints) console.log('  - 계약 타입/상태 제약조건 누락');
+    if (!hasWageValidation) console.log('  - 급여 검증 제약조건 누락');
+    if (!hasContractsRLS) console.log('  - contracts RLS 설정 누락');
+    if (!hasContractsUtilityFunctions) console.log('  - 유틸리티 함수들 누락');
+  }
+} else {
+  console.log('⏭️  Phase 1.2 파일들이 준비되지 않았습니다');
+}
+
+// 5. 다음 단계 안내
+console.log('
+📋 다음 단계: Phase 1.3 - 타입 정의 및 유틸리티 함수');
 console.log('   npm run test:db 명령으로 실제 데이터베이스 테스트 실행 가능');
 
 console.log('\n🔗 실행 방법:');
