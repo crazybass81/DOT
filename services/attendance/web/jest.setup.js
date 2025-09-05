@@ -59,13 +59,10 @@ jest.mock('./src/lib/supabase-config', () => ({
 
 // Mock Supabase Server Client
 jest.mock('./src/lib/supabase/server', () => ({
-  createClient: jest.fn(() => ({
-    from: jest.fn(() => ({
+  createClient: jest.fn(() => {
+    const mockQuery = {
       select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockResolvedValue({ 
-        data: { id: 'test-notification-id' }, 
-        error: null 
-      }),
+      insert: jest.fn().mockReturnThis(),
       update: jest.fn().mockReturnThis(),
       delete: jest.fn().mockReturnThis(),
       upsert: jest.fn().mockResolvedValue({ error: null }),
@@ -82,12 +79,28 @@ jest.mock('./src/lib/supabase/server', () => ({
       lte: jest.fn().mockReturnThis(),
       contains: jest.fn().mockReturnThis(),
       is: jest.fn().mockReturnThis(),
-    })),
-    auth: {
-      getUser: jest.fn(),
-      getSession: jest.fn(),
-    }
-  }))
+    };
+
+    // insert().select() 체이닝을 위한 특별 처리
+    mockQuery.insert.mockReturnValue({
+      ...mockQuery,
+      select: jest.fn().mockReturnValue({
+        ...mockQuery,
+        single: jest.fn().mockResolvedValue({ 
+          data: { id: 'test-notification-id' }, 
+          error: null 
+        })
+      })
+    });
+
+    return {
+      from: jest.fn(() => mockQuery),
+      auth: {
+        getUser: jest.fn(),
+        getSession: jest.fn(),
+      }
+    };
+  })
 }));
 
 // Global mocks will be handled in individual test files
