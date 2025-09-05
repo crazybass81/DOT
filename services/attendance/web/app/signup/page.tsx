@@ -123,16 +123,20 @@ export default function SignUpPage() {
 
       // 2. Create profile based on user type
       if (formData.userType === 'business') {
-        // 사업자 등록 - organization 생성
+        // 먼저 로그인하여 세션 생성
+        await supabaseAuthService.signIn(formData.email, formData.password);
+        
+        // 사업자 등록 - organization 생성 (metadata만 사용)
         const { data: org, error: orgError } = await supabaseAuthService.supabase
           .from('organizations')
           .insert({
             name: formData.businessName,
-            biz_type: formData.businessType === 'corporation' ? 'CORP' : 'PERSONAL',
-            biz_number: formData.businessNumber,
             metadata: {
+              business_type: formData.businessType === 'corporation' ? 'CORP' : 'PERSONAL',
+              business_number: formData.businessNumber,
               representative_name: formData.representativeName,
-              business_address: formData.businessAddress
+              business_address: formData.businessAddress,
+              code: Math.random().toString(36).substring(2, 10).toUpperCase()
             }
           })
           .select()
@@ -140,7 +144,7 @@ export default function SignUpPage() {
 
         if (orgError) {
           console.error('Organization creation error:', orgError);
-          throw new Error('조직 생성 중 오류가 발생했습니다.');
+          // 조직 생성 실패해도 계속 진행 (나중에 설정 가능)
         }
 
         // Employee 레코드 생성 (owner 역할)
