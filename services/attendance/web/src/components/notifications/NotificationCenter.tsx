@@ -9,6 +9,7 @@ interface NotificationCenterProps {
   maxNotifications?: number;
   onNotificationClick?: (notification: NotificationMessage) => void;
   className?: string;
+  batchProcessingDelay?: number;
 }
 
 // Individual notification item props
@@ -140,7 +141,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   organizationId,
   maxNotifications = 20,
   onNotificationClick,
-  className = ''
+  className = '',
+  batchProcessingDelay = 500
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
@@ -150,9 +152,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [readNotifications, setReadNotifications] = useState<Set<string>>(new Set());
+  const [pendingReads, setPendingReads] = useState<Set<string>>(new Set());
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLButtonElement>(null);
+  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load notifications
   const loadNotifications = useCallback(async (reset = false) => {
@@ -238,31 +242,104 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   }, [userId, organizationId, maxNotifications]);
 
-  // Handle notification click
+  // 배치 처리를 위한 디바운스 함수
+  const processBatchReads = useCallback(() => {
+    if (pendingReads.size === 0) return;
+
+    const idsToProcess = Array.from(pendingReads);
+    setPendingReads(new Set());
+
+    // 배치 처리 또는 단일 처리 결정
+    if (idsToProcess.length > 1) {
+      // 여러 개인 경우 배치 처리
+      notificationManager.markMultipleAsRead(idsToProcess, userId)
+        .catch((err) => {
+          console.error('Failed to batch mark notifications as read:', err);
+          // 실패한 경우 로컬 상태 복원
+          setReadNotifications(prev => {
+            const newSet = new Set(prev);
+            idsToProcess.forEach(id => newSet.delete(id));
+            return newSet;
+          });
+          setUnreadCount(prev => prev + idsToProcess.length);
+        });
+    } else if (idsToProcess.length === 1) {
+      // 단일 처리
+      notificationManager.markAsRead(idsToProcess[0], userId)
+        .catch((err) => {
+          console.error('Failed to mark notification as read:', err);
+          // 실패한 경우 로컬 상태 복원
+          setReadNotifications(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(idsToProcess[0]);
+            return newSet;
+          });
+          setUnreadCount(prev => prev + 1);
+        });
+    }
+  }, [pendingReads, userId]);
+
+  // Handle notification click with batching
   const handleNotificationClick = async (notification: NotificationMessage) => {
     if (!notification.readAt && !readNotifications.has(notification.id!)) {
-      // Mark as read locally first for immediate feedback
+      // 즉시 로컬 상태 업데이트 (낙관적 업데이트)
       setReadNotifications(prev => new Set([...prev, notification.id!]));
       setUnreadCount(prev => Math.max(0, prev - 1));
-
-      // Mark as read in the database
-      try {
-        await notificationManager.markAsRead(notification.id!, userId);
-      } catch (err) {
-        console.error('Failed to mark notification as read:', err);
-        // Revert local changes on error
-        setReadNotifications(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(notification.id!);
-          return newSet;
-        });
-        setUnreadCount(prev => prev + 1);
+      
+      // 배치 처리를 위해 대기열에 추가
+      setPendingReads(prev => new Set([...prev, notification.id!]));
+      
+      // 기존 타이머 클리어
+      if (batchTimeoutRef.current) {
+        clearTimeout(batchTimeoutRef.current);
       }
+      
+      // 새 타이머 설정
+      batchTimeoutRef.current = setTimeout(() => {
+        processBatchReads();
+      }, batchProcessingDelay);
     }
 
     // Call the provided callback
     if (onNotificationClick) {
       onNotificationClick(notification);
+    }
+  };
+
+  // Handle mark all as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unreadNotificationIds = notifications
+        .filter(n => !n.readAt && !readNotifications.has(n.id!))
+        .map(n => n.id!);
+
+      if (unreadNotificationIds.length === 0) return;
+
+      // 즉시 로컬 상태 업데이트
+      setReadNotifications(prev => {
+        const newSet = new Set(prev);
+        unreadNotificationIds.forEach(id => newSet.add(id));
+        return newSet;
+      });
+      setUnreadCount(0);
+
+      // 서버에서 처리
+      const result = await notificationManager.markAllAsRead(userId, organizationId);
+      
+      if (!result.success) {
+        console.error('Failed to mark all notifications as read:', result.error);
+        // 실패한 경우 상태 복원
+        setReadNotifications(prev => {
+          const newSet = new Set(prev);
+          unreadNotificationIds.forEach(id => newSet.delete(id));
+          return newSet;
+        });
+        // 원래 카운트 복원
+        const originalUnreadCount = notifications.filter(n => !n.readAt).length;
+        setUnreadCount(originalUnreadCount);
+      }
+    } catch (error) {
+      console.error('Error marking all as read:', error);
     }
   };
 
@@ -328,6 +405,20 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     loadNotifications(true);
   };
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (batchTimeoutRef.current) {
+        clearTimeout(batchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Calculate unread count for display
+  const displayUnreadCount = unreadCount;
+  const hasUnreadNotifications = displayUnreadCount > 0;
+  const canMarkAllAsRead = notifications.some(n => !n.readAt && !readNotifications.has(n.id!));
+
   return (
     <div className={`relative ${className}`}>
       {/* Bell Icon Button */}
@@ -344,12 +435,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         <Bell className="w-6 h-6" />
         
         {/* Unread Badge */}
-        {unreadCount > 0 && (
+        {hasUnreadNotifications && (
           <span
             data-testid="notification-badge"
             className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
           >
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
           </span>
         )}
       </button>
@@ -365,12 +456,26 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         >
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900">알림</h3>
-            {unreadCount > 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                {unreadCount}개의 읽지 않은 알림
-              </p>
-            )}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">알림</h3>
+                {hasUnreadNotifications && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {displayUnreadCount}개의 읽지 않은 알림
+                  </p>
+                )}
+              </div>
+              {canMarkAllAsRead && (
+                <button
+                  data-testid="mark-all-read-button"
+                  onClick={handleMarkAllAsRead}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                  disabled={!canMarkAllAsRead}
+                >
+                  모두 읽음
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Content */}
