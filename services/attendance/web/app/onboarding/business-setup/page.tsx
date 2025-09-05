@@ -27,19 +27,25 @@ export default function BusinessSetupPage() {
       }
 
       // 1. 조직(개인사업자) 생성
+      const orgData: any = {
+        name: formData.businessName,
+        code: `BIZ_${Date.now()}`,
+        is_active: true,
+        metadata: {
+          registered_by: user.id,
+          registered_at: new Date().toISOString(),
+          business_type: 'PERSONAL'  // metadata에 저장
+        }
+      }
+      
+      // biz_number가 있으면 추가 (컬럼이 있는 경우를 위해)
+      if (formData.businessNumber) {
+        orgData.metadata.business_number = formData.businessNumber.replace(/-/g, '')
+      }
+
       const { data: organization, error: orgError } = await supabase
         .from('organizations')
-        .insert({
-          name: formData.businessName,
-          code: `BIZ_${Date.now()}`,
-          biz_number: formData.businessNumber.replace(/-/g, ''),
-          biz_type: 'PERSONAL',
-          is_active: true,
-          metadata: {
-            registered_by: user.id,
-            registered_at: new Date().toISOString()
-          }
-        })
+        .insert(orgData)
         .select()
         .single()
 
