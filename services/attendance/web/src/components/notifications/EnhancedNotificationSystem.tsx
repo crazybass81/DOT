@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { ToastProvider, useToast } from './Toast';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { NotificationSystem } from './NotificationSystem';
+import { NotificationCenter } from './NotificationCenter';
+import { NotificationMessage } from '@/lib/notification-manager';
 
 interface EnhancedNotificationSystemProps {
   userId?: string;
