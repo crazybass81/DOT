@@ -190,6 +190,18 @@ export const ToastExamples: React.FC = () => {
   organizationId="org-456"
   position="top-right"
   enableRealtimeIntegration={true}
+  enableNotificationCenter={true}
+/>`}
+            </code>
+            
+            <p><strong>NotificationCenter Usage:</strong></p>
+            <code className="block bg-gray-200 p-2 rounded">
+              {`<NotificationCenter
+  userId="user-123"
+  organizationId="org-456"
+  onNotificationClick={(notification) => {
+    console.log('Clicked:', notification);
+  }}
 />`}
             </code>
           </div>
