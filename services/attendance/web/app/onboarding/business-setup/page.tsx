@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase-config'
+import { supabaseAuthService } from '@/services/supabaseAuthService'
 
 export default function BusinessSetupPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     businessName: '',
     businessNumber: ''
@@ -14,12 +17,73 @@ export default function BusinessSetupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
     
-    // 여기에 실제 API 호출 추가 가능
-    // 지금은 바로 대시보드로 이동
-    setTimeout(() => {
+    try {
+      // 현재 사용자 정보 가져오기
+      const user = await supabaseAuthService.getCurrentUser()
+      if (!user) {
+        throw new Error('로그인이 필요합니다')
+      }
+
+      // 1. 조직(개인사업자) 생성
+      const { data: organization, error: orgError } = await supabase
+        .from('organizations')
+        .insert({
+          name: formData.businessName,
+          code: `BIZ_${Date.now()}`,
+          biz_number: formData.businessNumber.replace(/-/g, ''),
+          biz_type: 'PERSONAL',
+          is_active: true,
+          metadata: {
+            registered_by: user.id,
+            registered_at: new Date().toISOString()
+          }
+        })
+        .select()
+        .single()
+
+      if (orgError) {
+        console.error('Organization creation error:', orgError)
+        throw new Error('사업자 등록에 실패했습니다: ' + orgError.message)
+      }
+
+      // 2. 사용자를 어드민으로 등록 (user_roles 테이블)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: user.id,
+          organization_id: organization.id,
+          role: 'admin',
+          is_active: true
+        })
+
+      if (roleError) {
+        console.error('Role creation error:', roleError)
+        // 롤 생성 실패해도 계속 진행
+      }
+
+      // 3. employees 테이블 업데이트 (조직 연결)
+      const { error: empUpdateError } = await supabase
+        .from('employees')
+        .update({
+          organization_id: organization.id,
+          position: 'admin'
+        })
+        .eq('user_id', user.id)
+
+      if (empUpdateError) {
+        console.error('Employee update error:', empUpdateError)
+        // 업데이트 실패해도 계속 진행
+      }
+
+      // 대시보드로 이동
       router.push('/dashboard')
-    }, 500)
+    } catch (err: any) {
+      console.error('Business setup error:', err)
+      setError(err.message || '사업자 등록 중 오류가 발생했습니다')
+      setLoading(false)
+    }
   }
 
   return (
