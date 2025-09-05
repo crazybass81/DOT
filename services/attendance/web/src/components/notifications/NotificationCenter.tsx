@@ -172,14 +172,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       if (result.success && result.notifications) {
         if (reset) {
           setNotifications(result.notifications);
-          setOffset(maxNotifications);
+          setOffset(result.notifications.length);
         } else {
           setNotifications(prev => [...prev, ...result.notifications!]);
           setOffset(prev => prev + result.notifications!.length);
         }
 
-        // Calculate unread count
-        const unread = result.notifications.filter(n => !n.readAt && !readNotifications.has(n.id!));
+        // Calculate unread count from all notifications
+        const allNotifications = reset ? result.notifications : [...notifications, ...result.notifications];
+        const unread = allNotifications.filter(n => !n.readAt && !readNotifications.has(n.id!));
         setUnreadCount(unread.length);
 
         // Check if there are more notifications
@@ -192,7 +193,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [userId, organizationId, maxNotifications, offset, readNotifications]);
+  }, [userId, organizationId, maxNotifications, offset, readNotifications, notifications]);
 
   // Initial load on mount to get unread count
   useEffect(() => {
