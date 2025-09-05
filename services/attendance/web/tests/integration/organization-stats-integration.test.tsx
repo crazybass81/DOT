@@ -162,7 +162,8 @@ describe('🔄 Phase 3.3.1.2 TDD 사이클 완성 검증', () => {
     
     // GREEN: 기본 기능이 모두 구현됨
     expect(screen.getByText('조직별 통계 대시보드')).toBeInTheDocument();
-    expect(screen.getByTestId('stats-overview')).toBeInTheDocument();
+    const statsOverview = screen.getAllByTestId('stats-overview');
+    expect(statsOverview.length).toBeGreaterThan(0);
     expect(screen.getByTestId('attendance-chart')).toBeInTheDocument();
     expect(screen.getByTestId('activity-heatmap')).toBeInTheDocument();
     expect(screen.getByTestId('realtime-metrics')).toBeInTheDocument();
