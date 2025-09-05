@@ -49,16 +49,16 @@ describe('useToastNotifications Hook', () => {
         { wrapper }
       );
 
-      expect(mockSubscribeToNotifications).toHaveBeenCalledWith(
+      expect(mockRealtimeManager.subscribeToNotifications).toHaveBeenCalledWith(
         'user-123',
         expect.any(Function)
       );
-      expect(mockSubscribeToAttendance).toHaveBeenCalledWith(
+      expect(mockRealtimeManager.subscribeToAttendance).toHaveBeenCalledWith(
         'org-456',
         expect.any(Function),
         { debounceMs: 300 }
       );
-      expect(mockSubscribeToApprovals).toHaveBeenCalledWith(
+      expect(mockRealtimeManager.subscribeToApprovals).toHaveBeenCalledWith(
         'org-456',
         expect.any(Function),
         { debounceMs: 300 }
