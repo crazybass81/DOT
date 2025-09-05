@@ -3,7 +3,7 @@
  */
 
 import { createMocks } from 'node-mocks-http';
-import { RoleType } from '../../src/types/auth';
+import { RoleType } from '../../src/types/multi-role';
 
 // Supabase 클라이언트 모킹
 const mockSupabaseClient = {
