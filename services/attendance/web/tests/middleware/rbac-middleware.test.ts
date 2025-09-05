@@ -98,8 +98,10 @@ describe('RBAC 미들웨어', () => {
     test('토큰이 없으면 401 반환', async () => {
       const requestWithoutToken = {
         ...mockRequest,
-        headers: new Headers()
-      } as NextRequest;
+        headers: {
+          get: jest.fn(() => null)
+        }
+      };
 
       const response = await rbacMiddleware(requestWithoutToken);
 
