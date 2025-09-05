@@ -79,21 +79,11 @@ describe('WebSocketServer', () => {
       const userId = 'test-user-1';
       const organizationId = 'test-org-1';
 
-      socketServer.on('connection', (socket) => {
-        socket.on('authenticate', (authData) => {
-          expect(authData.userId).toBe(userId);
-          expect(authData.organizationId).toBe(organizationId);
-          
-          // 사용자별 채널 참여
-          socket.join(`user:${userId}`);
-          socket.join(`org:${organizationId}`);
-          
-          socket.emit('authenticated', { 
-            success: true, 
-            channels: [`user:${userId}`, `org:${organizationId}`]
-          });
-          done();
-        });
+      clientSocket.on('authenticated', (response) => {
+        expect(response.success).toBe(true);
+        expect(response.channels).toContain(`user:${userId}`);
+        expect(response.channels).toContain(`org:${organizationId}`);
+        done();
       });
 
       clientSocket.emit('authenticate', { userId, organizationId });
