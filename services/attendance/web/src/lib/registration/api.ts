@@ -609,19 +609,21 @@ export class RegistrationAPI {
         .insert({
           employee_id: employee.id,
           organization_id: organization.id,
+          contract_type: 'PERMANENT',
           start_date: new Date().toISOString().split('T')[0],
-          status: 'ACTIVE',
+          is_active: true,
+          position: data.employment.position,
           wage: parseFloat(data.employment.wageAmount),
           wage_type: data.employment.wageType.toUpperCase(),
-          terms: {
-            position: data.employment.position,
+          metadata: {
             work_start_time: data.employment.workStartTime,
             work_end_time: data.employment.workEndTime,
             work_days: data.employment.workDays,
             lunch_break_minutes: parseInt(data.employment.lunchBreak),
-            annual_leave_days: parseInt(data.employment.annualLeave)
-          },
-          is_teen: false
+            annual_leave_days: parseInt(data.employment.annualLeave),
+            auto_generated: true,
+            role: 'founder'
+          }
         })
 
       return { success: true }
