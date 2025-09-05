@@ -19,7 +19,7 @@ interface EnhancedNotificationSystemProps {
 }
 
 /**
- * Enhanced notification system that combines both Toast notifications and legacy NotificationSystem
+ * Enhanced notification system that combines Toast notifications, NotificationCenter, and legacy NotificationSystem
  * Provides seamless WebSocket integration and backward compatibility
  */
 export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProps> = ({
@@ -30,6 +30,8 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
   enableSounds = true,
   enableRealtimeIntegration = true,
   enableLegacyNotifications = false,
+  enableNotificationCenter = true,
+  onNotificationCenterClick,
   className
 }) => {
   return (
@@ -44,6 +46,16 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
         enableSounds={enableSounds}
         enableRealtimeIntegration={enableRealtimeIntegration}
       />
+      
+      {/* Modern notification center */}
+      {enableNotificationCenter && userId && (
+        <NotificationCenter
+          userId={userId}
+          organizationId={organizationId}
+          onNotificationClick={onNotificationCenterClick}
+          className={className}
+        />
+      )}
       
       {/* Legacy notification system if needed */}
       {enableLegacyNotifications && (
