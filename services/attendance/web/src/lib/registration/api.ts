@@ -593,16 +593,14 @@ export class RegistrationAPI {
         })
         .eq('id', employee.id)
 
-      // 4. user_roles 테이블에 ADMIN 역할 추가
+      // 4. user_roles 테이블에 owner 역할 추가
       await this.supabase
         .from('user_roles')
         .insert({
-          employee_id: employee.id,
+          user_id: user.id,
           organization_id: organization.id,
-          role_type: 'ADMIN',
-          is_active: true,
-          granted_at: new Date().toISOString(),
-          granted_by: employee.id
+          role: 'owner',
+          is_active: true
         })
 
       // 5. contracts 테이블에 근로계약 생성
