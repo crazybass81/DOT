@@ -200,12 +200,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   // Load notifications when component mounts or dropdown opens
   useEffect(() => {
-    if (userId) {
-      if (isOpen || notifications.length === 0) {
-        loadNotifications(true);
-      }
+    if (userId && (isOpen || notifications.length === 0)) {
+      const load = async () => {
+        await loadNotifications(true);
+      };
+      load();
     }
-  }, [userId, isOpen]);
+  }, [userId, isOpen, loadNotifications, notifications.length]);
 
   // Handle notification click
   const handleNotificationClick = async (notification: NotificationMessage) => {
