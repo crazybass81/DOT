@@ -124,19 +124,24 @@ export default function SignUpPage() {
       // 2. Create profile based on user type
       if (formData.userType === 'business') {
         // 사업자 등록 - organization 생성
-        const { data: org } = await supabaseAuthService.supabase
+        const { data: org, error: orgError } = await supabaseAuthService.supabase
           .from('organizations')
           .insert({
             name: formData.businessName,
+            biz_type: formData.businessType === 'corporation' ? 'CORP' : 'PERSONAL',
+            biz_number: formData.businessNumber,
             metadata: {
-              business_type: formData.businessType,
-              business_number: formData.businessNumber,
               representative_name: formData.representativeName,
               business_address: formData.businessAddress
             }
           })
           .select()
           .single();
+
+        if (orgError) {
+          console.error('Organization creation error:', orgError);
+          throw new Error('조직 생성 중 오류가 발생했습니다.');
+        }
 
         // Employee 레코드 생성 (owner 역할)
         await supabaseAuthService.supabase
