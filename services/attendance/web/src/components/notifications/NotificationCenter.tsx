@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, AlertCircle, CheckCircle, Clock, Settings, Users, Megaphone } from 'lucide-react';
 import { notificationManager, NotificationMessage, NotificationType, NotificationPriority } from '@/lib/notification-manager';
+import { useNotificationBatch } from '@/hooks/useNotificationBatch';
 
 // Notification Center Props
 interface NotificationCenterProps {
@@ -152,11 +153,19 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [readNotifications, setReadNotifications] = useState<Set<string>>(new Set());
-  const [pendingReads, setPendingReads] = useState<Set<string>>(new Set());
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLButtonElement>(null);
-  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 배치 처리 훅 사용
+  const {
+    markAsRead: batchMarkAsRead,
+    markAllAsRead: batchMarkAllAsRead,
+    pendingReads,
+    isProcessing
+  } = useNotificationBatch(userId, organizationId, {
+    delay: batchProcessingDelay,
+  });
 
   // Load notifications
   const loadNotifications = useCallback(async (reset = false) => {
@@ -242,42 +251,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   }, [userId, organizationId, maxNotifications]);
 
-  // 배치 처리를 위한 디바운스 함수
-  const processBatchReads = useCallback(() => {
-    if (pendingReads.size === 0) return;
-
-    const idsToProcess = Array.from(pendingReads);
-    setPendingReads(new Set());
-
-    // 배치 처리 또는 단일 처리 결정
-    if (idsToProcess.length > 1) {
-      // 여러 개인 경우 배치 처리
-      notificationManager.markMultipleAsRead(idsToProcess, userId)
-        .catch((err) => {
-          console.error('Failed to batch mark notifications as read:', err);
-          // 실패한 경우 로컬 상태 복원
-          setReadNotifications(prev => {
-            const newSet = new Set(prev);
-            idsToProcess.forEach(id => newSet.delete(id));
-            return newSet;
-          });
-          setUnreadCount(prev => prev + idsToProcess.length);
-        });
-    } else if (idsToProcess.length === 1) {
-      // 단일 처리
-      notificationManager.markAsRead(idsToProcess[0], userId)
-        .catch((err) => {
-          console.error('Failed to mark notification as read:', err);
-          // 실패한 경우 로컬 상태 복원
-          setReadNotifications(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(idsToProcess[0]);
-            return newSet;
-          });
-          setUnreadCount(prev => prev + 1);
-        });
-    }
-  }, [pendingReads, userId]);
 
   // Handle notification click with batching
   const handleNotificationClick = async (notification: NotificationMessage) => {
@@ -286,18 +259,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       setReadNotifications(prev => new Set([...prev, notification.id!]));
       setUnreadCount(prev => Math.max(0, prev - 1));
       
-      // 배치 처리를 위해 대기열에 추가
-      setPendingReads(prev => new Set([...prev, notification.id!]));
-      
-      // 기존 타이머 클리어
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-      }
-      
-      // 새 타이머 설정
-      batchTimeoutRef.current = setTimeout(() => {
-        processBatchReads();
-      }, batchProcessingDelay);
+      // 배치 처리 시작
+      batchMarkAsRead(notification.id!);
     }
 
     // Call the provided callback
@@ -323,23 +286,23 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       });
       setUnreadCount(0);
 
-      // 서버에서 처리
-      const result = await notificationManager.markAllAsRead(userId, organizationId);
-      
-      if (!result.success) {
-        console.error('Failed to mark all notifications as read:', result.error);
-        // 실패한 경우 상태 복원
-        setReadNotifications(prev => {
-          const newSet = new Set(prev);
-          unreadNotificationIds.forEach(id => newSet.delete(id));
-          return newSet;
-        });
-        // 원래 카운트 복원
-        const originalUnreadCount = notifications.filter(n => !n.readAt).length;
-        setUnreadCount(originalUnreadCount);
-      }
+      // 배치 처리로 서버에 전송
+      await batchMarkAllAsRead();
     } catch (error) {
       console.error('Error marking all as read:', error);
+      // 실패한 경우 상태 복원
+      const unreadNotificationIds = notifications
+        .filter(n => !n.readAt)
+        .map(n => n.id!);
+        
+      setReadNotifications(prev => {
+        const newSet = new Set(prev);
+        unreadNotificationIds.forEach(id => newSet.delete(id));
+        return newSet;
+      });
+      // 원래 카운트 복원
+      const originalUnreadCount = notifications.filter(n => !n.readAt).length;
+      setUnreadCount(originalUnreadCount);
     }
   };
 
@@ -405,19 +368,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     loadNotifications(true);
   };
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // Calculate unread count for display
   const displayUnreadCount = unreadCount;
   const hasUnreadNotifications = displayUnreadCount > 0;
   const canMarkAllAsRead = notifications.some(n => !n.readAt && !readNotifications.has(n.id!));
+  const isMarkAllReadDisabled = !canMarkAllAsRead || isProcessing;
 
   return (
     <div className={`relative ${className}`}>
@@ -469,10 +424,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 <button
                   data-testid="mark-all-read-button"
                   onClick={handleMarkAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                  disabled={!canMarkAllAsRead}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isMarkAllReadDisabled}
                 >
-                  모두 읽음
+                  {isProcessing ? '처리중...' : '모두 읽음'}
                 </button>
               )}
             </div>
