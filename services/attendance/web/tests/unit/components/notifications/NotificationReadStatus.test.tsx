@@ -87,14 +87,21 @@ describe('NotificationCenter - 읽음/안읽음 상태 관리', () => {
         />
       );
 
+      // 컴포넌트가 로드되고 알림이 렌더링될 때까지 기다리기
+      await waitFor(() => {
+        const badge = screen.queryByTestId('notification-badge');
+        expect(badge).toBeInTheDocument();
+        expect(badge).toHaveTextContent('2');
+      });
+
       // 알림 센터 열기
       const bellButton = screen.getByTestId('notification-bell');
       await user.click(bellButton);
 
-      // 읽지 않은 알림 찾기
+      // 읽지 않은 알림 찾기 (로딩 완료 후)
       await waitFor(() => {
         expect(screen.getByTestId('notification-item-notif-1')).toBeInTheDocument();
-      });
+      }, { timeout: 3000 });
 
       const unreadNotification = screen.getByTestId('notification-item-notif-1');
       
