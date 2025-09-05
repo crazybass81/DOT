@@ -355,37 +355,30 @@ export class SupabaseAuthService {
    */
   private async mapSupabaseUserToUser(supabaseUser: SupabaseUser): Promise<User | null> {
     try {
+      // 기본 사용자 정보만 사용 (employees 테이블 조회 제거)
       const baseUser: User = {
         id: supabaseUser.id,
         email: supabaseUser.email!,
-        name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0]
+        name: supabaseUser.user_metadata?.full_name || 
+              supabaseUser.user_metadata?.name || 
+              supabaseUser.email?.split('@')[0] || 
+              '사용자',
+        role: 'EMPLOYEE' // 기본 역할
       };
 
-      // Try to get employee data - user_id 컬럼 사용
-      try {
-        const { data: employee, error } = await supabase
-          .from('employees')
-          .select('*')
-          .eq('user_id', supabaseUser.id)
-          .single();
-
-        if (!error && employee) {
-          baseUser.role = employee.position || 'EMPLOYEE';
-          baseUser.employee = employee;
-          baseUser.name = employee.name || baseUser.name;
-        }
-      } catch (empError) {
-        // employees 테이블 조회 실패는 무시
-        console.log('Employee data not found or table error');
-      }
-
+      // employees 테이블 조회 완전히 제거 (500 에러 방지)
+      console.log('User mapped successfully:', baseUser.email);
+      
       return baseUser;
     } catch (error) {
       console.error('Error mapping Supabase user:', error);
       return {
         id: supabaseUser.id,
         email: supabaseUser.email!,
-        name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0]
+        name: supabaseUser.user_metadata?.full_name || 
+              supabaseUser.user_metadata?.name || 
+              supabaseUser.email?.split('@')[0] || 
+              '사용자'
       };
     }
   }
