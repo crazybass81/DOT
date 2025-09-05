@@ -71,39 +71,74 @@ When executing ANY task or command, Claude MUST:
 
 ## Project Overview
 
-This is a JavaScript/TypeScript project optimized for modern web development. The project uses industry-standard tools and follows best practices for scalable application development.
+DOT is a comprehensive business platform for restaurant digital transformation, built as a microservices-based monorepo. The platform provides integrated solutions for attendance management, marketing automation, and scheduling.
+
+## Architecture
+
+### Monorepo Structure
+- **services/**: Independent microservices (attendance, marketing, scheduler)
+- **packages/**: Shared libraries (shared, ui, utils, context-manager)
+- **infrastructure/**: AWS CDK deployment configurations
+- **docker/**: Local development environment setup
+- **monitoring/**: Prometheus/Grafana monitoring stack
+
+### Services Overview
+- **Attendance Service** (Port 3002): GPS-based attendance with web dashboard + Flutter mobile app
+- **Marketing Service** (Port 3003): YouTube creator marketing automation platform
+- **Scheduler Service**: Employee scheduling and shift management (in planning)
 
 ## Development Commands
 
-### Package Management
-- `npm install` or `yarn install` - Install dependencies
-- `npm ci` or `yarn install --frozen-lockfile` - Install dependencies for CI/CD
-- `npm update` or `yarn upgrade` - Update dependencies
+### Workspace Management
+- `npm install` - Install root dependencies and setup workspaces
+- `npm run install:all` - Install all workspace dependencies
+- `npm run clean` - Clean all build artifacts and node_modules
 
-### Build Commands
-- `npm run build` - Build the project for production
-- `npm run dev` or `npm start` - Start development server
-- `npm run preview` - Preview production build locally
+### Service Development
+- `npm run dev` - Start all services in development mode
+- `npm run dev:attendance:web` - Start attendance web service (port 3002)
+- `npm run dev:attendance:mobile` - Start Flutter mobile app development
+- `npm run dev:marketing` - Start marketing service (port 3003)
 
-### Testing Commands
-- `npm test` or `npm run test` - Run all tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
-- `npm run test:unit` - Run unit tests only
-- `npm run test:integration` - Run integration tests only
-- `npm run test:e2e` - Run end-to-end tests
+### Build & Test
+- `npm run build` - Build all services for production
+- `npm run build:attendance` - Build attendance service only
+- `npm run build:marketing` - Build marketing service only
+- `npm run test` - Run all tests across services
+- `npm run lint` - Run linting across all services
 
-### Code Quality Commands
-- `npm run lint` - Run ESLint for code linting
-- `npm run lint:fix` - Run ESLint with auto-fix
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
-- `npm run typecheck` - Run TypeScript type checking
+### Service-Specific Commands
 
-### Development Tools
-- `npm run storybook` - Start Storybook (if available)
-- `npm run analyze` - Analyze bundle size
-- `npm run clean` - Clean build artifacts
+#### Attendance Service
+```bash
+cd services/attendance/web
+npm run dev              # Web dashboard (port 3002)
+npm run test:unit        # Unit tests
+npm run test:integration # Integration tests with Supabase
+npm run test:rls         # Row Level Security tests
+npm run test:workflow    # Full workflow tests
+npm run deploy           # Deploy to production
+
+cd services/attendance/mobile
+flutter pub get          # Install Flutter dependencies
+flutter run              # Run mobile app
+flutter test             # Run Flutter tests
+flutter build web       # Build for web deployment
+```
+
+#### Marketing Service
+```bash
+cd services/marketing
+npm run dev              # Development server (port 3003)
+npm run setup:aws        # Setup AWS Parameter Store
+npm run load:env         # Load environment from AWS
+npm run test:coverage    # Run tests with coverage
+```
+
+### Infrastructure & DevOps
+- `docker-compose up -d --profile dev` - Start local development environment
+- `docker-compose up -d --profile monitoring` - Start monitoring stack
+- `./scripts/setup-hybrid-database.sh` - Setup hybrid database architecture
 
 ## Technology Stack
 
