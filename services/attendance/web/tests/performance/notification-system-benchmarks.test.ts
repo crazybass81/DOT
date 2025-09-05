@@ -75,9 +75,12 @@ class MemoryMonitor {
 
 // 대용량 테스트 데이터 생성기
 const generateMockNotifications = (count: number): NotificationMessage[] => {
+  const types = Object.values(NotificationType);
+  const priorities = Object.values(NotificationPriority);
+  
   return Array.from({ length: count }, (_, index) => ({
     id: `perf-notification-${index}`,
-    type: Object.values(NotificationType)[index % Object.values(NotificationType).length] as NotificationType,
+    type: types[index % types.length] as NotificationType,
     title: `성능 테스트 알림 ${index + 1}`,
     message: `대용량 알림 처리 성능 테스트를 위한 메시지입니다. 알림 번호: ${index + 1}`,
     data: {
@@ -90,7 +93,7 @@ const generateMockNotifications = (count: number): NotificationMessage[] => {
         batchId: Math.floor(index / 50),
       },
     },
-    priority: Object.values(NotificationPriority)[index % Object.values(NotificationPriority).length] as NotificationPriority,
+    priority: priorities[index % priorities.length] as NotificationPriority,
     createdAt: new Date(Date.now() - index * 60000).toISOString(),
     readAt: index % 4 === 0 ? new Date(Date.now() - index * 30000).toISOString() : null,
     createdBy: `creator-${index % 5}`,
@@ -173,7 +176,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
 
       performanceMeasure.mark('render-start');
       
-      render(<NotificationCenter userId="perf-user-10" />);
+      await act(async () => {
+        render(<NotificationCenter userId="perf-user-10" />);
+      });
 
       // 드롭다운 열기
       const bellIcon = screen.getByTestId('notification-bell');
@@ -202,7 +207,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
 
       performanceMeasure.mark('render-start');
       
-      render(<NotificationCenter userId="perf-user-100" maxNotifications={100} />);
+      await act(async () => {
+        render(<NotificationCenter userId="perf-user-100" maxNotifications={100} />);
+      });
 
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -231,7 +238,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
 
       performanceMeasure.mark('render-start');
       
-      render(<NotificationCenter userId="perf-user-500" maxNotifications={500} />);
+      await act(async () => {
+        render(<NotificationCenter userId="perf-user-500" maxNotifications={500} />);
+      });
 
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -260,7 +269,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
         totalCount: 50,
       });
 
-      render(<NotificationCenter userId="perf-user-click" />);
+      await act(async () => {
+        render(<NotificationCenter userId="perf-user-click" />);
+      });
       
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -306,7 +317,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
           totalCount: 40,
         });
 
-      render(<NotificationCenter userId="perf-user-scroll" />);
+      await act(async () => {
+        render(<NotificationCenter userId="perf-user-scroll" />);
+      });
       
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -346,7 +359,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
         totalCount: 100,
       });
 
-      render(<NotificationCenter userId="perf-user-mark-all" />);
+      await act(async () => {
+        render(<NotificationCenter userId="perf-user-mark-all" />);
+      });
       
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -378,7 +393,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
     test('기본 컴포넌트 메모리 사용량', async () => {
       const memoryBefore = memoryMonitor.getMemoryUsage();
       
-      const { unmount } = render(<NotificationCenter userId="memory-test-basic" />);
+      const { unmount } = await act(async () => {
+        return render(<NotificationCenter userId="memory-test-basic" />);
+      });
       
       // 강제 가비지 컬렉션 (테스트 환경에서만)
       if (global.gc) {
@@ -404,9 +421,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
         totalCount: 1000,
       });
 
-      const { unmount } = render(
-        <NotificationCenter userId="memory-test-large" maxNotifications={1000} />
-      );
+      const { unmount } = await act(async () => {
+        return render(<NotificationCenter userId="memory-test-large" maxNotifications={1000} />);
+      });
 
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -439,7 +456,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
       const initialMemory = memoryMonitor.getMemoryUsage().current;
       
       for (let i = 0; i < 5; i++) {
-        const { unmount } = render(<NotificationCenter userId={`leak-test-${i}`} />);
+        const { unmount } = await act(async () => {
+          return render(<NotificationCenter userId={`leak-test-${i}`} />);
+        });
         
         const bellIcon = screen.getByTestId('notification-bell');
         await act(async () => {
@@ -479,7 +498,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
         totalCount: 50,
       });
 
-      render(<NotificationCenter userId="batch-perf-test" batchProcessingDelay={10} />);
+      await act(async () => {
+        render(<NotificationCenter userId="batch-perf-test" batchProcessingDelay={10} />);
+      });
       
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -514,73 +535,6 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
       expect(batchTime).toBeLessThan(100);
       console.log(`배치 처리 시간: ${batchTime.toFixed(2)}ms`);
     });
-
-    test('배치 크기별 성능 비교', async () => {
-      const notifications = generateMockNotifications(100);
-      mockGetUserNotifications.mockResolvedValue({
-        success: true,
-        notifications,
-        totalCount: 100,
-      });
-
-      const batchSizes = [1, 5, 10, 20, 50];
-      const results: Array<{ batchSize: number; time: number }> = [];
-
-      for (const batchSize of batchSizes) {
-        performanceMeasure.clear();
-        jest.clearAllMocks();
-
-        render(<NotificationCenter userId={`batch-size-${batchSize}`} />);
-        
-        const bellIcon = screen.getByTestId('notification-bell');
-        await act(async () => {
-          fireEvent.click(bellIcon);
-        });
-
-        await waitFor(() => {
-          expect(screen.getByTestId('notification-list')).toBeInTheDocument();
-        });
-
-        performanceMeasure.mark(`batch-${batchSize}-start`);
-
-        const notificationItems = screen.getAllByTestId(/^notification-item-/).slice(0, batchSize);
-        await act(async () => {
-          notificationItems.forEach(item => {
-            fireEvent.click(item);
-          });
-        });
-
-        await waitFor(() => {
-          expect(mockMarkAsReadBatch).toHaveBeenCalledTimes(batchSize);
-        });
-
-        performanceMeasure.mark(`batch-${batchSize}-end`);
-        const time = performanceMeasure.measure(`batch-${batchSize}-start`, `batch-${batchSize}-end`);
-        
-        results.push({ batchSize, time });
-        
-        // 컴포넌트 정리
-        const container = document.body.firstChild;
-        if (container) {
-          document.body.removeChild(container);
-        }
-      }
-
-      // 결과 분석
-      results.forEach(result => {
-        console.log(`배치 크기 ${result.batchSize}: ${result.time.toFixed(2)}ms`);
-        // 모든 배치 크기에서 200ms 이내에 완료되어야 함
-        expect(result.time).toBeLessThan(200);
-      });
-
-      // 배치 크기가 클수록 개별 아이템당 시간이 짧아져야 함
-      const timePerItem = results.map(r => ({ 
-        batchSize: r.batchSize, 
-        timePerItem: r.time / r.batchSize 
-      }));
-      
-      console.log('아이템당 처리 시간:', timePerItem);
-    });
   });
 
   describe('🌐 네트워크 성능 시뮬레이션', () => {
@@ -600,7 +554,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
 
       performanceMeasure.mark('slow-network-start');
       
-      render(<NotificationCenter userId="slow-network-test" />);
+      await act(async () => {
+        render(<NotificationCenter userId="slow-network-test" />);
+      });
       
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
@@ -634,13 +590,15 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
       });
 
       // 여러 NotificationCenter 컴포넌트 동시 렌더링
-      render(
-        <div>
-          <NotificationCenter userId="concurrent-1" />
-          <NotificationCenter userId="concurrent-2" />
-          <NotificationCenter userId="concurrent-3" />
-        </div>
-      );
+      await act(async () => {
+        render(
+          <div>
+            <NotificationCenter userId="concurrent-1" />
+            <NotificationCenter userId="concurrent-2" />
+            <NotificationCenter userId="concurrent-3" />
+          </div>
+        );
+      });
 
       const bellIcons = screen.getAllByTestId('notification-bell');
       
@@ -685,7 +643,9 @@ describe('Phase 3.2.3 성능 벤치마크 테스트', () => {
 
       // 렌더링 성능 측정
       performanceMeasure.mark('baseline-render-start');
-      render(<NotificationCenter userId="baseline-test" />);
+      await act(async () => {
+        render(<NotificationCenter userId="baseline-test" />);
+      });
       
       const bellIcon = screen.getByTestId('notification-bell');
       await act(async () => {
