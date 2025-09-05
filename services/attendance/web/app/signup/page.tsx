@@ -201,7 +201,8 @@ export default function SignUpPage() {
           throw new Error('직원 정보 생성 중 오류가 발생했습니다.');
         }
 
-        // 워커 대시보드로 이동
+        // 자동 로그인 후 대시보드로 이동
+        await supabaseAuthService.signIn(formData.email, formData.password);
         router.push('/worker-dashboard');
       }
     } catch (err: any) {
