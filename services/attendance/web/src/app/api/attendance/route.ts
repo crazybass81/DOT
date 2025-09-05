@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withRBAC } from '@/middleware/rbac-middleware';
-import { RoleType } from '@/types/auth';
+import { RoleType } from '@/types/multi-role';
 
 /**
  * 출근 기록 조회 API
