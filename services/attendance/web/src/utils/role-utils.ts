@@ -9,7 +9,7 @@ import {
   ContractStatus,
   RolePermissions,
   DashboardInfo
-} from '@/types/multi-role';
+} from '../types/multi-role';
 
 /**
  * 사용자가 특정 역할을 가지고 있는지 확인
