@@ -180,10 +180,7 @@ export const ToastManager: React.FC<ToastManagerProps> = ({
         <Toast 
           key={toast.id} 
           toast={toast} 
-          onRemove={(id) => {
-            // Find removeToast method from context - will be implemented
-            toastContext.clearAll(); // Temporary fallback
-          }}
+          onRemove={toastContext.removeToast}
         />
       ))}
     </div>
@@ -291,6 +288,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
     showWarning,
     showInfo,
     showNotification,
+    removeToast,
     clearAll,
     getToasts
   };
