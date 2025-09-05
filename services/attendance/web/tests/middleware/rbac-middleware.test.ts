@@ -54,9 +54,12 @@ describe('RBAC 미들웨어', () => {
     mockRequest = {
       url: 'http://localhost:3000/api/test',
       method: 'GET',
-      headers: new Headers({
-        'authorization': 'Bearer test-token'
-      }),
+      headers: {
+        get: jest.fn((key) => {
+          if (key === 'authorization') return 'Bearer test-token';
+          return null;
+        })
+      }
     };
 
     mockUser = {
