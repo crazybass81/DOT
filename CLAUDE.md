@@ -113,10 +113,17 @@ DOT is a comprehensive business platform for restaurant digital transformation, 
 ```bash
 cd services/attendance/web
 npm run dev              # Web dashboard (port 3002)
-npm run test:unit        # Unit tests
+npm run dev:clean        # Clean dev server with cache clear
+npm run test             # Run all tests
+npm run test:unit        # Unit tests only
 npm run test:integration # Integration tests with Supabase
 npm run test:rls         # Row Level Security tests
+npm run test:master-admin # Master admin functionality tests
 npm run test:workflow    # Full workflow tests
+npm run test:security    # Security-related tests
+npm run test:performance # Performance tests
+npm run setup:test-user  # Setup test user for development
+npm run test:auth        # Test authentication flow
 npm run deploy           # Deploy to production
 
 cd services/attendance/mobile
@@ -132,7 +139,9 @@ cd services/marketing
 npm run dev              # Development server (port 3003)
 npm run setup:aws        # Setup AWS Parameter Store
 npm run load:env         # Load environment from AWS
-npm run test:coverage    # Run tests with coverage
+npm run test             # Run all tests
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Run tests with coverage report
 ```
 
 ### Infrastructure & DevOps
