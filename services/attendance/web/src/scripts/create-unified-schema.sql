@@ -130,7 +130,7 @@ CREATE TABLE attendance_records (
     -- Attendance Timing
     check_in_time TIMESTAMP WITH TIME ZONE,
     check_out_time TIMESTAMP WITH TIME ZONE,
-    work_date DATE GENERATED ALWAYS AS ((COALESCE(check_in_time, check_out_time))::date) STORED,
+    work_date DATE,
     
     -- Location Tracking
     check_in_location JSONB, -- {lat: number, lng: number, address?: string}
