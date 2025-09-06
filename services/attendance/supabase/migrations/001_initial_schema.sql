@@ -533,6 +533,9 @@ CREATE TRIGGER update_shifts_updated_at BEFORE UPDATE ON shifts
 CREATE TRIGGER update_attendance_updated_at BEFORE UPDATE ON attendance
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_breaks_updated_at BEFORE UPDATE ON breaks
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_role_templates_updated_at BEFORE UPDATE ON role_templates
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
