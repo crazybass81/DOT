@@ -384,32 +384,42 @@ describe('🟢 Green Phase: 보안 및 권한 테스트', () => {
 
 // Mock implementations for testing - Green Phase: 실제 컴포넌트 사용
 
-// Mock React Query for testing
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(() => ({
-    data: { auditLogs: [], total: 0, page: 1, pageSize: 20 },
+// Mock the hooks to avoid React Query dependency issues
+jest.mock('@/hooks/useOrganizationStatusMutation', () => ({
+  useChangeOrganizationStatus: jest.fn(() => ({
+    mutate: jest.fn(),
+    isLoading: false,
+    error: null
+  })),
+  useBulkChangeOrganizationStatus: jest.fn(() => ({
+    mutate: jest.fn(),
     isLoading: false,
     error: null,
-    refetch: jest.fn()
+    data: undefined
   })),
-  useMutation: jest.fn(() => ({
+  useUndoOrganizationStatusChange: jest.fn(() => ({
     mutate: jest.fn(),
-    mutateAsync: jest.fn(),
-    isPending: false,
-    isError: false,
-    error: null,
-    data: undefined,
-    reset: jest.fn()
+    isLoading: false,
+    error: null
   })),
-  useQueryClient: jest.fn(() => ({
-    invalidateQueries: jest.fn()
-  }))
+  statusChangeUtils: {
+    getStatusDisplayInfo: (status: any) => ({
+      label: status === 'ACTIVE' ? '활성' : '비활성',
+      color: 'bg-green-100 text-green-800',
+      icon: '✅'
+    }),
+    canChangeToStatus: () => true,
+    isValidStatusChange: () => true,
+    getStatusChangeWarning: () => null
+  }
 }));
 
-// Mock fetch for API calls
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({ success: true }),
-  })
-) as jest.Mock;
+// Mock React Query's useQuery
+jest.mock('@/components/master-admin/OrganizationAuditLog', () => ({
+  OrganizationAuditLog: ({ organizationId }: { organizationId: string }) => (
+    <div>
+      <h3>변경 이력</h3>
+      <p>조직 상태 변경 및 관련 작업 이력</p>
+    </div>
+  )
+}));
