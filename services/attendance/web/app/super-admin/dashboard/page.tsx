@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { cognitoAuthService } from '@/services/cognitoAuthService';
+import { unifiedAuthService } from '@/services/unifiedAuthService';
 import { userService } from '@/services/userService';
 
 interface BusinessStats {
@@ -42,7 +42,7 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     // Check super admin authentication
-    if (!cognitoAuthService.isAuthenticated()) {
+    if (!await unifiedAuthService.isAuthenticated()) {
       router.push('/login');
       return;
     }
