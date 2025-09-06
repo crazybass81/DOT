@@ -1,143 +1,79 @@
 /**
- * Unified Type System for DOT Attendance Service
- * Phase 1: Consolidation of all identity, organization, and role types
+ * Unified Types for Identity and Organization Management
+ * Common types used across the unified identity system
  */
 
 // =====================================================
-// Core Identity System
+// Core Identity Types
 // =====================================================
 
 export type IdType = 
-  | 'personal'          // 개인 (기본 신원)
-  | 'business_owner'    // 개인사업자
-  | 'corporation'       // 법인
-  | 'franchise_hq'      // 프랜차이즈 본사
-  | 'franchise_store'   // 프랜차이즈 가맹점
+  | 'personal'           // 개인
+  | 'business_owner'     // 사업자
+  | 'corporation'        // 법인
+  | 'franchise_hq'       // 프랜차이즈 본사
 
 export type UnifiedRole = 
-  | 'master'            // 시스템 관리자
-  | 'admin'            // 사업장 관리자
-  | 'manager'          // 매니저
-  | 'worker'           // 일반 직원
+  | 'master'           // 마스터 관리자 (시스템 전체)
+  | 'admin'            // 사업자/관리자 (조직 내)
+  | 'manager'          // 매니저 (부서/팀 관리)
+  | 'worker'           // 워커 (일반 직원)
   | 'franchise_admin'  // 프랜차이즈 본사 관리자
 
-export type BusinessStatus = 
-  | 'unverified'
-  | 'pending'
-  | 'verified'
-  | 'suspended'
-  | 'rejected'
-
-export type ContractStatus = 
-  | 'draft'
-  | 'pending_approval'
-  | 'active'
-  | 'suspended'
-  | 'terminated'
-  | 'expired'
-
-export type EmploymentType = 
-  | 'permanent'
-  | 'fixed_term'
-  | 'part_time'
-  | 'internship'
-
-export type SalaryType = 
-  | 'hourly'
-  | 'daily'
-  | 'monthly'
-  | 'annual'
+export type OrgType = 
+  | 'personal'         // 개인사업자
+  | 'business_owner'   // 사업자
+  | 'corporation'      // 법인
+  | 'franchise_hq'     // 프랜차이즈 본사
+  | 'franchise_store'  // 프랜차이즈 매장
 
 // =====================================================
-// Core Data Interfaces
+// Identity Interface
 // =====================================================
 
-export interface UnifiedIdentity {
+export interface Identity {
   id: string
-  
-  // Core identity (immutable)
   email: string
-  phone: string
+  phone?: string
   fullName: string
-  birthDate: string
-  
-  // Identity type and verification
+  birthDate?: string
   idType: IdType
-  isVerified: boolean
-  verifiedAt?: Date
-  verificationMethod?: string
-  
-  // Computed fields
-  age: number
-  isTeen: boolean
-  
-  // Teen-specific data
-  parentConsentData?: ParentConsentData
-  parentVerifiedAt?: Date
-  
-  // Supabase auth integration
+  idNumber?: string
+  businessVerificationStatus: 'pending' | 'verified' | 'rejected'
+  businessVerificationData: Record<string, any>
   authUserId?: string
-  
-  // Business-specific data (for business owners)
-  businessNumber?: string
-  businessName?: string
-  businessVerificationStatus: BusinessStatus
-  businessVerifiedAt?: Date
-  businessVerificationData?: Record<string, any>
-  
-  // Status
+  profileData: Record<string, any>
+  isVerified: boolean
   isActive: boolean
-  
-  // Timestamps
   createdAt: Date
   updatedAt: Date
 }
 
-export interface ParentConsentData {
-  parentName: string
-  parentPhone: string
-  consentedAt: Date
-  consentDocument?: string
-  verificationMethod?: string
-}
+// =====================================================
+// Organization Interface
+// =====================================================
 
 export interface Organization {
   id: string
   code: string
-  
-  // Basic information
   name: string
   displayName?: string
   description?: string
   logoUrl?: string
-  
-  // Organization type and hierarchy
-  orgType: IdType
+  orgType: OrgType
   parentOrgId?: string
-  
-  // Ownership
   ownerIdentityId: string
-  
-  // Business registration
   businessRegistration: Record<string, any>
-  businessVerificationStatus: BusinessStatus
-  
-  // Settings and limits
+  businessVerificationStatus: string
   settings: OrganizationSettings
-  maxEmployees: number
-  maxLocations: number
-  
-  // Subscription and billing
-  subscriptionTier: string
+  maxEmployees?: number
+  maxLocations?: number
+  subscriptionTier?: string
   subscriptionExpiresAt?: Date
   billingData: Record<string, any>
-  
-  // Status
   isActive: boolean
   suspendedAt?: Date
   suspensionReason?: string
-  
-  // Timestamps
   createdAt: Date
   updatedAt: Date
 }
@@ -149,11 +85,11 @@ export interface OrganizationSettings {
   }
   overtimePolicy: {
     enabled: boolean
-    threshold: number // minutes
+    threshold: number
   }
   gpsTracking: {
     enabled: boolean
-    radius: number // meters
+    radius: number
   }
   approvalRequired: boolean
   notifications: {
@@ -161,135 +97,49 @@ export interface OrganizationSettings {
     push: boolean
     sms: boolean
   }
-  customFields?: Record<string, any>
-}
-
-export interface RoleAssignment {
-  id: string
-  
-  // Identity and organization
-  identityId: string
-  organizationId?: string // null for master role
-  
-  // Role definition
-  role: UnifiedRole
-  isActive: boolean
-  isPrimary: boolean // Primary role for login
-  
-  // Permissions
-  customPermissions: Record<string, any>
-  accessRestrictions: Record<string, any>
-  
-  // Assignment tracking
-  assignedAt: Date
-  assignedBy?: string
-  revokedAt?: Date
-  revokedBy?: string
-  revocationReason?: string
-  
-  // Metadata
-  metadata: Record<string, any>
-}
-
-export interface EmploymentContract {
-  id: string
-  contractNumber: string
-  
-  // Parties
-  employeeId: string
-  employerOrgId: string
-  
-  // Position details
-  positionTitle: string
-  department?: string
-  reportingManagerId?: string
-  
-  // Employment terms
-  employmentType: EmploymentType
-  startDate: string
-  endDate?: string // null for permanent
-  probationPeriodMonths: number
-  
-  // Compensation
-  salaryType: SalaryType
-  salaryAmount: number
-  currency: string
-  
-  // Working conditions
-  weeklyWorkHours: number
-  workSchedule: WorkSchedule
-  breakMinutes: number
-  
-  // Contract status
-  status: ContractStatus
-  
-  // Signature and approval
-  employeeSignedAt?: Date
-  employerSignedAt?: Date
-  approvedBy?: string
-  approvedAt?: Date
-  
-  // Teen employment compliance
-  teenWorkPermitData?: TeenWorkPermitData
-  parentGuardianConsent?: ParentConsentData
-  
-  // Document management
-  contractDocuments: ContractDocument[]
-  
-  // Termination data
-  terminatedAt?: Date
-  terminationReason?: string
-  terminationType?: 'voluntary' | 'involuntary' | 'mutual' | 'expiry'
-  
-  // Timestamps
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface WorkSchedule {
-  days: number[] // 1=Monday, 7=Sunday
-  start: string // HH:mm format
-  end: string // HH:mm format
-  flexibleHours?: boolean
-  shiftPattern?: 'fixed' | 'rotating' | 'flexible'
-}
-
-export interface TeenWorkPermitData {
-  permitNumber: string
-  issuedAt: Date
-  expiresAt: Date
-  issuingAuthority: string
-  restrictions: string[]
-  parentalConsent: boolean
-}
-
-export interface ContractDocument {
-  id: string
-  type: 'contract' | 'signature' | 'permit' | 'consent' | 'other'
-  filename: string
-  url: string
-  uploadedAt: Date
-  uploadedBy: string
 }
 
 // =====================================================
-// API Request/Response Types
+// Role Assignment Interface
+// =====================================================
+
+export interface RoleAssignment {
+  id: string
+  identityId: string
+  organizationId?: string
+  role: UnifiedRole
+  isActive: boolean
+  isPrimary: boolean
+  customPermissions: Record<string, any>
+  accessRestrictions: Record<string, any>
+  assignedAt: Date
+  assignedBy: string
+  revokedAt?: Date
+  revokedBy?: string
+  revocationReason?: string
+  metadata: Record<string, any>
+}
+
+// =====================================================
+// Request/Response Types
 // =====================================================
 
 export interface CreateIdentityRequest {
   email: string
-  phone: string
+  phone?: string
   fullName: string
-  birthDate: string
+  birthDate?: string
   idType: IdType
-  businessNumber?: string
-  businessName?: string
+  idNumber?: string
+  businessData?: Record<string, any>
+  authUserId?: string
+  profileData?: Record<string, any>
 }
 
 export interface CreateIdentityResponse {
   success: boolean
-  identity?: UnifiedIdentity
-  requiresVerification: boolean
+  identity?: Identity
+  requiresVerification?: boolean
   verificationMethod?: string
   error?: string
 }
@@ -297,10 +147,11 @@ export interface CreateIdentityResponse {
 export interface CreateOrganizationRequest {
   name: string
   displayName?: string
-  orgType: IdType
+  orgType: OrgType
   ownerIdentityId: string
   businessNumber?: string
   settings?: Partial<OrganizationSettings>
+  parentOrgId?: string
 }
 
 export interface CreateOrganizationResponse {
@@ -324,247 +175,255 @@ export interface AssignRoleResponse {
   error?: string
 }
 
-export interface CreateContractRequest {
-  employeeId: string
-  employerOrgId: string
-  positionTitle: string
-  department?: string
-  employmentType: EmploymentType
-  startDate: string
-  endDate?: string
-  salaryType: SalaryType
-  salaryAmount: number
-  weeklyWorkHours: number
-  workSchedule: WorkSchedule
-}
-
-export interface CreateContractResponse {
-  success: boolean
-  contract?: EmploymentContract
-  contractNumber?: string
-  requiresParentConsent: boolean
-  error?: string
-}
-
 // =====================================================
-// Permission System
-// =====================================================
-
-export interface Permission {
-  resource: string
-  action: string
-  conditions?: Record<string, any>
-}
-
-export interface RolePermissions {
-  [key: string]: Permission[]
-}
-
-export const DEFAULT_PERMISSIONS: RolePermissions = {
-  master: [
-    { resource: '*', action: '*' } // Full system access
-  ],
-  admin: [
-    { resource: 'organization', action: 'read' },
-    { resource: 'organization', action: 'update' },
-    { resource: 'employees', action: '*' },
-    { resource: 'attendance', action: '*' },
-    { resource: 'contracts', action: '*' },
-    { resource: 'reports', action: 'generate' }
-  ],
-  manager: [
-    { resource: 'organization', action: 'read' },
-    { resource: 'employees', action: 'read' },
-    { resource: 'employees', action: 'update', conditions: { managedOnly: true } },
-    { resource: 'attendance', action: 'read' },
-    { resource: 'attendance', action: 'approve' },
-    { resource: 'contracts', action: 'read', conditions: { managedOnly: true } }
-  ],
-  worker: [
-    { resource: 'profile', action: 'read' },
-    { resource: 'profile', action: 'update' },
-    { resource: 'attendance', action: 'read', conditions: { selfOnly: true } },
-    { resource: 'attendance', action: 'create', conditions: { selfOnly: true } },
-    { resource: 'contracts', action: 'read', conditions: { selfOnly: true } }
-  ],
-  franchise_admin: [
-    { resource: 'franchise', action: '*' },
-    { resource: 'franchise_stores', action: '*' },
-    { resource: 'reports', action: 'generate', conditions: { franchiseOnly: true } }
-  ]
-}
-
-// =====================================================
-// Validation Schemas
+// Validation Patterns
 // =====================================================
 
 export const VALIDATION_PATTERNS = {
-  email: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-  phone: /^[0-9-+\s]+$/,
-  businessNumber: /^\d{3}-\d{2}-\d{5}$/, // Korean business registration number
-  orgCode: /^[A-Z0-9]{8,12}$/
-} as const
-
-export interface ValidationRule {
-  field: string
-  rule: 'required' | 'pattern' | 'minLength' | 'maxLength' | 'custom'
-  value?: any
-  message: string
+  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  phone: /^010-?\d{4}-?\d{4}$/,
+  businessNumber: /^\d{3}-?\d{2}-?\d{5}$/,
+  corporateNumber: /^\d{6}-?\d{7}$/
 }
 
-export const IDENTITY_VALIDATION_RULES: ValidationRule[] = [
-  { field: 'email', rule: 'required', message: 'Email is required' },
-  { field: 'email', rule: 'pattern', value: VALIDATION_PATTERNS.email, message: 'Invalid email format' },
-  { field: 'phone', rule: 'required', message: 'Phone is required' },
-  { field: 'phone', rule: 'pattern', value: VALIDATION_PATTERNS.phone, message: 'Invalid phone format' },
-  { field: 'fullName', rule: 'required', message: 'Full name is required' },
-  { field: 'fullName', rule: 'minLength', value: 2, message: 'Name must be at least 2 characters' },
-  { field: 'birthDate', rule: 'required', message: 'Birth date is required' }
-]
+// =====================================================
+// Error Codes
+// =====================================================
+
+export const ERROR_CODES = {
+  // Validation Errors
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  INVALID_EMAIL: 'INVALID_EMAIL',
+  INVALID_PHONE: 'INVALID_PHONE',
+  INVALID_BUSINESS_NUMBER: 'INVALID_BUSINESS_NUMBER',
+  
+  // Identity Errors
+  IDENTITY_NOT_FOUND: 'IDENTITY_NOT_FOUND',
+  IDENTITY_ALREADY_EXISTS: 'IDENTITY_ALREADY_EXISTS',
+  IDENTITY_NOT_VERIFIED: 'IDENTITY_NOT_VERIFIED',
+  
+  // Organization Errors
+  ORGANIZATION_NOT_FOUND: 'ORGANIZATION_NOT_FOUND',
+  ORGANIZATION_NAME_EXISTS: 'ORGANIZATION_NAME_EXISTS',
+  INVALID_ORGANIZATION_TYPE: 'INVALID_ORGANIZATION_TYPE',
+  INVALID_OWNERSHIP_RULES: 'INVALID_OWNERSHIP_RULES',
+  
+  // Role Errors
+  ROLE_ALREADY_ASSIGNED: 'ROLE_ALREADY_ASSIGNED',
+  INVALID_ROLE_ASSIGNMENT: 'INVALID_ROLE_ASSIGNMENT',
+  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
+  
+  // System Errors
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  DATABASE_ERROR: 'DATABASE_ERROR',
+  AUTHENTICATION_ERROR: 'AUTHENTICATION_ERROR'
+}
 
 // =====================================================
 // Utility Functions
 // =====================================================
 
-export function calculateAge(birthDate: string): number {
-  const birth = new Date(birthDate)
-  const today = new Date()
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
-  }
-  
-  return age
-}
-
-export function isTeen(birthDate: string): boolean {
-  const age = calculateAge(birthDate)
-  return age >= 15 && age < 18
-}
-
+/**
+ * Generate unique organization code
+ */
 export function generateOrgCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
-  for (let i = 0; i < 12; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  for (let i = 0; i < 4; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length))
   }
   return result
 }
 
-export function validateBusinessOwnership(identity: UnifiedIdentity, org: Organization): boolean {
-  if (org.orgType === 'business_owner' || org.orgType === 'corporation') {
-    return (
-      identity.id === org.ownerIdentityId &&
-      identity.idType === org.orgType &&
-      identity.businessVerificationStatus === 'verified'
-    )
+/**
+ * Validate business ownership rules
+ */
+export function validateBusinessOwnership(ownerType: IdType, orgType: OrgType): boolean {
+  switch (orgType) {
+    case 'personal':
+      return true // Personal orgs can be owned by anyone
+    case 'business_owner':
+      return ownerType === 'business_owner'
+    case 'corporation':
+      return ownerType === 'corporation'
+    case 'franchise_hq':
+      return ownerType === 'business_owner' || ownerType === 'corporation'
+    case 'franchise_store':
+      return true // Franchise stores can be owned by various types
+    default:
+      return false
+  }
+}
+
+/**
+ * Validate franchise hierarchy
+ */
+export function validateFranchiseHierarchy(parentOrgType: OrgType, childOrgType: OrgType): boolean {
+  if (childOrgType === 'franchise_store') {
+    return parentOrgType === 'franchise_hq'
   }
   return true
 }
 
-export function validateFranchiseHierarchy(parentOrg: Organization, childOrg: Organization): boolean {
-  if (childOrg.orgType === 'franchise_store') {
-    return parentOrg.orgType === 'franchise_hq'
+/**
+ * Get role hierarchy level (higher number = more permissions)
+ */
+export function getRoleLevel(role: UnifiedRole): number {
+  switch (role) {
+    case 'master': return 100
+    case 'franchise_admin': return 80
+    case 'admin': return 60
+    case 'manager': return 40
+    case 'worker': return 20
+    default: return 0
   }
-  return true
 }
 
-export function validateTeenEmployment(identity: UnifiedIdentity, contract: EmploymentContract): string[] {
-  const errors: string[] = []
+/**
+ * Check if role can assign another role
+ */
+export function canAssignRole(assignerRole: UnifiedRole, targetRole: UnifiedRole): boolean {
+  const assignerLevel = getRoleLevel(assignerRole)
+  const targetLevel = getRoleLevel(targetRole)
   
-  if (!isTeen(identity.birthDate)) {
-    return errors
-  }
+  // Master can assign any role
+  if (assignerRole === 'master') return true
   
-  // Check work hours
-  if (contract.weeklyWorkHours > 35) {
-    errors.push('Teen workers cannot work more than 35 hours per week')
-  }
-  
-  // Check parent consent
-  if (!contract.parentGuardianConsent) {
-    errors.push('Teen workers require parent/guardian consent')
-  }
-  
-  // Check work permit
-  if (!contract.teenWorkPermitData) {
-    errors.push('Teen workers require work permit data')
-  }
-  
-  return errors
+  // Can only assign roles at lower level
+  return assignerLevel > targetLevel
 }
 
-export function hasPermission(
-  roleAssignments: RoleAssignment[], 
-  resource: string, 
-  action: string
-): boolean {
-  for (const assignment of roleAssignments) {
-    if (!assignment.isActive) continue
-    
-    const permissions = DEFAULT_PERMISSIONS[assignment.role] || []
-    
-    for (const permission of permissions) {
-      if (permission.resource === '*' && permission.action === '*') {
-        return true
-      }
-      
-      if (permission.resource === resource || permission.resource === '*') {
-        if (permission.action === action || permission.action === '*') {
-          return true
-        }
-      }
-    }
+/**
+ * Get default permissions for role
+ */
+export function getDefaultPermissions(role: UnifiedRole): Record<string, boolean> {
+  const basePermissions = {
+    read_profile: true,
+    update_profile: true,
+    read_attendance: false,
+    create_attendance: false,
+    update_attendance: false,
+    delete_attendance: false,
+    read_reports: false,
+    create_reports: false,
+    manage_users: false,
+    manage_organization: false,
+    system_admin: false
   }
-  
-  return false
+
+  switch (role) {
+    case 'master':
+      return {
+        ...basePermissions,
+        read_attendance: true,
+        create_attendance: true,
+        update_attendance: true,
+        delete_attendance: true,
+        read_reports: true,
+        create_reports: true,
+        manage_users: true,
+        manage_organization: true,
+        system_admin: true
+      }
+    
+    case 'franchise_admin':
+    case 'admin':
+      return {
+        ...basePermissions,
+        read_attendance: true,
+        create_attendance: true,
+        update_attendance: true,
+        delete_attendance: true,
+        read_reports: true,
+        create_reports: true,
+        manage_users: true,
+        manage_organization: true
+      }
+    
+    case 'manager':
+      return {
+        ...basePermissions,
+        read_attendance: true,
+        create_attendance: true,
+        update_attendance: true,
+        read_reports: true,
+        create_reports: true,
+        manage_users: true
+      }
+    
+    case 'worker':
+      return {
+        ...basePermissions,
+        read_attendance: true,
+        create_attendance: true
+      }
+    
+    default:
+      return basePermissions
+  }
 }
 
 // =====================================================
 // Type Guards
 // =====================================================
 
-export function isBusinessIdentity(identity: UnifiedIdentity): boolean {
-  return identity.idType === 'business_owner' || identity.idType === 'corporation'
+export function isBusinessIdentity(idType: IdType): boolean {
+  return ['business_owner', 'corporation', 'franchise_hq'].includes(idType)
 }
 
-export function isFranchiseOrganization(organization: Organization): boolean {
-  return organization.orgType === 'franchise_hq' || organization.orgType === 'franchise_store'
+export function isPersonalIdentity(idType: IdType): boolean {
+  return idType === 'personal'
 }
 
-export function isActiveContract(contract: EmploymentContract): boolean {
-  return contract.status === 'active' && 
-         (!contract.endDate || new Date(contract.endDate) > new Date())
+export function isFranchiseOrganization(orgType: OrgType): boolean {
+  return ['franchise_hq', 'franchise_store'].includes(orgType)
 }
 
-export function requiresParentConsent(identity: UnifiedIdentity): boolean {
-  return isTeen(identity.birthDate)
+export function isBusinessOrganization(orgType: OrgType): boolean {
+  return ['business_owner', 'corporation'].includes(orgType)
+}
+
+export function requiresVerification(idType: IdType): boolean {
+  return isBusinessIdentity(idType)
 }
 
 // =====================================================
-// Constants
+// API Response Types
 // =====================================================
 
-export const SYSTEM_CONSTANTS = {
-  MIN_AGE: 15,
-  ADULT_AGE: 18,
-  TEEN_MAX_WORK_HOURS: 35,
-  DEFAULT_WORK_HOURS: 40,
-  DEFAULT_BREAK_MINUTES: 60,
-  DEFAULT_PROBATION_MONTHS: 3,
-  MAX_ORG_CODE_LENGTH: 12,
-  MIN_ORG_CODE_LENGTH: 8
-} as const
+export interface ApiResponse<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+  code?: string
+}
 
-export const ERROR_CODES = {
-  INVALID_IDENTITY_TYPE: 'INVALID_IDENTITY_TYPE',
-  BUSINESS_VERIFICATION_REQUIRED: 'BUSINESS_VERIFICATION_REQUIRED',
-  PARENT_CONSENT_REQUIRED: 'PARENT_CONSENT_REQUIRED',
-  INVALID_FRANCHISE_HIERARCHY: 'INVALID_FRANCHISE_HIERARCHY',
-  TEEN_WORK_HOURS_EXCEEDED: 'TEEN_WORK_HOURS_EXCEEDED',
-  WORK_PERMIT_REQUIRED: 'WORK_PERMIT_REQUIRED',
-  DUPLICATE_ADMIN_ROLE: 'DUPLICATE_ADMIN_ROLE',
-  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS'
-} as const
+export interface PaginatedResponse<T = any> extends ApiResponse<T[]> {
+  pagination?: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+// =====================================================
+// Auth Integration Types
+// =====================================================
+
+export interface AuthUser {
+  id: string
+  email: string
+  name?: string
+  role?: UnifiedRole
+  identityId?: string
+  organizationId?: string
+  permissions?: Record<string, boolean>
+}
+
+export interface AuthSession {
+  user: AuthUser
+  accessToken: string
+  refreshToken?: string
+  expiresAt: Date
+}
