@@ -382,33 +382,34 @@ describe('🟢 Green Phase: 보안 및 권한 테스트', () => {
   });
 });
 
-// Mock implementations for testing (이후 Green Phase에서 실제 구현으로 대체)
-jest.mock('@/components/master-admin/OrganizationStatusToggle', () => ({
-  OrganizationStatusToggle: () => {
-    throw new Error('OrganizationStatusToggle component not implemented yet');
-  }
+// Mock implementations for testing - Green Phase: 실제 컴포넌트 사용
+
+// Mock React Query for testing
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: jest.fn(() => ({
+    data: { auditLogs: [], total: 0, page: 1, pageSize: 20 },
+    isLoading: false,
+    error: null,
+    refetch: jest.fn()
+  })),
+  useMutation: jest.fn(() => ({
+    mutate: jest.fn(),
+    mutateAsync: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    data: undefined,
+    reset: jest.fn()
+  })),
+  useQueryClient: jest.fn(() => ({
+    invalidateQueries: jest.fn()
+  }))
 }));
 
-jest.mock('@/components/master-admin/BulkStatusActions', () => ({
-  BulkStatusActions: () => {
-    throw new Error('BulkStatusActions component not implemented yet');
-  }
-}));
-
-jest.mock('@/components/master-admin/StatusChangeConfirmDialog', () => ({
-  StatusChangeConfirmDialog: () => {
-    throw new Error('StatusChangeConfirmDialog component not implemented yet');
-  }
-}));
-
-jest.mock('@/components/master-admin/OrganizationAuditLog', () => ({
-  OrganizationAuditLog: () => {
-    throw new Error('OrganizationAuditLog component not implemented yet');
-  }
-}));
-
-jest.mock('@/hooks/useOrganizationStatusMutation', () => ({
-  useOrganizationStatusMutation: () => {
-    throw new Error('useOrganizationStatusMutation hook not implemented yet');
-  }
-}));
+// Mock fetch for API calls
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({ success: true }),
+  })
+) as jest.Mock;
