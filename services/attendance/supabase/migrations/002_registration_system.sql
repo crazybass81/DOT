@@ -408,6 +408,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to compute teen status
+CREATE OR REPLACE FUNCTION update_teen_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.is_teen := (
+        NEW.birth_date > CURRENT_DATE - INTERVAL '18 years' AND
+        NEW.birth_date <= CURRENT_DATE - INTERVAL '15 years'
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Function to validate teen work restrictions
 CREATE OR REPLACE FUNCTION check_teen_work_restrictions()
 RETURNS TRIGGER AS $$
