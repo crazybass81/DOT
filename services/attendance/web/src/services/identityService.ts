@@ -87,18 +87,18 @@ export class IdentityService {
    */
   async getById(id: string): Promise<Identity | null> {
     try {
-      const { data, error } = await this.supabase
+      const response = await this.supabase
         .from('unified_identities')
         .select('*')
         .eq('id', id)
         .eq('is_active', true)
-        .single()
+        .maybeSingle()
 
-      if (error || !data) {
+      if (!response || response.error || !response.data) {
         return null
       }
 
-      return this.mapToIdentity(data)
+      return this.mapToIdentity(response.data)
     } catch (error) {
       console.error('Error getting identity by ID:', error)
       return null
