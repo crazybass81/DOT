@@ -175,129 +175,105 @@ export async function GET(request: NextRequest) {
  * - 자신의 출근 기록만 생성 가능
  */
 export async function POST(request: NextRequest) {
-  return withRBAC(
-    async (request: NextRequest, user: any) => {
-      const supabase = createClient();
-
-      try {
-        const body = await request.json();
-        const {
-          organization_id,
-          check_in_time,
-          location_lat,
-          location_lng,
-          location_address,
-          notes
-        } = body;
-
-        // 필수 필드 검증
-        if (!organization_id) {
-          return NextResponse.json(
-            { error: '조직 ID는 필수입니다.' },
-            { status: 400 }
-          );
-        }
-
-        // 해당 조직에서 활성 역할 확인
-        const { data: userRole, error: roleError } = await supabase
-          .from('user_roles')
-          .select('id, role, hourly_wage, start_date, end_date')
-          .eq('user_id', user.id)
-          .eq('organization_id', organization_id)
-          .eq('is_active', true)
-          .single();
-
-        if (roleError || !userRole) {
-          return NextResponse.json(
-            { error: '해당 조직에서 활성 역할이 없습니다.' },
-            { status: 403 }
-          );
-        }
-
-        // 시간 기반 역할 유효성 검증
-        const now = new Date();
-        const startDate = userRole.start_date ? new Date(userRole.start_date) : null;
-        const endDate = userRole.end_date ? new Date(userRole.end_date) : null;
-
-        if (startDate && now < startDate) {
-          return NextResponse.json(
-            { error: '역할 시작일이 아직 도래하지 않았습니다.' },
-            { status: 403 }
-          );
-        }
-
-        if (endDate && now > endDate) {
-          return NextResponse.json(
-            { error: '역할 종료일이 지났습니다.' },
-            { status: 403 }
-          );
-        }
-
-        // 당일 이미 출근한 기록이 있는지 확인
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const { data: existingAttendance } = await supabase
-          .from('attendance')
-          .select('id, check_out_time')
-          .eq('user_id', user.id)
-          .eq('organization_id', organization_id)
-          .gte('check_in_time', today.toISOString())
-          .lt('check_in_time', tomorrow.toISOString())
-          .single();
-
-        if (existingAttendance && !existingAttendance.check_out_time) {
-          return NextResponse.json(
-            { error: '이미 출근한 상태입니다. 먼저 퇴근 처리를 해주세요.' },
-            { status: 409 }
-          );
-        }
-
-        const checkInTime = check_in_time || new Date().toISOString();
-
-        const { data: newAttendance, error } = await supabase
-          .from('attendance')
-          .insert({
-            user_id: user.id,
-            organization_id,
-            check_in_time: checkInTime,
-            location_lat,
-            location_lng,
-            location_address,
-            notes,
-            status: 'checked_in'
-          })
-          .select(`
-            *,
-            users (id, name, email),
-            organizations (id, name, type)
-          `)
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        return NextResponse.json(
-          { attendance: newAttendance },
-          { status: 201 }
-        );
-      } catch (error) {
-        console.error('출근 체크인 중 오류 발생:', error);
-        return NextResponse.json(
-          { error: '출근 체크인 중 오류가 발생했습니다.' },
-          { status: 500 }
-        );
-      }
-    },
-    {
-      requiredRoles: [RoleType.WORKER, RoleType.ADMIN, RoleType.MANAGER, RoleType.FRANCHISE],
-      action: 'write',
-      enableAuditLog: true
+  try {
+    const supabase = createClient();
+    
+    // Get current authenticated user
+    const currentUser = await supabaseAuthService.getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
     }
-  )(request);
+
+    const body = await request.json();
+    const {
+      business_id,
+      check_in_time,
+      location,
+      verification_method = 'gps',
+      notes
+    } = body;
+
+    // 필수 필드 검증
+    if (!business_id) {
+      return NextResponse.json(
+        { error: '조직 ID는 필수입니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 해당 조직에서 활성 역할 확인
+    const userRoles = await organizationService.getUserRoles(currentUser.id);
+    const hasRoleInOrg = userRoles.some(role => 
+      role.organizationId === business_id && role.isActive
+    );
+
+    if (!hasRoleInOrg) {
+      return NextResponse.json(
+        { error: '해당 조직에서 활성 역할이 없습니다.' },
+        { status: 403 }
+      );
+    }
+
+    // 당일 이미 출근한 기록이 있는지 확인
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const { data: existingAttendance } = await supabase
+      .from('attendance_records')
+      .select('id, check_out_time')
+      .eq('employee_id', currentUser.id)
+      .eq('business_id', business_id)
+      .gte('check_in_time', today.toISOString())
+      .lt('check_in_time', tomorrow.toISOString())
+      .maybeSingle();
+
+    if (existingAttendance && !existingAttendance.check_out_time) {
+      return NextResponse.json(
+        { error: '이미 출근한 상태입니다. 먼저 퇴근 처리를 해주세요.' },
+        { status: 409 }
+      );
+    }
+
+    const checkInTime = check_in_time || new Date().toISOString();
+
+    const { data: newAttendance, error } = await supabase
+      .from('attendance_records')
+      .insert({
+        employee_id: currentUser.id,
+        business_id,
+        check_in_time: checkInTime,
+        check_in_location: location,
+        verification_method,
+        notes,
+        status: 'active'
+      })
+      .select(`
+        *,
+        unified_identities:employee_id (id, full_name, email),
+        organizations_v3:business_id (id, name, type)
+      `)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json(
+      { attendance: newAttendance },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('출근 체크인 중 오류 발생:', error);
+    return NextResponse.json(
+      { error: '출근 체크인 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
+  }
 }
 
 /**
