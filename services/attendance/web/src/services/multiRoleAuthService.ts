@@ -150,25 +150,28 @@ export class MultiRoleAuthService {
   }
 
   /**
-   * 사용자의 모든 활성 역할 조회
+   * 사용자의 모든 활성 역할 조회 (통합 테이블 사용)
    */
   async getUserRoles(userId: string): Promise<UserRole[]> {
     try {
       const { data, error } = await supabase
-        .from('user_roles')
+        .from('role_assignments')
         .select(`
           id,
-          employee_id,
+          identity_id,
           organization_id,
-          role_type,
+          role,
           is_active,
-          granted_at,
-          granted_by,
-          organizations!inner(name)
+          assigned_at,
+          assigned_by,
+          employee_code,
+          department,
+          position,
+          organizations_v3!inner(name)
         `)
-        .eq('employees.user_id', userId)
+        .eq('identity_id', userId)
         .eq('is_active', true)
-        .order('granted_at', { ascending: false });
+        .order('assigned_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching user roles:', error);
@@ -177,13 +180,13 @@ export class MultiRoleAuthService {
 
       return (data || []).map(item => ({
         id: item.id,
-        employeeId: item.employee_id,
+        employeeId: item.identity_id, // Updated field mapping
         organizationId: item.organization_id,
-        roleType: item.role_type as RoleType,
+        roleType: item.role as RoleType,
         isActive: item.is_active,
-        grantedAt: new Date(item.granted_at),
-        grantedBy: item.granted_by,
-        organizationName: (item as any).organizations?.name || '알 수 없는 조직'
+        grantedAt: new Date(item.assigned_at),
+        grantedBy: item.assigned_by,
+        organizationName: (item as any).organizations_v3?.name || '알 수 없는 조직'
       }));
 
     } catch (error) {
