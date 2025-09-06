@@ -186,11 +186,17 @@ export default function QRDisplayPage() {
             <div className="mt-6 bg-blue-50 rounded-lg p-6">
               <h3 className="font-semibold text-blue-900 mb-2">사용 방법</h3>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• 직원들이 이 QR 코드를 스캔하여 출퇴근 기록</li>
+                <li>• 직원들이 <strong>모바일 기기</strong>에서 이 QR 코드를 스캔하여 출퇴근 기록</li>
                 <li>• 필요시 '새로고침' 버튼으로 QR 코드 재생성</li>
                 <li>• 사업장 입구에 인쇄하여 게시 가능</li>
                 <li>• 신규 직원은 QR 스캔 후 자동으로 등록 페이지로 이동</li>
               </ul>
+              
+              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800 font-medium">
+                  ⚠️ QR 스캔 기능은 모바일 전용입니다. 웹에서는 관리 기능만 제공됩니다.
+                </p>
+              </div>
             </div>
 
             {/* Security Notice */}
