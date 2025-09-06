@@ -141,6 +141,9 @@ export function useRealtimeConnections(options: UseRealtimeConnectionsOptions = 
       reconnection: false, // 수동으로 재연결 관리
     });
 
+    // 즉시 연결 시도 (for testing)
+    socket.connect();
+
     socket.on('connect', () => {
       console.log('WebSocket connected for monitoring');
       reconnectAttemptsRef.current = 0;
