@@ -432,88 +432,44 @@ export class RegistrationAPI {
     }
   }): Promise<{ success: boolean; error?: string }> {
     try {
-      const { data: { user } } = await this.supabase.auth.getUser()
+      const user = await supabaseAuthService.getCurrentUser()
       if (!user) {
         return { success: false, error: '로그인이 필요합니다' }
       }
 
-      // 1. 직원 정보 조회
-      const { data: employee } = await this.supabase
-        .from('employees')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      // 1. 법인 조직 생성
+      const orgResult = await organizationService.createOrganization({
+        name: data.business.corporationName,
+        business_type: 'CORP',
+        business_registration_number: data.business.businessNumber,
+        address: data.business.businessAddress,
+        founder_identity_id: user.id,
+        metadata: {
+          representative_name: data.business.representativeName,
+          establish_date: data.business.establishDate,
+          is_active: true
+        }
+      })
 
-      if (!employee) {
-        return { success: false, error: '직원 정보를 찾을 수 없습니다' }
-      }
-
-      // 2. 법인 조직 생성
-      const orgCode = Math.random().toString(36).substring(2, 10).toUpperCase()
-      const { data: organization, error: orgError } = await this.supabase
-        .from('organizations')
-        .insert({
-          name: data.business.corporationName,
-          metadata: {
-            code: orgCode,  // metadata에 저장
-            business_type: 'CORP',
-            business_number: data.business.businessNumber,
-            representative_name: data.business.representativeName,
-            establish_date: data.business.establishDate,
-            address: data.business.businessAddress,
-            founder_id: user.id,
-            is_active: true
-          }
-        })
-        .select()
-        .single()
-
-      if (orgError || !organization) {
-        console.error('Organization creation error:', orgError)
+      if (!orgResult.success) {
+        console.error('Organization creation error:', orgResult.error)
         return { success: false, error: '법인 생성 실패' }
       }
 
-      // 3. 직원 정보 업데이트 (ADMIN 역할로)
-      await this.supabase
-        .from('employees')
-        .update({
-          organization_id: organization.id,
-          position: 'owner'  // 법인 설립자는 owner
-        })
-        .eq('id', employee.id)
+      // 2. 설립자에게 admin 역할 할당
+      const roleResult = await organizationService.assignRole({
+        identityId: user.id,
+        organizationId: orgResult.organization!.id,
+        role: 'admin',
+        assignedBy: user.id
+      })
 
-      // 4. user_roles 테이블에 owner 역할 추가
-      await this.supabase
-        .from('user_roles')
-        .insert({
-          user_id: user.id,
-          organization_id: organization.id,
-          role: 'owner',
-          is_active: true
-        })
+      if (!roleResult.success) {
+        console.error('Role assignment error:', roleResult.error)
+      }
 
-      // 5. contracts 테이블에 근로계약 생성
-      await this.supabase
-        .from('contracts')
-        .insert({
-          employee_id: employee.id,
-          organization_id: organization.id,
-          contract_type: 'PERMANENT',
-          start_date: new Date().toISOString().split('T')[0],
-          is_active: true,
-          position: data.employment.position,
-          wage: parseFloat(data.employment.wageAmount),
-          wage_type: data.employment.wageType.toUpperCase(),
-          metadata: {
-            work_start_time: data.employment.workStartTime,
-            work_end_time: data.employment.workEndTime,
-            work_days: data.employment.workDays,
-            lunch_break_minutes: parseInt(data.employment.lunchBreak),
-            annual_leave_days: parseInt(data.employment.annualLeave),
-            auto_generated: true,
-            role: 'founder'
-          }
-        })
+      // 3. 근로계약 정보는 향후 contracts 시스템에서 처리
+      // (현재는 조직 생성과 역할 할당만 수행)
 
       return { success: true }
     } catch (error) {
