@@ -153,9 +153,10 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
   }
 
   Widget _buildCurrentStatusCard() {
-    // Mock current attendance status - in real app this would come from provider
+    // PLAN-1: 실제 attendance 상태 연동
+    final attendanceState = ref.watch(attendanceProvider);
     final now = DateTime.now();
-    final isCheckedIn = false; // This would come from actual state
+    final isCheckedIn = attendanceState.currentStatus != 'NOT_WORKING';
     final todayDate = DateFormat('EEEE, MMMM dd, yyyy').format(now);
     final currentTime = DateFormat('hh:mm a').format(now);
 
