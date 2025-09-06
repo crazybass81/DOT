@@ -9,6 +9,22 @@ global.Request = class MockRequest {
   }
 };
 
+global.NextRequest = class MockNextRequest {
+  constructor(url, options = {}) {
+    this.url = url;
+    this.method = options.method || 'GET';
+    this.headers = new Headers(options.headers || {});
+    this.nextUrl = new URL(url);
+    this.ip = options.ip || '127.0.0.1';
+    this.cookies = {
+      get: (name) => null,
+      getAll: () => [],
+      set: () => {},
+      delete: () => {}
+    };
+  }
+};
+
 global.Response = class MockResponse {
   constructor(body, options = {}) {
     this.body = body;
