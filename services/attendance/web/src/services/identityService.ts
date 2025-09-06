@@ -127,18 +127,18 @@ export class IdentityService {
    */
   async getByEmail(email: string): Promise<Identity | null> {
     try {
-      const { data, error } = await this.supabase
+      const response = await this.supabase
         .from('unified_identities')
         .select('*')
         .eq('email', email.toLowerCase())
         .eq('is_active', true)
-        .single()
+        .maybeSingle()
 
-      if (error || !data) {
+      if (!response || response.error || !response.data) {
         return null
       }
 
-      return this.mapToIdentity(data)
+      return this.mapToIdentity(response.data)
     } catch (error) {
       console.error('Error getting identity by email:', error)
       return null
