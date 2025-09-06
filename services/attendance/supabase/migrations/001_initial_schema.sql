@@ -281,6 +281,11 @@ CREATE INDEX idx_attendance_date ON attendance(date);
 CREATE INDEX idx_attendance_employee_date ON attendance(employee_id, date);
 CREATE INDEX idx_attendance_status ON attendance(status);
 
+-- Breaks indexes
+CREATE INDEX idx_breaks_attendance ON breaks(attendance_id);
+CREATE INDEX idx_breaks_status ON breaks(status);
+CREATE INDEX idx_breaks_start_time ON breaks(start_time);
+
 -- Audit logs indexes
 CREATE INDEX idx_audit_logs_user ON audit_logs(user_id);
 CREATE INDEX idx_audit_logs_organization ON audit_logs(organization_id);
