@@ -231,14 +231,19 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
   }
   
   Widget _buildQuickActions() {
+    // PLAN-1: 실제 출퇴근 상태에 따른 동적 버튼 처리
+    final attendanceState = ref.watch(attendanceProvider);
+    final canCheckIn = attendanceState.currentStatus == 'NOT_WORKING';
+    final canCheckOut = attendanceState.currentStatus == 'WORKING' || attendanceState.currentStatus == 'ON_BREAK';
+    
     return Row(
       children: [
         Expanded(
           child: NeoBrutalButton(
-            onPressed: () {
+            onPressed: canCheckIn ? () {
               // Handle check-in
               ref.read(attendanceProvider.notifier).checkIn();
-            },
+            } : null,
             backgroundColor: NeoBrutalTheme.success,
             foregroundColor: NeoBrutalTheme.white,
             child: const Column(
