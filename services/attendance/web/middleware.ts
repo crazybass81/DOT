@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { 
+  securityMiddleware, 
+  maskResponseMiddleware,
+  createSecurityHeaders,
+  securityHealthCheck,
+  createAPIMiddleware
+} from './src/middleware/security-middleware';
 
 // Protected routes that require authentication
 const protectedRoutes = [
@@ -29,11 +36,6 @@ const SQL_INJECTION_PATTERNS = [
   /\b(xp_|sp_|0x|exec|execute|declare|cast|convert)\b/gi,
   /(WAITFOR|DELAY|SLEEP|BENCHMARK)/gi,
 ];
-
-// Rate limiting configuration
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 100;
-const requestCounts = new Map<string, { count: number; resetTime: number }>();
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for') || 
