@@ -23,20 +23,17 @@ export interface AuthenticatedRequest extends NextRequest {
 export async function withAuth(
   handler: (request: AuthenticatedRequest) => Promise<NextResponse>,
   options: {
-    requireEmployeeId?: boolean;
-    requireOrganizationId?: boolean;
+    requireOrganization?: boolean;
     allowedRoles?: string[];
+    requiredPermissions?: string[];
   } = {}
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     try {
-      // Supabase 클라이언트 생성
-      const supabase = createRouteHandlerClient({ cookies });
+      // 통합 인증 시스템을 통한 사용자 확인
+      const user = await supabaseAuthService.getCurrentUser();
       
-      // 세션 확인
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      
-      if (authError || !session) {
+      if (!user) {
         return NextResponse.json(
           { 
             error: '인증이 필요합니다',
@@ -46,63 +43,56 @@ export async function withAuth(
         );
       }
 
-      // 사용자 프로필 정보 가져오기
-      const { data: profile, error: profileError } = await supabase
-        .from('employees')
-        .select('id, employee_id, organization_id, role, is_active')
-        .eq('user_id', session.user.id)
-        .single();
+      // 사용자 역할과 조직 정보 가져오기
+      const userRoles = await organizationService.getUserRoles(user.id);
+      const userOrganizations = await organizationService.getUserOrganizations(user.id);
 
-      if (profileError || !profile || !profile.is_active) {
-        return NextResponse.json(
-          { 
-            error: '유효하지 않은 사용자입니다',
-            code: 'INVALID_USER' 
-          }, 
-          { status: 403 }
-        );
-      }
-
-      // 필수 필드 검증
-      if (options.requireEmployeeId && !profile.employee_id) {
-        return NextResponse.json(
-          { 
-            error: '직원 정보가 필요합니다',
-            code: 'EMPLOYEE_ID_REQUIRED' 
-          }, 
-          { status: 400 }
-        );
-      }
-
-      if (options.requireOrganizationId && !profile.organization_id) {
+      // 조직 필요 여부 검증
+      if (options.requireOrganization && (!userOrganizations || userOrganizations.length === 0)) {
         return NextResponse.json(
           { 
             error: '조직 정보가 필요합니다',
-            code: 'ORGANIZATION_ID_REQUIRED' 
+            code: 'ORGANIZATION_REQUIRED' 
           }, 
           { status: 400 }
         );
       }
 
       // 역할 권한 검증
-      if (options.allowedRoles && !options.allowedRoles.includes(profile.role)) {
-        return NextResponse.json(
-          { 
-            error: '권한이 부족합니다',
-            code: 'INSUFFICIENT_PERMISSIONS' 
-          }, 
-          { status: 403 }
+      if (options.allowedRoles) {
+        const hasAllowedRole = userRoles.some(role => 
+          options.allowedRoles!.includes(role.role)
         );
+        
+        if (!hasAllowedRole) {
+          return NextResponse.json(
+            { 
+              error: '권한이 부족합니다',
+              code: 'INSUFFICIENT_PERMISSIONS' 
+            }, 
+            { status: 403 }
+          );
+        }
+      }
+
+      // 권한 검증 (향후 확장)
+      if (options.requiredPermissions) {
+        // TODO: 권한 체크 로직 구현
       }
 
       // 인증된 사용자 정보를 request에 추가
       const authenticatedRequest = request as AuthenticatedRequest;
       authenticatedRequest.user = {
-        id: session.user.id,
-        email: session.user.email!,
-        employeeId: profile.employee_id,
-        organizationId: profile.organization_id,
-        role: profile.role,
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        roles: userRoles,
+        organizations: userOrganizations,
+        hasRole: (role: string) => userRoles.some(r => r.role === role),
+        hasPermission: (permission: string) => {
+          // TODO: 권한 체크 로직 구현
+          return userRoles.some(r => ['admin', 'master'].includes(r.role));
+        }
       };
 
       // 핸들러 실행
