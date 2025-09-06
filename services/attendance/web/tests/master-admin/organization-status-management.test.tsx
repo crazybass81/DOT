@@ -184,7 +184,7 @@ describe('🟢 Green Phase: BulkStatusActions', () => {
   });
 });
 
-describe('🔴 Red Phase: StatusChangeConfirmDialog', () => {
+describe('🟢 Green Phase: StatusChangeConfirmDialog', () => {
   const mockStatusChangeData = {
     organizations: [mockOrganization],
     newStatus: OrganizationStatus.SUSPENDED,
