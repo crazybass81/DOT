@@ -149,10 +149,16 @@ export class SupabaseAuthService {
    */
   async signIn(email: string, password: string): Promise<User> {
     try {
-      const { data, error }: AuthResponse = await supabase.auth.signInWithPassword({
+      const result = await supabase.auth.signInWithPassword({
         email,
         password
       });
+
+      if (!result) {
+        throw new Error('No response from authentication service');
+      }
+
+      const { data, error } = result;
 
       if (error) {
         console.error('Sign in error:', error);
