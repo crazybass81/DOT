@@ -62,18 +62,20 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const clientIp = getClientIp(request);
   
-  // Apply SQL injection checks to API routes
+  // Apply comprehensive security middleware to API routes
   if (pathname.startsWith('/api/')) {
-    // Check rate limiting
-    if (!checkRateLimit(clientIp)) {
-      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Too many requests. Please try again later.' 
-        },
-        { status: 429 }
-      );
+    // Apply advanced rate limiting and DDoS protection
+    const securityResponse = await securityMiddleware(request, {
+      enableRateLimiting: true,
+      enablePIIMasking: true,
+      enableAuditLogging: true,
+      enableDDoSProtection: true,
+      skipPaths: ['/api/health', '/api/metrics'],
+      whitelistIPs: []
+    });
+    
+    if (securityResponse) {
+      return securityResponse;
     }
 
     // Check all URL parameters for SQL injection
