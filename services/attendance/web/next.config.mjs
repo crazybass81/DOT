@@ -4,6 +4,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  output: {
+    outputFileTracingRoot: __dirname
+  },
   // 모바일 GPS 접근을 위한 설정
   headers: async () => {
     return [
