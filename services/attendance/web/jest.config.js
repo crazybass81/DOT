@@ -9,6 +9,8 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    '^@/services/(.*)$': '<rootDir>/src/services/$1',
+    '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
   },
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   testMatch: [
