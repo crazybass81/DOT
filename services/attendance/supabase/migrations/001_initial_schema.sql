@@ -604,6 +604,7 @@ COMMENT ON TABLE organizations IS 'Multi-tenant organizations table';
 COMMENT ON TABLE users IS 'System users with role-based access';
 COMMENT ON TABLE employees IS 'Employee profiles linked to users';
 COMMENT ON TABLE attendance IS 'Daily attendance records';
+COMMENT ON TABLE breaks IS 'Break periods within attendance records';
 COMMENT ON TABLE shifts IS 'Work shift definitions';
 COMMENT ON TABLE locations IS 'Physical locations for attendance tracking';
 COMMENT ON TABLE permissions IS 'Role-based permission definitions';
