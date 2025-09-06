@@ -133,24 +133,29 @@ describe('🟢 Green Phase: OrganizationStatusToggle', () => {
   });
 });
 
-describe('🔴 Red Phase: BulkStatusActions', () => {
+describe('🟢 Green Phase: BulkStatusActions', () => {
   const mockSelectedOrganizations = [
     { ...mockOrganization, id: 'org-1' },
     { ...mockOrganization, id: 'org-2', status: OrganizationStatus.INACTIVE }
   ];
 
   test('선택된 조직들의 벌크 상태 변경 도구가 렌더링된다', () => {
-    expect(() => {
-      render(
-        <TestWrapper>
-          <BulkStatusActions
-            selectedOrganizations={mockSelectedOrganizations}
-            onBulkStatusChange={jest.fn()}
-            currentUser={mockMasterAdminUser}
-          />
-        </TestWrapper>
-      );
-    }).toThrow(); // 컴포넌트가 아직 존재하지 않음
+    render(
+      <TestWrapper>
+        <BulkStatusActions
+          selectedOrganizations={mockSelectedOrganizations}
+          onBulkStatusChange={jest.fn()}
+          currentUser={mockMasterAdminUser}
+        />
+      </TestWrapper>
+    );
+    
+    // 벌크 액션 버튼이 존재하는지 확인
+    const bulkActions = screen.getByTestId('bulk-status-actions');
+    expect(bulkActions).toBeInTheDocument();
+    
+    // 선택된 조직 수가 표시되는지 확인
+    expect(bulkActions).toHaveTextContent('2');
   });
 
   test('여러 조직의 상태를 동시에 변경할 수 있다', () => {
