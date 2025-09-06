@@ -204,67 +204,14 @@ export class MultiRoleAuthService {
   }
 
   /**
-   * 사용자의 모든 활성 계약 조회
+   * 사용자의 모든 활성 계약 조회 (현재 통합 스키마에 contracts 테이블 없음)
    */
   async getUserContracts(userId: string): Promise<Contract[]> {
-    try {
-      const { data, error } = await supabase
-        .from('contracts')
-        .select(`
-          id,
-          employee_id,
-          organization_id,
-          contract_type,
-          start_date,
-          end_date,
-          status,
-          wage_amount,
-          wage_type,
-          is_minor,
-          parent_consent_file,
-          terms,
-          metadata,
-          is_active,
-          created_at,
-          updated_at,
-          created_by,
-          organizations!inner(name)
-        `)
-        .eq('employees.user_id', userId)
-        .eq('is_active', true)
-        .in('status', ['ACTIVE', 'PENDING'])
-        .order('start_date', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching user contracts:', error);
-        return [];
-      }
-
-      return (data || []).map(item => ({
-        id: item.id,
-        employeeId: item.employee_id,
-        organizationId: item.organization_id,
-        contractType: item.contract_type,
-        startDate: new Date(item.start_date),
-        endDate: item.end_date ? new Date(item.end_date) : undefined,
-        status: item.status as ContractStatus,
-        wageAmount: item.wage_amount,
-        wageType: item.wage_type,
-        isMinor: item.is_minor,
-        parentConsentFile: item.parent_consent_file,
-        terms: item.terms,
-        metadata: item.metadata,
-        isActive: item.is_active,
-        createdAt: item.created_at ? new Date(item.created_at) : undefined,
-        updatedAt: item.updated_at ? new Date(item.updated_at) : undefined,
-        createdBy: item.created_by,
-        organizationName: (item as any).organizations?.name || '알 수 없는 조직'
-      }));
-
-    } catch (error) {
-      console.error('Error in getUserContracts:', error);
-      return [];
-    }
+    // TODO: 통합 스키마에 contracts 테이블이 없으므로 빈 배열 반환
+    // 필요시 별도의 contracts 테이블을 생성하거나 role_assignments로 통합
+    console.log('getUserContracts called for userId:', userId);
+    console.log('Contracts not implemented in unified schema yet - returning empty array');
+    return [];
   }
 
   /**
