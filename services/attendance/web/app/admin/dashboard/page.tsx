@@ -61,7 +61,7 @@ export default function AdminDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     await unifiedAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
