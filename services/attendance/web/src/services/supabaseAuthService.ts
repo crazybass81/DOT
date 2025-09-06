@@ -35,12 +35,20 @@ export class SupabaseAuthService {
    * Initialize auth state listener
    */
   private initializeAuthListener() {
-    supabase.auth.onAuthStateChange((event, session) => {
-      // Notify all registered callbacks
-      this.authStateChangeCallbacks.forEach(callback => {
-        callback(event, session);
-      });
-    });
+    try {
+      if (supabase?.auth?.onAuthStateChange && typeof supabase.auth.onAuthStateChange === 'function') {
+        supabase.auth.onAuthStateChange((event, session) => {
+          // Notify all registered callbacks
+          this.authStateChangeCallbacks.forEach(callback => {
+            callback(event, session);
+          });
+        });
+      } else {
+        console.log('⚠️ Auth state listener not available in current environment');
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize auth listener:', error);
+    }
   }
 
   /**
