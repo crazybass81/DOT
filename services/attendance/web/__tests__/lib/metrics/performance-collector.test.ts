@@ -74,7 +74,7 @@ describe('PerformanceCollector', () => {
 
   describe('Initialization', () => {
     test('should initialize with correct configuration', () => {
-      expect(collector.isEnabled()).toBe(true);
+      expect(collector.isEnabled()).toBe(false); // Not started yet
       expect(collector.getConfig()).toEqual(mockConfig);
     });
 
@@ -88,18 +88,21 @@ describe('PerformanceCollector', () => {
     });
 
     test('should start and stop correctly', () => {
-      const startSpy = jest.spyOn(collector, 'start');
-      const stopSpy = jest.spyOn(collector, 'stop');
-
+      expect(collector.isEnabled()).toBe(false);
+      
       collector.start();
-      expect(startSpy).toHaveBeenCalled();
+      expect(collector.isEnabled()).toBe(true);
 
       collector.stop();
-      expect(stopSpy).toHaveBeenCalled();
+      expect(collector.isEnabled()).toBe(false);
     });
   });
 
   describe('Metric Collection', () => {
+    beforeEach(() => {
+      collector.start();
+    });
+
     test('should collect API metrics', () => {
       const metric: ApiMetric = {
         requestId: 'req-001',
@@ -125,6 +128,7 @@ describe('PerformanceCollector', () => {
         ...mockConfig,
         samplingRate: 0.5, // 50% sampling
       });
+      sampledCollector.start();
 
       // Mock Math.random to control sampling
       const originalRandom = Math.random;
@@ -154,10 +158,7 @@ describe('PerformanceCollector', () => {
     });
 
     test('should not collect when disabled', () => {
-      const disabledCollector = new PerformanceCollector({
-        ...mockConfig,
-        enabled: false,
-      });
+      collector.stop(); // Disable
 
       const metric: ApiMetric = {
         requestId: 'req-001',
@@ -168,15 +169,17 @@ describe('PerformanceCollector', () => {
         timestamp: new Date(),
       };
 
-      disabledCollector.collectMetric(metric);
+      collector.collectMetric(metric);
 
-      const metrics = disabledCollector.getMetrics();
+      const metrics = collector.getMetrics();
       expect(metrics.overview.totalRequests).toBe(0);
     });
   });
 
   describe('Performance Metrics Calculation', () => {
     beforeEach(() => {
+      collector.start();
+      
       // Add test data
       const testMetrics: ApiMetric[] = [
         { requestId: 'req-1', method: 'GET', endpoint: '/api/users', statusCode: 200, responseTime: 100, timestamp: new Date() },
@@ -253,6 +256,10 @@ describe('PerformanceCollector', () => {
   });
 
   describe('Alert System', () => {
+    beforeEach(() => {
+      collector.start();
+    });
+
     test('should detect high response time alerts', async () => {
       const alertSpy = jest.spyOn(collector, 'checkThresholds');
       
@@ -350,6 +357,10 @@ describe('PerformanceCollector', () => {
   });
 
   describe('Real-time Updates', () => {
+    beforeEach(() => {
+      collector.start();
+    });
+
     test('should emit real-time updates when enabled', () => {
       collector.collectMetric({
         requestId: 'realtime-test',
@@ -392,6 +403,10 @@ describe('PerformanceCollector', () => {
   });
 
   describe('Time Series Data', () => {
+    beforeEach(() => {
+      collector.start();
+    });
+
     test('should generate time series data', () => {
       const now = new Date();
       
@@ -431,6 +446,7 @@ describe('PerformanceCollector', () => {
           cleanupInterval: 100,
         },
       });
+      memoryLimitedCollector.start();
 
       // Add more metrics than buffer size
       for (let i = 0; i < 20; i++) {
@@ -460,6 +476,7 @@ describe('PerformanceCollector', () => {
           cleanupInterval: 25, // 25ms cleanup interval
         },
       });
+      quickExpireCollector.start();
 
       quickExpireCollector.collectMetric({
         requestId: 'expire-test',
@@ -482,6 +499,10 @@ describe('PerformanceCollector', () => {
   });
 
   describe('Edge Cases and Error Handling', () => {
+    beforeEach(() => {
+      collector.start();
+    });
+
     test('should handle malformed metrics gracefully', () => {
       const invalidMetric = {
         requestId: 'invalid',
