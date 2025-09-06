@@ -1,5 +1,15 @@
 import '@testing-library/jest-dom';
 
+// Load environment variables from .env.local for real connection tests
+require('dotenv').config({ path: '.env.local' });
+
+// Set up test environment variables if not already set
+process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sanlpdXpldGNodGp1ZGJjZnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDg3MDUsImV4cCI6MjA3MjIyNDcwNX0.8s8-zrgnztjabvrVE32J2ZRCiH5bVrypyHBJjHNzfjQ';
+
+// Extend test timeout for real database operations
+jest.setTimeout(30000);
+
 // Next.js 환경 모킹
 global.Request = class MockRequest {
   constructor(url, options = {}) {
