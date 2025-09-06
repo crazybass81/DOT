@@ -98,34 +98,8 @@ export default function Home() {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">DOT 근태관리</h1>
-                <p className="text-xs text-gray-500">Smart Attendance System</p>
-              </div>
-            </div>
-            
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-gray-900">
-                {currentTime.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-              <p className="text-xs text-gray-500">
-                {currentTime.toLocaleTimeString('ko-KR')}
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Login Section */}
-      <main className="relative z-10 flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4">
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* Welcome Section */}
           <div className="text-center mb-8">
