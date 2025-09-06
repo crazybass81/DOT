@@ -444,6 +444,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create trigger for teen status calculation
+CREATE TRIGGER calculate_teen_status
+BEFORE INSERT OR UPDATE ON personal_accounts
+FOR EACH ROW
+EXECUTE FUNCTION update_teen_status();
+
 -- Create trigger for teen work restrictions
 CREATE TRIGGER enforce_teen_work_restrictions
 BEFORE INSERT OR UPDATE ON employment_contracts
