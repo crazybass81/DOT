@@ -3,7 +3,7 @@
  * Handles organization creation, hierarchy validation, and role assignments
  */
 
-import { createClient } from '../lib/supabase-config'
+import { supabase } from '../lib/supabase-config'
 import { 
   Organization, 
   RoleAssignment,
