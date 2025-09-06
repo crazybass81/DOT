@@ -51,27 +51,31 @@ export async function getSupabaseServerClient(): Promise<TypedSupabaseClient> {
   if (typeof window !== 'undefined') {
     throw new Error('getSupabaseServerClient should only be called on the server');
   }
-
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
   // Use service role key if available, otherwise fall back to anon key
-  const authKey = serviceRoleKey || supabaseAnonKey;
+  const authKey = config.supabase.serviceRoleKey || config.supabase.anonKey;
   
-  const serverClient = createClient<Database>(supabaseUrl, authKey, {
+  const serverConfig = {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
       detectSessionInUrl: false
     },
     db: {
-      schema: 'public'
+      schema: config.supabase.options?.db?.schema || 'public'
     },
     global: {
       headers: {
-        'x-application-name': 'DOT Attendance System Server'
+        'x-application-name': `DOT Attendance Server (${config.name})`
       }
     }
-  });
+  };
+  
+  const serverClient = createClient<Database>(
+    config.supabase.url,
+    authKey,
+    serverConfig
+  );
 
   return serverClient;
 }
