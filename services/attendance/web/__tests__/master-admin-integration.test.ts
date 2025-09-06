@@ -103,12 +103,12 @@ describe('Phase 4.1.5: 실제 데이터로 Master Admin 계정 생성 및 권한
     // 조직 생성 시도 (Master Admin은 모든 조직에 접근 가능해야 함)
     const { data, error } = await adminSupabase
       .from('organizations')
-      .insert({
+      .insert([{
         name: testOrganization.name,
         subscription_tier: testOrganization.subscription_tier,
         max_employees: 100,
         is_active: true
-      })
+      }])
       .select()
 
     if (error) {
