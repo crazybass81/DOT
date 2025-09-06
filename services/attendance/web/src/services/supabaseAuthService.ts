@@ -351,7 +351,7 @@ export class SupabaseAuthService {
   }
 
   /**
-   * Map Supabase user to our User interface
+   * Map Supabase user to our User interface using unified identity system
    */
   private async mapSupabaseUserToUser(supabaseUser: SupabaseUser): Promise<User | null> {
     try {
@@ -365,56 +365,83 @@ export class SupabaseAuthService {
               '사용자'
       };
 
-      // employees 테이블에서 사용자 정보 가져오기
+      // unified_identities 테이블에서 사용자 정보 가져오기
       try {
-        const { data: employee, error } = await supabase
-          .from('employees')
-          .select('id, name, email, phone, position, department, organization_id, is_active')
-          .eq('user_id', supabaseUser.id)
-          .maybeSingle(); // single() 대신 maybeSingle() 사용 (없어도 에러 안남)
+        console.log('Looking up unified identity for auth user:', supabaseUser.id);
 
-        if (!error && employee) {
-          // employee 정보가 있으면 추가
-          baseUser.role = employee.position || 'EMPLOYEE';
-          baseUser.employee = employee;
-          baseUser.name = employee.name || baseUser.name;
-          console.log('Employee data loaded:', employee.name);
-        } else if (error) {
-          console.log('Employee query error:', error.message);
-          // 에러가 있어도 기본 정보로 계속 진행
-        } else {
-          console.log('No employee record found for user:', supabaseUser.id);
-          // employee 레코드가 없으면 자동 생성
+        const { data: identity, error } = await supabase
+          .from('unified_identities')
+          .select(`
+            id, 
+            email, 
+            full_name, 
+            phone, 
+            id_type,
+            is_verified, 
+            is_active,
+            profile_data
+          `)
+          .eq('auth_user_id', supabaseUser.id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (!error && identity) {
+          // Unified identity 정보가 있으면 사용
+          baseUser.name = identity.full_name || baseUser.name;
+          baseUser.role = 'EMPLOYEE'; // Default role, will be determined by role assignments
+          console.log('✅ Unified identity found:', identity.id);
+
+          // Get role assignments for this identity
           try {
-            const { data: newEmployee, error: createError } = await supabase
-              .from('employees')
-              .insert({
-                user_id: supabaseUser.id,
-                email: supabaseUser.email!,
-                name: supabaseUser.user_metadata?.full_name || 
-                      supabaseUser.user_metadata?.name || 
-                      supabaseUser.email?.split('@')[0] || 
-                      '사용자',
-                position: 'worker',  // 기본 역할
-                is_active: true
-              })
-              .select()
-              .single();
+            const { data: roles, error: roleError } = await supabase
+              .from('role_assignments')
+              .select(`
+                role,
+                is_primary,
+                is_active,
+                organization_id
+              `)
+              .eq('identity_id', identity.id)
+              .eq('is_active', true)
+              .order('is_primary', { ascending: false });
 
-            if (!createError && newEmployee) {
-              console.log('Employee record auto-created:', newEmployee.id);
-              baseUser.role = newEmployee.position || 'worker';
-              baseUser.employee = newEmployee;
-              baseUser.name = newEmployee.name || baseUser.name;
-            } else if (createError) {
-              console.log('Failed to auto-create employee record:', createError.message);
+            if (!roleError && roles && roles.length > 0) {
+              // Use primary role, or first active role
+              const primaryRole = roles.find(r => r.is_primary) || roles[0];
+              baseUser.role = primaryRole.role.toUpperCase();
+              console.log('✅ Role found:', primaryRole.role);
+            } else {
+              console.log('No active roles found, using default');
             }
-          } catch (autoCreateError) {
-            console.log('Error auto-creating employee record:', autoCreateError);
+          } catch (roleError) {
+            console.log('Role lookup error, using default role');
           }
+
+          // Store identity info for later use
+          baseUser.employee = {
+            id: identity.id,
+            name: identity.full_name,
+            email: identity.email,
+            phone: identity.phone,
+            position: baseUser.role,
+            is_active: identity.is_active
+          } as any;
+
+        } else if (error) {
+          console.log('Unified identity query error:', error.message);
+          
+          // If no identity exists, try to auto-create one
+          if (error.message.includes('does not exist') || !identity) {
+            console.log('No unified identity found, attempting auto-creation');
+            await this.autoCreateUnifiedIdentity(supabaseUser);
+          }
+        } else {
+          console.log('No unified identity record found for user:', supabaseUser.id);
+          // Auto-create unified identity
+          await this.autoCreateUnifiedIdentity(supabaseUser);
         }
-      } catch (empError) {
-        console.log('Employee table access error, continuing with basic info');
+      } catch (identityError) {
+        console.log('Unified identity lookup error, using basic info:', identityError);
       }
 
       return baseUser;
@@ -426,6 +453,62 @@ export class SupabaseAuthService {
         email: supabaseUser.email!,
         name: supabaseUser.email?.split('@')[0] || '사용자'
       };
+    }
+  }
+
+  /**
+   * Auto-create unified identity for auth user
+   */
+  private async autoCreateUnifiedIdentity(supabaseUser: SupabaseUser): Promise<void> {
+    try {
+      console.log('🚀 Auto-creating unified identity for:', supabaseUser.email);
+
+      const identityData = {
+        auth_user_id: supabaseUser.id,
+        email: supabaseUser.email!,
+        full_name: supabaseUser.user_metadata?.full_name || 
+                   supabaseUser.user_metadata?.name || 
+                   supabaseUser.email?.split('@')[0] || 
+                   '사용자',
+        phone: supabaseUser.user_metadata?.phone || null,
+        id_type: 'personal', // Default to personal identity
+        business_verification_status: 'verified', // Personal identities are auto-verified
+        is_verified: true,
+        is_active: true,
+        profile_data: {}
+      };
+
+      const { data: identity, error } = await supabase
+        .from('unified_identities')
+        .insert(identityData)
+        .select()
+        .single();
+
+      if (!error && identity) {
+        console.log('✅ Unified identity auto-created:', identity.id);
+        
+        // Create default worker role assignment (no organization initially)
+        // Note: This will fail due to RLS, but user can be assigned roles later by admin
+        try {
+          await supabase
+            .from('role_assignments')
+            .insert({
+              identity_id: identity.id,
+              organization_id: null, // No organization initially
+              role: 'worker',
+              is_active: true,
+              is_primary: true,
+              assigned_at: new Date().toISOString()
+            });
+          console.log('✅ Default role assigned');
+        } catch (roleError) {
+          console.log('⚠️ Default role assignment failed (will be done by admin)');
+        }
+      } else {
+        console.log('❌ Failed to auto-create unified identity:', error?.message);
+      }
+    } catch (error) {
+      console.error('Auto-create unified identity error:', error);
     }
   }
 
