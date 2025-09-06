@@ -433,6 +433,52 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
     );
   }
   
+  /// PLAN-1: GPS 기반 위치 확인으로 이동
+  Future<void> _navigateToLocationCheck() async {
+    final attendanceState = ref.read(attendanceProvider);
+    
+    // 현재 상태에 따라 출근/퇴근 결정
+    AttendanceActionType actionType;
+    if (attendanceState.currentStatus == 'NOT_WORKING') {
+      actionType = AttendanceActionType.checkIn;
+    } else {
+      actionType = AttendanceActionType.checkOut;
+    }
+    
+    // Mock 사업장 위치 데이터 (실제로는 사용자의 소속 사업장 정보를 가져와야 함)
+    final workLocation = BusinessLocation(
+      id: 'work_1',
+      businessInfoId: 'business_1',
+      name: 'DOT 본사',
+      address: '서울특별시 강남구 테헤란로 123',
+      detailAddress: '456호',
+      postalCode: '06141',
+      latitude: 37.497928, // 강남역 근처 좌표 (실제 사업장 좌표)
+      longitude: 127.027618,
+      isActive: true,
+      isHeadOffice: true,
+    );
+    
+    // 햅틱 피드백
+    await HapticFeedback.lightImpact();
+    
+    // 위치 확인 페이지로 이동
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationCheckPage(
+          actionType: actionType,
+          workLocation: workLocation,
+        ),
+      ),
+    );
+    
+    // 성공적으로 처리되었으면 데이터 새로고침
+    if (result == true) {
+      await _refreshAttendanceData();
+    }
+  }
+  
   @override
   void dispose() {
     _pulseController.dispose();
