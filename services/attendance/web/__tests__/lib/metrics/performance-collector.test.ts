@@ -3,14 +3,11 @@
  * 성능 데이터 수집기 테스트
  */
 
-// Mock WebSocket server - must be declared before imports
-const mockWebSocketServer = {
-  sendToChannel: jest.fn(),
-  broadcastToOrganization: jest.fn(),
-};
-
 jest.mock('../../../src/lib/websocket-server', () => ({
-  webSocketServer: mockWebSocketServer,
+  webSocketServer: {
+    sendToChannel: jest.fn(),
+    broadcastToOrganization: jest.fn(),
+  },
 }));
 
 import { PerformanceCollector } from '../../../src/lib/metrics/performance-collector';
@@ -20,6 +17,10 @@ import {
   MetricsCollectorConfig, 
   PerformanceAlert 
 } from '../../../src/types/performance-metrics';
+import { webSocketServer } from '../../../src/lib/websocket-server';
+
+// Get mocked functions for assertions
+const mockWebSocketServer = webSocketServer as jest.Mocked<typeof webSocketServer>;
 
 describe('PerformanceCollector', () => {
   let collector: PerformanceCollector;
