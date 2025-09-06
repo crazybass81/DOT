@@ -313,20 +313,14 @@ export class RegistrationAPI {
   /**
    * 조직 코드로 조회
    */
-  async getOrganizationByCode(code: string): Promise<Organization | null> {
-    const { data, error } = await this.supabase
-      .from('organizations')
-      .select('*')
-      .eq('code', code)
-      .eq('is_active', true)
-      .single()
-
-    if (error) {
+  async getOrganizationByCode(code: string): Promise<any | null> {
+    try {
+      const result = await organizationService.getOrganizationByCode(code)
+      return result.success ? result.organization : null
+    } catch (error) {
       console.error('Organization fetch error:', error)
       return null
     }
-
-    return data
   }
 
   /**
