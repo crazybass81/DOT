@@ -197,7 +197,14 @@ export class SupabaseAuthService {
    */
   async signOut(): Promise<void> {
     try {
-      const { error } = await supabase.auth.signOut();
+      const result = await supabase.auth.signOut();
+      
+      if (!result) {
+        console.log('Sign out completed (no response object)');
+        return;
+      }
+
+      const { error } = result;
       
       if (error) {
         console.error('Sign out error:', error);
