@@ -513,26 +513,146 @@ export class SupabaseAuthService {
   }
 
   /**
-   * Check if user has master admin privileges
+   * Check if user has master admin privileges using unified identity system
    */
   async isMasterAdmin(): Promise<boolean> {
     try {
-      const user = await this.getCurrentUser();
-      return user?.employee?.is_master_admin === true;
-    } catch {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      
+      if (!supabaseUser) {
+        return false;
+      }
+
+      // Check for master admin role in role_assignments
+      const { data: roles, error } = await supabase
+        .from('role_assignments')
+        .select('role, is_active')
+        .eq('role', 'master')
+        .eq('is_active', true)
+        .inner('unified_identities', 'identity_id', 'id', { 
+          auth_user_id: supabaseUser.id 
+        })
+        .limit(1);
+
+      if (error) {
+        console.log('Master admin check error:', error.message);
+        return false;
+      }
+
+      const hasMasterRole = roles && roles.length > 0;
+      console.log('Master admin check result:', hasMasterRole);
+      
+      return hasMasterRole;
+    } catch (error) {
+      console.error('Master admin check error:', error);
       return false;
     }
   }
 
   /**
-   * Check if user is approved
+   * Check if user is verified (replaces approval status)
    */
-  async isApproved(): Promise<boolean> {
+  async isVerified(): Promise<boolean> {
     try {
-      const user = await this.getCurrentUser();
-      return user?.approvalStatus === 'APPROVED';
-    } catch {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      
+      if (!supabaseUser) {
+        return false;
+      }
+
+      // Check verification status in unified_identities
+      const { data: identity, error } = await supabase
+        .from('unified_identities')
+        .select('is_verified, business_verification_status')
+        .eq('auth_user_id', supabaseUser.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error || !identity) {
+        console.log('Verification check error:', error?.message);
+        return false;
+      }
+
+      const isVerified = identity.is_verified || 
+                        identity.business_verification_status === 'verified';
+      
+      console.log('Verification check result:', isVerified);
+      return isVerified;
+    } catch (error) {
+      console.error('Verification check error:', error);
       return false;
+    }
+  }
+
+  /**
+   * Check if user has specific role
+   */
+  async hasRole(role: string): Promise<boolean> {
+    try {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      
+      if (!supabaseUser) {
+        return false;
+      }
+
+      // Check for specific role in role_assignments
+      const { data: roles, error } = await supabase
+        .from('role_assignments')
+        .select('role, is_active')
+        .eq('role', role.toLowerCase())
+        .eq('is_active', true)
+        .inner('unified_identities', 'identity_id', 'id', { 
+          auth_user_id: supabaseUser.id 
+        })
+        .limit(1);
+
+      if (error) {
+        console.log(`Role check error for ${role}:`, error.message);
+        return false;
+      }
+
+      const hasRole = roles && roles.length > 0;
+      console.log(`Role check result for ${role}:`, hasRole);
+      
+      return hasRole;
+    } catch (error) {
+      console.error(`Role check error for ${role}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Get user's roles
+   */
+  async getUserRoles(): Promise<string[]> {
+    try {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      
+      if (!supabaseUser) {
+        return [];
+      }
+
+      // Get all active roles for user
+      const { data: roles, error } = await supabase
+        .from('role_assignments')
+        .select('role, is_active, organization_id')
+        .eq('is_active', true)
+        .inner('unified_identities', 'identity_id', 'id', { 
+          auth_user_id: supabaseUser.id 
+        });
+
+      if (error) {
+        console.log('Get user roles error:', error.message);
+        return [];
+      }
+
+      const userRoles = (roles || []).map(r => r.role);
+      console.log('User roles:', userRoles);
+      
+      return userRoles;
+    } catch (error) {
+      console.error('Get user roles error:', error);
+      return [];
     }
   }
 }
