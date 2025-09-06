@@ -32,7 +32,7 @@
   "author": "DOT Team",
   "license": "MIT",
   "dependencies": {
-    "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/realtime-js": "^2.8.4",
     "@supabase/supabase-js": "^2.56.1",
     "date-fns": "^2.30.0",
