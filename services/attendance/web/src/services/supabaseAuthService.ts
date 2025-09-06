@@ -692,7 +692,7 @@ export class SupabaseAuthService {
       const result = await supabase.auth.getUser();
       
       if (!result || !result.data) {
-        return false;
+        return [];
       }
 
       const { data: { user: supabaseUser } } = result;
