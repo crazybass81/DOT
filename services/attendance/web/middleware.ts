@@ -112,12 +112,17 @@ export async function middleware(request: NextRequest) {
       );
     }
     
-    // Add security headers for API responses
+    // Create response with security headers
     const response = NextResponse.next();
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    const securityHeaders = createSecurityHeaders();
+    
+    // Apply all security headers
+    securityHeaders.forEach((value, key) => {
+      response.headers.set(key, value);
+    });
+    
+    // Apply PII masking to response if enabled
+    // Note: This is handled by API route handlers individually for better control
     
     return response;
   }
