@@ -47,14 +47,14 @@ const permissionCache = new Map<string, { data: any; expires: number }>();
  */
 async function extractUserFromToken(authHeader: string): Promise<{ user: any; error: any }> {
   try {
-    const token = authHeader.replace('Bearer ', '');
-    const { data, error } = await supabase.auth.getUser(token);
+    // Use unified auth service for token validation
+    const user = await supabaseAuthService.getCurrentUser();
     
-    if (error || !data.user) {
-      return { user: null, error: error || new Error('Invalid token') };
+    if (!user) {
+      return { user: null, error: new Error('Invalid token or user not found') };
     }
     
-    return { user: data.user, error: null };
+    return { user, error: null };
   } catch (error) {
     return { user: null, error };
   }
