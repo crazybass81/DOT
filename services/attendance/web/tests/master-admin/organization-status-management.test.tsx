@@ -70,18 +70,11 @@ const mockRegularAdminUser = {
   name: 'Regular Admin'
 };
 
-// 테스트 헬퍼: QueryClient 래퍼
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false }
-  }
-});
-
+// 테스트 헬퍼: 간단한 래퍼
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <QueryClientProvider client={createTestQueryClient()}>
+  <div data-testid="test-wrapper">
     {children}
-  </QueryClientProvider>
+  </div>
 );
 
 describe('🔴 Red Phase: OrganizationStatusToggle', () => {
