@@ -4,6 +4,8 @@
  * 단순화 금지 - 완전한 SOLID 아키텍처 검증
  */
 
+import 'cross-fetch/polyfill'
+
 describe('Phase 4.2.1 Edge Functions TDD 테스트', () => {
   const LOCAL_EDGE_FUNCTIONS_URL = 'http://127.0.0.1:54321/functions/v1'
   const AUTH_HEADER = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
