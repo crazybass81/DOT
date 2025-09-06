@@ -342,7 +342,7 @@ CREATE POLICY "Managers can view their team members"
         id IN (
             SELECT user_id FROM employees 
             WHERE manager_id = (
-                SELECT id FROM employees 
+                SELECT id::text FROM employees 
                 WHERE user_id = auth.uid()
             )
         )
@@ -376,8 +376,8 @@ CREATE POLICY "Employees can view their own attendance"
     ON attendance FOR SELECT
     TO authenticated
     USING (
-        employee_id IN (
-            SELECT id FROM employees WHERE user_id = auth.uid()
+        employee_id::text IN (
+            SELECT id::text FROM employees WHERE user_id = auth.uid()
         )
     );
 
@@ -386,8 +386,8 @@ CREATE POLICY "Managers can view team attendance"
     TO authenticated
     USING (
         auth.jwt() ->> 'role' IN ('admin', 'manager', 'master_admin') AND
-        employee_id IN (
-            SELECT id FROM employees 
+        employee_id::text IN (
+            SELECT id::text FROM employees 
             WHERE organization_id = auth.jwt() ->> 'organization_id' OR
                   auth.jwt() ->> 'role' = 'master_admin'
         )
@@ -397,8 +397,8 @@ CREATE POLICY "Workers can create their own attendance"
     ON attendance FOR INSERT
     TO authenticated
     WITH CHECK (
-        employee_id IN (
-            SELECT id FROM employees WHERE user_id = auth.uid()
+        employee_id::text IN (
+            SELECT id::text FROM employees WHERE user_id = auth.uid()
         )
     );
 
@@ -407,8 +407,8 @@ CREATE POLICY "Managers can manage team attendance"
     TO authenticated
     USING (
         (auth.jwt() ->> 'role' IN ('admin', 'manager') AND
-         employee_id IN (
-             SELECT id FROM employees 
+         employee_id::text IN (
+             SELECT id::text FROM employees 
              WHERE organization_id::text = auth.jwt() ->> 'organization_id'
          )) OR
         auth.jwt() ->> 'role' = 'master_admin'
