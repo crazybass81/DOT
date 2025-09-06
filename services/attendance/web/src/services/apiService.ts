@@ -190,7 +190,7 @@ class ApiService {
     const headers = await this.getAuthHeaders();
     const user = await supabaseAuthService.getCurrentUser();
     
-    if (!user || !userService.isAdmin()) {
+    if (!user || !(await supabaseAuthService.hasRole('admin'))) {
       throw new Error('Unauthorized: Admin access required');
     }
     
@@ -210,7 +210,7 @@ class ApiService {
     const headers = await this.getAuthHeaders();
     const user = await supabaseAuthService.getCurrentUser();
     
-    if (!user || !userService.isAdmin()) {
+    if (!user || !(await supabaseAuthService.hasRole('admin'))) {
       throw new Error('Unauthorized: Admin access required');
     }
     
