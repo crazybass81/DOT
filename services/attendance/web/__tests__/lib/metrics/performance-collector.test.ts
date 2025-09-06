@@ -3,6 +3,16 @@
  * 성능 데이터 수집기 테스트
  */
 
+// Mock WebSocket server - must be declared before imports
+const mockWebSocketServer = {
+  sendToChannel: jest.fn(),
+  broadcastToOrganization: jest.fn(),
+};
+
+jest.mock('../../../src/lib/websocket-server', () => ({
+  webSocketServer: mockWebSocketServer,
+}));
+
 import { PerformanceCollector } from '../../../src/lib/metrics/performance-collector';
 import { 
   ApiMetric, 
@@ -10,24 +20,6 @@ import {
   MetricsCollectorConfig, 
   PerformanceAlert 
 } from '../../../src/types/performance-metrics';
-
-// Mock WebSocket server
-const mockWebSocketServer = {
-  sendToChannel: jest.fn(),
-  broadcastToOrganization: jest.fn(),
-};
-
-// Mock Redis client
-const mockRedisClient = {
-  setex: jest.fn(),
-  get: jest.fn(),
-  del: jest.fn(),
-  keys: jest.fn(),
-};
-
-jest.mock('../../../src/lib/websocket-server', () => ({
-  webSocketServer: mockWebSocketServer,
-}));
 
 describe('PerformanceCollector', () => {
   let collector: PerformanceCollector;
