@@ -1,20 +1,22 @@
 /**
- * TDD Phase 2: GREEN - Minimal Supabase Client Implementation
- * Type-safe Supabase client for both browser and server environments
+ * TDD Phase 3: REFACTOR - Production-Ready Supabase Client
+ * Type-safe Supabase client with environment-specific configuration
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from './types';
+import { config, validateConfig, SupabaseConfig } from './config';
 
 // Type-safe Supabase client
 export type TypedSupabaseClient = SupabaseClient<Database>;
 
-// Get environment variables with fallback for testing
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sanlpdXpldGNodGp1ZGJjZnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDg3MDUsImV4cCI6MjA3MjIyNDcwNX0.8s8-zrgnztjabvrVE32J2ZRCiH5bVrypyHBJjHNzfjQ';
-
 // Singleton client instance for browser
 let browserClient: TypedSupabaseClient | null = null;
+
+// Validate configuration on module load
+if (!validateConfig(config)) {
+  console.warn('Invalid Supabase configuration detected');
+}
 
 /**
  * Get Supabase client for browser environment
