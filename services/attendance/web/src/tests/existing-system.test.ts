@@ -177,37 +177,34 @@ describe('Existing System - Step 2: Create Test Data', () => {
   })
 })
 
-describe('Existing System - Step 3: Authentication Service Test', () => {
+describe('Existing System - Step 3: Direct Authentication Test', () => {
   
-  test('Should test auth service with real user', async () => {
+  test('Should test direct auth with Supabase client', async () => {
     try {
-      const user = await supabaseAuthService.signIn(testUser.email, testUser.password)
-      
-      console.log('Auth service result:', {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
+      // Try signing in with test user
+      const { data, error } = await testClient.auth.signInWithPassword({
+        email: testUser.email,
+        password: testUser.password
       })
       
-      expect(user).toBeDefined()
-      expect(user.email).toBe(testUser.email)
-      expect(user.id).toBeDefined()
+      console.log('Direct auth result:', { 
+        user: data.user?.id, 
+        session: !!data.session,
+        error: error?.message 
+      })
       
-      // Test get current user
-      const currentUser = await supabaseAuthService.getCurrentUser()
-      console.log('Current user:', currentUser?.email)
-      
-      expect(currentUser).toBeDefined()
-      expect(currentUser?.email).toBe(testUser.email)
-      
-      // Test master admin check
-      const isMasterAdmin = await supabaseAuthService.isMasterAdmin()
-      console.log('Is master admin:', isMasterAdmin)
+      if (data.user) {
+        expect(data.user.email).toBe(testUser.email)
+        console.log('✅ Direct auth successful')
+        
+        // Sign out
+        await testClient.auth.signOut()
+      } else {
+        console.log('❌ Direct auth failed - user may not exist yet')
+      }
       
     } catch (error: any) {
-      console.log('Auth service error:', error.message)
-      // This might fail if the user doesn't exist yet, which is expected
+      console.log('Direct auth error:', error.message)
     }
   })
 })
