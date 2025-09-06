@@ -3,7 +3,7 @@
  * Handles organization creation, hierarchy validation, and role assignments
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '../lib/supabase-config'
 import { 
   Organization, 
   RoleAssignment,
@@ -18,7 +18,7 @@ import {
   validateBusinessOwnership,
   validateFranchiseHierarchy,
   ERROR_CODES
-} from '@/types/unified.types'
+} from '../types/unified.types'
 import { identityService } from './identityService'
 
 export class OrganizationService {
