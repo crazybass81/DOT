@@ -5,7 +5,7 @@ import {
   User as SupabaseUser,
   AuthChangeEvent
 } from '@supabase/supabase-js';
-import { supabase, Employee } from '@/lib/supabase-config';
+import { supabase, Employee } from '../lib/supabase-config';
 
 export interface User {
   id: string;
