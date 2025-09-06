@@ -423,3 +423,15 @@ jest.mock('@/components/master-admin/OrganizationAuditLog', () => ({
     </div>
   )
 }));
+
+// Mock Headless UI
+jest.mock('@headlessui/react', () => ({
+  Dialog: {
+    Panel: ({ children }: any) => <div>{children}</div>,
+    Title: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>
+  },
+  Transition: {
+    Child: ({ children }: any) => <div>{children}</div>
+  },
+  Fragment: ({ children }: any) => <>{children}</>,
+}));
