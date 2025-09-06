@@ -3,7 +3,7 @@
  * Handles identity creation, verification, and role management
  */
 
-import { createClient } from '../lib/supabase-config'
+import { supabase } from '../lib/supabase-config'
 import { 
   Identity, 
   IdType,
@@ -14,7 +14,7 @@ import {
 } from '../types/unified.types'
 
 export class IdentityService {
-  private supabase = createClient()
+  private supabase = supabase
 
   /**
    * Create new unified identity
