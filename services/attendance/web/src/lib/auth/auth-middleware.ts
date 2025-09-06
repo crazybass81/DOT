@@ -155,21 +155,31 @@ export function validateRequestData<T>(
  * 조직 접근 권한 검증
  */
 export function validateOrganizationAccess(
-  userOrganizationId: string,
+  userOrganizations: any[],
   requestedOrganizationId: string
 ): boolean {
-  return userOrganizationId === requestedOrganizationId;
+  return userOrganizations.some(org => org.id === requestedOrganizationId);
 }
 
 /**
- * 직원 접근 권한 검증 (본인 또는 관리자)
+ * 신원 접근 권한 검증 (본인 또는 관리자)
  */
-export function validateEmployeeAccess(
-  userEmployeeId: string,
-  requestedEmployeeId: string,
-  userRole: string
+export function validateIdentityAccess(
+  userId: string,
+  requestedUserId: string,
+  userRoles: any[]
 ): boolean {
   // 본인의 데이터이거나 관리자 권한이 있는 경우
-  return userEmployeeId === requestedEmployeeId || 
-         ['ADMIN', 'MANAGER', 'HR'].includes(userRole);
+  return userId === requestedUserId || 
+         userRoles.some(role => ['admin', 'manager', 'master'].includes(role.role));
+}
+
+/**
+ * 역할 기반 접근 권한 검증
+ */
+export function validateRoleAccess(
+  userRoles: any[],
+  requiredRoles: string[]
+): boolean {
+  return userRoles.some(role => requiredRoles.includes(role.role));
 }
