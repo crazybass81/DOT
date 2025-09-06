@@ -11,7 +11,9 @@ import '../../widgets/attendance/attendance_queue_widget.dart';
 import '../../widgets/attendance/attendance_verification_dialog.dart';
 import '../../widgets/common/neo_brutal_button.dart';
 import '../../widgets/common/neo_brutal_card.dart';
+import '../../../domain/entities/business/business_location.dart';
 import 'qr_scanner_page.dart';
+import 'location_check_page.dart';
 
 class AttendancePage extends ConsumerStatefulWidget {
   const AttendancePage({super.key});
