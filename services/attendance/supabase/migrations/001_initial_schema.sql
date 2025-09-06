@@ -431,6 +431,46 @@ CREATE POLICY "Managers can manage team attendance"
         auth.jwt() ->> 'role' = 'master_admin'
     );
 
+-- Breaks policies
+CREATE POLICY "Users can view breaks for their own attendance"
+    ON breaks FOR SELECT
+    TO authenticated
+    USING (
+        attendance_id IN (
+            SELECT id FROM attendance 
+            WHERE employee_id IN (
+                SELECT id FROM employees WHERE user_id = auth.uid()
+            )
+        )
+    );
+
+CREATE POLICY "Users can manage breaks for their own attendance"
+    ON breaks FOR ALL
+    TO authenticated
+    USING (
+        attendance_id IN (
+            SELECT id FROM attendance 
+            WHERE employee_id IN (
+                SELECT id FROM employees WHERE user_id = auth.uid()
+            )
+        )
+    );
+
+CREATE POLICY "Managers can view team member breaks"
+    ON breaks FOR SELECT
+    TO authenticated
+    USING (
+        auth.jwt() ->> 'role' IN ('admin', 'manager', 'master_admin') AND
+        attendance_id IN (
+            SELECT id FROM attendance 
+            WHERE employee_id IN (
+                SELECT id FROM employees 
+                WHERE organization_id = (auth.jwt() ->> 'organization_id')::uuid OR
+                      auth.jwt() ->> 'role' = 'master_admin'
+            )
+        )
+    );
+
 -- Notifications policies
 CREATE POLICY "Users can view their own notifications"
     ON notifications FOR SELECT
