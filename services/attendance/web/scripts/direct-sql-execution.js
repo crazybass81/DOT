@@ -121,14 +121,14 @@ async function executeStepByStep() {
       ALTER TABLE unified_identities ENABLE ROW LEVEL SECURITY;
       ALTER TABLE organizations_v3 ENABLE ROW LEVEL SECURITY;
       ALTER TABLE role_assignments ENABLE ROW LEVEL SECURITY;
-    \`)
+    `)
     
     console.log('\\n5. Create basic RLS policies:')
     console.log(`
       CREATE POLICY "Users can view own identity" ON unified_identities FOR SELECT USING (auth_user_id = auth.uid());
       CREATE POLICY "Users can update own identity" ON unified_identities FOR UPDATE USING (auth_user_id = auth.uid());
       CREATE POLICY "Allow identity creation for authenticated users" ON unified_identities FOR INSERT WITH CHECK (auth_user_id = auth.uid());
-    \`)
+    `)
     
     return true
     
