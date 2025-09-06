@@ -90,8 +90,8 @@ export function createCustomClient(
   options?: any
 ): TypedSupabaseClient {
   return createClient<Database>(
-    url || supabaseUrl,
-    key || supabaseAnonKey,
+    url || config.supabase.url,
+    key || config.supabase.anonKey,
     options || {}
   );
 }
