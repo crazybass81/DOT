@@ -18,7 +18,7 @@ const adminSupabase = serviceKey ? createClient(supabaseUrl, serviceKey, {
 
 async function createTestUser() {
   try {
-    const testEmail = `testuser${Date.now()}@test.com`;
+    const testEmail = `test.user.${Date.now()}@gmail.com`;
     const testPassword = 'TestPassword123!';
     
     console.log(`🚀 테스트 사용자 생성 중... (${testEmail})`);
