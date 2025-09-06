@@ -41,7 +41,9 @@ export function OrganizationDataGrid({
   onSortChange,
   onPageChange,
   isLoading = false,
-  isRefetching = false
+  isRefetching = false,
+  currentUser,
+  onOrganizationStatusChange
 }: OrganizationDataGridProps) {
   
   // Column definitions
