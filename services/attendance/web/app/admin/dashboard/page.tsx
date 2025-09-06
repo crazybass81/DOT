@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { cognitoAuthService } from '@/services/cognitoAuthService';
+import { unifiedAuthService } from '@/services/unifiedAuthService';
 import { userService } from '@/services/userService';
 import AttendanceStats from '@/components/dashboard/AttendanceStats';
 import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
