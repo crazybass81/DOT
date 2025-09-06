@@ -74,6 +74,7 @@
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "constructs": "^10.4.2",
+    "cross-fetch": "^4.1.0",
     "dotenv": "^17.2.2",
     "eslint": "^9.34.0",
     "jest": "^30.0.5",
