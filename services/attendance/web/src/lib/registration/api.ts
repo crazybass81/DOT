@@ -485,14 +485,18 @@ export class RegistrationAPI {
    * 로그아웃
    */
   async logout(): Promise<void> {
-    await this.supabase.auth.signOut()
+    await supabaseAuthService.signOut()
   }
 
   /**
    * 세션 확인
    */
   async checkSession(): Promise<boolean> {
-    const { data: { session } } = await this.supabase.auth.getSession()
-    return !!session
+    try {
+      const session = await supabaseAuthService.getSession()
+      return !!session
+    } catch (error) {
+      return false
+    }
   }
 }
