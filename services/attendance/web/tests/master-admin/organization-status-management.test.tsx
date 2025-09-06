@@ -253,7 +253,7 @@ describe('🟢 Green Phase: StatusChangeConfirmDialog', () => {
     );
     
     // 확인 버튼 클릭 시 콜백이 호출되는지 확인
-    const confirmButton = screen.getByText(/상태 변경 확인/);
+    const confirmButton = screen.getByRole('button', { name: /상태 변경 확인.*정지/ });
     fireEvent.click(confirmButton);
     
     expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({
