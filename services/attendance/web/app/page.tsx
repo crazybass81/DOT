@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, LogIn, Shield, Users, Clock, CheckCircle } from 'lucide-react';
+import { LogIn, Shield, Users, Clock, CheckCircle } from 'lucide-react';
 import { supabaseAuthService } from '../src/services/supabaseAuthService';
 
 export default function Home() {
