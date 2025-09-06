@@ -192,33 +192,74 @@ describe('🟢 Green Phase: StatusChangeConfirmDialog', () => {
   };
 
   test('상태 변경 확인 다이얼로그가 렌더링된다', () => {
-    expect(() => {
-      render(
-        <TestWrapper>
-          <StatusChangeConfirmDialog
-            isOpen={true}
-            onClose={jest.fn()}
-            onConfirm={jest.fn()}
-            statusChangeData={mockStatusChangeData}
-          />
-        </TestWrapper>
-      );
-    }).toThrow(); // 컴포넌트가 아직 존재하지 않음
+    render(
+      <TestWrapper>
+        <StatusChangeConfirmDialog
+          isOpen={true}
+          onClose={jest.fn()}
+          onConfirm={jest.fn()}
+          statusChangeData={mockStatusChangeData}
+        />
+      </TestWrapper>
+    );
+    
+    // 다이얼로그 제목이 표시되는지 확인
+    expect(screen.getByText('조직 상태 변경 확인')).toBeInTheDocument();
   });
 
   test('변경 사유 입력 필드가 표시된다', () => {
-    // Red Phase: 변경 사유 입력 실패 테스트
-    expect(true).toBe(false);
+    render(
+      <TestWrapper>
+        <StatusChangeConfirmDialog
+          isOpen={true}
+          onClose={jest.fn()}
+          onConfirm={jest.fn()}
+          statusChangeData={mockStatusChangeData}
+        />
+      </TestWrapper>
+    );
+    
+    // 사유 입력 필드가 있는지 확인
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
   test('SUSPENDED 상태 변경 시 추가 경고 메시지가 표시된다', () => {
-    // Red Phase: SUSPENDED 경고 메시지 실패 테스트
-    expect(true).toBe(false);
+    render(
+      <TestWrapper>
+        <StatusChangeConfirmDialog
+          isOpen={true}
+          onClose={jest.fn()}
+          onConfirm={jest.fn()}
+          statusChangeData={mockStatusChangeData}
+        />
+      </TestWrapper>
+    );
+    
+    // 경고 메시지가 표시되는지 확인
+    expect(screen.getByText(/정지하면 모든 기능이 차단됩니다/)).toBeInTheDocument();
   });
 
   test('확인 버튼 클릭 시 상태 변경이 실행된다', () => {
-    // Red Phase: 확인 액션 실행 실패 테스트
-    expect(true).toBe(false);
+    const onConfirm = jest.fn();
+    render(
+      <TestWrapper>
+        <StatusChangeConfirmDialog
+          isOpen={true}
+          onClose={jest.fn()}
+          onConfirm={onConfirm}
+          statusChangeData={mockStatusChangeData}
+        />
+      </TestWrapper>
+    );
+    
+    // 확인 버튼 클릭 시 콜백이 호출되는지 확인
+    const confirmButton = screen.getByText(/상태 변경 확인/);
+    fireEvent.click(confirmButton);
+    
+    expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      organizations: mockStatusChangeData.organizations,
+      newStatus: mockStatusChangeData.newStatus
+    }));
   });
 });
 
