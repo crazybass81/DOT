@@ -8,9 +8,11 @@ export interface AuthenticatedRequest extends NextRequest {
   user: {
     id: string;
     email: string;
-    employeeId?: string;
-    organizationId?: string;
-    role?: string;
+    full_name: string;
+    roles?: any[];
+    organizations?: any[];
+    hasRole?: (role: string) => boolean;
+    hasPermission?: (permission: string) => boolean;
   };
 }
 
