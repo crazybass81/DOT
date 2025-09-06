@@ -75,7 +75,7 @@ export class SupabaseAuthService {
     metadata?: { name?: string }
   ): Promise<{ user: User | null; session: Session | null; needsVerification: boolean }> {
     try {
-      const { data, error }: AuthResponse = await supabase.auth.signUp({
+      const result = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -85,6 +85,12 @@ export class SupabaseAuthService {
           emailRedirectTo: `${window.location.origin}/auth/verify`
         }
       });
+
+      if (!result) {
+        throw new Error('No response from authentication service');
+      }
+
+      const { data, error } = result;
 
       if (error) {
         console.error('Sign up error:', error);
