@@ -17,7 +17,7 @@ class ApiService {
     verificationMethod: 'gps' | 'qr';
   }) {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -47,7 +47,7 @@ class ApiService {
     location: { lat: number; lng: number };
   }) {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -75,7 +75,7 @@ class ApiService {
 
   async verifyLocation(location: { lat: number; lng: number }) {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -100,7 +100,7 @@ class ApiService {
 
   async getAttendanceHistory(startDate?: string, endDate?: string) {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -129,7 +129,7 @@ class ApiService {
     validityMinutes?: number;
   }) {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -160,7 +160,7 @@ class ApiService {
     location: { lat: number; lng: number };
   }) {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -188,7 +188,7 @@ class ApiService {
   // Admin APIs
   async getEmployees() {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user || !userService.isAdmin()) {
       throw new Error('Unauthorized: Admin access required');
@@ -208,7 +208,7 @@ class ApiService {
 
   async getAttendanceStats(period: 'daily' | 'weekly' | 'monthly') {
     const headers = await this.getAuthHeaders();
-    const user = userService.getCurrentUser();
+    const user = await supabaseAuthService.getCurrentUser();
     
     if (!user || !userService.isAdmin()) {
       throw new Error('Unauthorized: Admin access required');
