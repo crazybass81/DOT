@@ -367,7 +367,7 @@ CREATE POLICY "Admins can manage employees in their organization"
     TO authenticated
     USING (
         (auth.jwt() ->> 'role' = 'admin' AND 
-         organization_id::text = auth.jwt() ->> 'organization_id') OR
+         organization_id = (auth.jwt() ->> 'organization_id')::uuid) OR
         auth.jwt() ->> 'role' = 'master_admin'
     );
 
