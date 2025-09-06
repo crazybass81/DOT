@@ -5,8 +5,7 @@
 
 'use client';
 
-import React, { useState, useEffect, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, { useState, useEffect } from 'react';
 import { Organization, OrganizationStatus } from '@/types/organization.types';
 import { statusChangeUtils } from '@/hooks/useOrganizationStatusMutation';
 
