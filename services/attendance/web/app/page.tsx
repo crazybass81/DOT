@@ -14,7 +14,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [isFindIdPwModalOpen, setFindIdPwModalOpen] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const idInputRef = useRef<HTMLDivElement>(null);
 
   // Mock 계정 데이터 (테스트용)
