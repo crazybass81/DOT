@@ -258,12 +258,12 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
         const SizedBox(width: NeoBrutalTheme.space4),
         Expanded(
           child: NeoBrutalButton(
-            onPressed: () {
+            onPressed: canCheckOut ? () {
               // Handle check-out
               ref.read(attendanceProvider.notifier).checkOut();
-            },
-            backgroundColor: NeoBrutalTheme.error,
-            foregroundColor: NeoBrutalTheme.white,
+            } : null,
+            backgroundColor: canCheckOut ? NeoBrutalTheme.error : NeoBrutalTheme.gray300,
+            foregroundColor: canCheckOut ? NeoBrutalTheme.white : NeoBrutalTheme.gray500,
             child: const Column(
               children: [
                 Icon(Icons.logout, size: 32),
