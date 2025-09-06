@@ -24,28 +24,19 @@ if (!validateConfig(config)) {
  */
 export function getSupabaseClient(): TypedSupabaseClient {
   if (!browserClient) {
-    browserClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    const clientConfig = {
+      ...config.supabase.options,
       auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
+        ...config.supabase.options?.auth,
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 10
-        }
-      },
-      db: {
-        schema: 'public'
-      },
-      global: {
-        headers: {
-          'x-application-name': 'DOT Attendance System'
-        }
       }
-    });
+    };
+    
+    browserClient = createClient<Database>(
+      config.supabase.url,
+      config.supabase.anonKey,
+      clientConfig
+    );
   }
   
   return browserClient;
