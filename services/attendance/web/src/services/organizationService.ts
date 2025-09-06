@@ -282,8 +282,6 @@ export class OrganizationService {
    */
   async getOrganizationMembers(organizationId: string): Promise<RoleAssignment[]> {
     try {
-      const { data, error } = await this.supabase
-      const { data, error } = await this.supabase
         .from('role_assignments')
         .select(`
           *,
