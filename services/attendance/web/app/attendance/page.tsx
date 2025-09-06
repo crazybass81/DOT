@@ -265,7 +265,7 @@ export default function AttendancePage() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log('[DEBUG] handleLogout called');
     await unifiedAuthService.signOut();
     
