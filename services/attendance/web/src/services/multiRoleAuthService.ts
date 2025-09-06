@@ -223,17 +223,18 @@ export class MultiRoleAuthService {
   }
 
   /**
-   * 사용자 역할 추가
+   * 사용자 역할 추가 (통합 테이블 사용)
    */
   async addUserRole(userId: string, roleRequest: CreateRoleRequest): Promise<RoleResult> {
     try {
       const { data, error } = await supabase
-        .from('user_roles')
+        .from('role_assignments')
         .insert({
-          employee_id: roleRequest.employeeId,
+          identity_id: userId,  // Updated field name
           organization_id: roleRequest.organizationId,
-          role_type: roleRequest.roleType,
-          is_active: true
+          role: roleRequest.roleType,  // Updated field name
+          is_active: true,
+          assigned_at: new Date().toISOString()
         })
         .select()
         .single();
@@ -247,18 +248,18 @@ export class MultiRoleAuthService {
 
       // 조직 이름 가져오기
       const { data: orgData } = await supabase
-        .from('organizations')
+        .from('organizations_v3')  // Updated table name
         .select('name')
         .eq('id', roleRequest.organizationId)
         .single();
 
       const role: UserRole = {
         id: data.id,
-        employeeId: data.employee_id,
+        employeeId: data.identity_id,  // Updated field mapping
         organizationId: data.organization_id,
-        roleType: data.role_type,
+        roleType: data.role,  // Updated field mapping
         isActive: data.is_active,
-        grantedAt: new Date(data.granted_at),
+        grantedAt: new Date(data.assigned_at),  // Updated field mapping
         organizationName: orgData?.name || '알 수 없는 조직'
       };
 
