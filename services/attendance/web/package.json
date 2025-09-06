@@ -19,6 +19,7 @@
     "test:security": "jest --config=../tests/jest.integration.config.js --testNamePattern='Security|security'",
     "test:security-critical": "jest --testPathPattern=master-admin-auth.test.ts --coverage",
     "test:privilege-escalation": "jest --testPathPattern=master-admin-auth.test.ts --testNamePattern='Privilege Escalation'",
+    "test:sql-injection": "jest --testPathPattern=tests/security/sql-injection.test.ts",
     "test:performance": "jest --config=../tests/jest.integration.config.js --testNamePattern='Performance|performance'",
     "test:cleanup": "node -e \"console.log('Manual cleanup would run here')\"",
     "deploy": "./scripts/deploy.sh",
