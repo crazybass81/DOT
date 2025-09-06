@@ -149,6 +149,7 @@ if (!process.env.REAL_SUPABASE_TEST) {
     };
   })
 }));
+}
 
 // Global mocks will be handled in individual test files
 
