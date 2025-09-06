@@ -250,7 +250,13 @@ export class SupabaseAuthService {
    */
   async getSession(): Promise<Session | null> {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const result = await supabase.auth.getSession();
+      
+      if (!result || !result.data) {
+        return null;
+      }
+
+      const { data: { session }, error } = result;
       
       if (error) {
         console.error('Get session error:', error);
