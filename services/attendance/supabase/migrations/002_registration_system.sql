@@ -92,11 +92,8 @@ CREATE TABLE IF NOT EXISTS personal_accounts (
     -- Identity verification (encrypted)
     resident_id_hash VARCHAR(255), -- One-way hash
     
-    -- Computed teen status
-    is_teen BOOLEAN GENERATED ALWAYS AS (
-        birth_date > CURRENT_DATE - INTERVAL '18 years' AND
-        birth_date <= CURRENT_DATE - INTERVAL '15 years'
-    ) STORED,
+    -- Teen status (computed via function, not generated column due to immutability)
+    is_teen BOOLEAN DEFAULT false,
     
     -- Teen-specific data
     parent_consent JSONB, -- {parent_name, parent_phone, consented_at, consent_document}
