@@ -569,7 +569,7 @@ export class SupabaseAuthService {
       }
 
       // Check for master admin role in role_assignments
-      const { data: roles, error } = await supabase
+      const dbResult = await supabase
         .from('role_assignments')
         .select('role, is_active')
         .eq('role', 'master')
@@ -578,6 +578,12 @@ export class SupabaseAuthService {
           auth_user_id: supabaseUser.id 
         })
         .limit(1);
+
+      if (!dbResult) {
+        return false;
+      }
+
+      const { data: roles, error } = dbResult;
 
       if (error) {
         console.log('Master admin check error:', error.message);
