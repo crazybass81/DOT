@@ -20,11 +20,12 @@ export default function QRHandlerPage() {
   const deviceInfo = useDeviceFingerprint();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [status, setStatus] = useState<'checking' | 'gps' | 'processing' | 'success' | 'error'>('checking');
+  const [status, setStatus] = useState<'checking' | 'gps' | 'processing' | 'success' | 'error' | 'web-redirect'>('checking');
   const [message, setMessage] = useState('');
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [nearestLocation, setNearestLocation] = useState<any>(null);
   const [distance, setDistance] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Calculate distance
   const calculateDistance = (loc1: Location, loc2: Location): number => {
@@ -70,8 +71,30 @@ export default function QRHandlerPage() {
     });
   };
 
+  // Check if device is mobile
   useEffect(() => {
-    if (!params.data || !deviceInfo) return;
+    const checkDevice = () => {
+      const userAgent = navigator.userAgent;
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+      setIsMobile(isMobileDevice);
+      
+      if (!isMobileDevice) {
+        setStatus('web-redirect');
+        setMessage('이 기능은 모바일 전용입니다. 웹에서는 관리자 대시보드를 이용해주세요.');
+        setLoading(false);
+        // 3초 후 홈으로 리디렉트
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
+        return;
+      }
+    };
+    
+    checkDevice();
+  }, [router]);
+
+  useEffect(() => {
+    if (!params.data || !deviceInfo || !isMobile) return;
 
     const processQRCode = async () => {
       try {
@@ -163,8 +186,40 @@ export default function QRHandlerPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+        {/* Web Redirect State */}
+        {status === 'web-redirect' && (
+          <div className="text-center">
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">모바일 전용 기능</h2>
+            <p className="text-gray-600 mb-6">{message}</p>
+            
+            <div className="bg-blue-50 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-blue-900 mb-2">웹에서 사용 가능한 기능:</h3>
+              <ul className="text-sm text-blue-800 text-left space-y-1">
+                <li>• 직원 근태 관리 대시보드</li>
+                <li>• 출퇴근 기록 조회 및 승인</li>
+                <li>• 근무 보고서 생성</li>
+                <li>• 직원 정보 관리</li>
+              </ul>
+            </div>
+            
+            <button
+              onClick={() => router.push('/')}
+              className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-[1.02]"
+            >
+              로그인 페이지로 이동
+            </button>
+            
+            <p className="text-sm text-gray-500 mt-3">잠시 후 자동으로 이동합니다...</p>
+          </div>
+        )}
+
         {/* Loading State */}
-        {(loading || status === 'checking' || status === 'gps' || status === 'processing') && (
+        {(loading || status === 'checking' || status === 'gps' || status === 'processing') && status !== 'web-redirect' && (
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
