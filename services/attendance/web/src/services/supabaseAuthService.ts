@@ -221,7 +221,13 @@ export class SupabaseAuthService {
    */
   async getCurrentUser(): Promise<User | null> {
     try {
-      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
+      const result = await supabase.auth.getUser();
+      
+      if (!result || !result.data) {
+        return null;
+      }
+
+      const { data: { user: supabaseUser }, error } = result;
       
       if (error) {
         console.error('Get user error:', error);
