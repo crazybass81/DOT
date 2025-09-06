@@ -330,7 +330,7 @@ CREATE POLICY "Admins can view users in their organization"
     TO authenticated
     USING (
         auth.jwt() ->> 'role' = 'admin' AND
-        organization_id = auth.jwt() ->> 'organization_id'
+        organization_id::text = auth.jwt() ->> 'organization_id'
     );
 
 CREATE POLICY "Managers can view their team members"
@@ -338,7 +338,7 @@ CREATE POLICY "Managers can view their team members"
     TO authenticated
     USING (
         auth.jwt() ->> 'role' = 'manager' AND
-        organization_id = auth.jwt() ->> 'organization_id' AND
+        organization_id::text = auth.jwt() ->> 'organization_id' AND
         id IN (
             SELECT user_id FROM employees 
             WHERE manager_id = (
@@ -358,7 +358,7 @@ CREATE POLICY "Organization members can view employees"
     ON employees FOR SELECT
     TO authenticated
     USING (
-        organization_id = auth.jwt() ->> 'organization_id' OR
+        organization_id::text = auth.jwt() ->> 'organization_id' OR
         auth.jwt() ->> 'role' = 'master_admin'
     );
 
@@ -367,7 +367,7 @@ CREATE POLICY "Admins can manage employees in their organization"
     TO authenticated
     USING (
         (auth.jwt() ->> 'role' = 'admin' AND 
-         organization_id = auth.jwt() ->> 'organization_id') OR
+         organization_id::text = auth.jwt() ->> 'organization_id') OR
         auth.jwt() ->> 'role' = 'master_admin'
     );
 
@@ -409,7 +409,7 @@ CREATE POLICY "Managers can manage team attendance"
         (auth.jwt() ->> 'role' IN ('admin', 'manager') AND
          employee_id IN (
              SELECT id FROM employees 
-             WHERE organization_id = auth.jwt() ->> 'organization_id'
+             WHERE organization_id::text = auth.jwt() ->> 'organization_id'
          )) OR
         auth.jwt() ->> 'role' = 'master_admin'
     );
@@ -431,7 +431,7 @@ CREATE POLICY "Admins can view audit logs for their organization"
     TO authenticated
     USING (
         (auth.jwt() ->> 'role' = 'admin' AND 
-         organization_id = auth.jwt() ->> 'organization_id') OR
+         organization_id::text = auth.jwt() ->> 'organization_id') OR
         auth.jwt() ->> 'role' = 'master_admin'
     );
 
