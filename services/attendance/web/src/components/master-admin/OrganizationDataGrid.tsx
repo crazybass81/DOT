@@ -26,6 +26,12 @@ interface OrganizationDataGridProps {
   onPageChange: (page: number, pageSize?: number) => void;
   isLoading?: boolean;
   isRefetching?: boolean;
+  currentUser?: {
+    id: string;
+    role: string;
+    name: string;
+  };
+  onOrganizationStatusChange?: (organizationId: string, newStatus: OrganizationStatus) => void;
 }
 
 export function OrganizationDataGrid({
