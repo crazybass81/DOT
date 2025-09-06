@@ -178,8 +178,8 @@ export class RegistrationAPI {
   async register(data: RegistrationData): Promise<{
     success: boolean
     user?: any
-    employee?: Employee
-    organization?: Organization
+    identity?: any
+    organization?: any
     error?: string
   }> {
     try {
@@ -206,106 +206,72 @@ export class RegistrationAPI {
         return { success: false, error: authError?.message || '계정 생성 실패' }
       }
 
-      // 3. 조직 생성 (개인사업자/법인/가맹본부인 경우)
-      let organization: Organization | undefined
-      let role: 'EMPLOYEE' | 'ADMIN' = 'EMPLOYEE'
-      let roleType: 'WORKER' | 'ADMIN' = 'WORKER'
+      // 3. 통합 신원 생성
+      const identityResult = await unifiedIdentityService.createIdentity({
+        email: data.email,
+        full_name: data.fullName,
+        phone: data.phone,
+        birth_date: data.birthDate,
+        id_type: data.registrationType === 'personal' ? 'personal' : 'business',
+        auth_user_id: authUser.user.id,
+        verification_status: 'pending',
+        verification_method: data.registrationType === 'personal' ? 'email' : 'business_registration'
+      })
 
-      if (data.registrationType !== 'personal' && data.businessInfo) {
+      if (!identityResult.success) {
+        console.error('Identity creation error:', identityResult.error)
+        try {
+          await this.supabase.auth.signOut()
+        } catch (cleanupError) {
+          console.error('Cleanup error:', cleanupError)
+        }
+        return { success: false, error: identityResult.error || '신원 생성 실패' }
+      }
+
+      // 4. 조직 생성 (개인사업자/법인/가맹본부인 경우)
+      let organization: any = undefined
+
+      if (data.registrationType !== 'personal' && data.businessInfo && identityResult.identity) {
         const bizType = data.registrationType === 'business_owner' ? 'PERSONAL' :
                        data.registrationType === 'corporation_founder' ? 'CORP' :
                        'FRANCHISE'
 
-        const orgCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+        const orgResult = await organizationService.createOrganization({
+          name: data.businessInfo.name,
+          business_type: bizType,
+          business_registration_number: data.businessInfo.bizNumber,
+          address: data.businessInfo.address || '',
+          founder_identity_id: identityResult.identity.id,
+          metadata: {
+            founded_at: new Date().toISOString(),
+            is_active: true
+          }
+        })
 
-        const { data: newOrg, error: orgError } = await this.supabase
-          .from('organizations')
-          .insert({
-            name: data.businessInfo.name,
-            metadata: {
-              code: orgCode,  // metadata에 저장
-              business_type: bizType,
-              business_number: data.businessInfo.bizNumber,
-              founder_id: authUser.user.id,
-              founded_at: new Date().toISOString(),
-              address: data.businessInfo.address || null,
-              is_active: true
-            }
-          })
-          .select()
-          .single()
-
-        if (orgError) {
-          console.error('Organization creation error:', orgError)
-          // Auth 계정 삭제
-          await this.supabase.auth.admin.deleteUser(authUser.user.id)
+        if (!orgResult.success) {
+          console.error('Organization creation error:', orgResult.error)
           return { success: false, error: '조직 생성 실패' }
         }
 
-        organization = newOrg
-        role = 'ADMIN'
-        roleType = 'ADMIN'
-      }
+        organization = orgResult.organization
 
-      // 4. employees 테이블에 추가
-      const { data: employee, error: empError } = await this.supabase
-        .from('employees')
-        .insert({
-          user_id: authUser.user.id,  // auth_user_id -> user_id
-          organization_id: organization?.id,
-          email: data.email,
-          phone: data.phone,
-          name: data.fullName,
-          birth_date: data.birthDate,
-          position: role === 'ADMIN' ? 'admin' : 'worker',  // role -> position
-          is_active: true
+        // 5. 조직에 관리자 역할 할당
+        const roleResult = await organizationService.assignRole({
+          identityId: identityResult.identity.id,
+          organizationId: organization.id,
+          role: 'admin',
+          assignedBy: identityResult.identity.id
         })
-        .select()
-        .single()
 
-      if (empError) {
-        console.error('Employee creation error:', empError)
-        // Auth 계정 삭제
-        await this.supabase.auth.admin.deleteUser(authUser.user.id)
-        return { success: false, error: '직원 정보 생성 실패' }
-      }
-
-      // 5. user_roles 테이블에 역할 추가
-      if (organization) {
-        const { error: roleError } = await this.supabase
-          .from('user_roles')
-          .insert({
-            user_id: authUser.user.id,  // employee_id -> user_id
-            organization_id: organization.id,
-            role: roleType === 'ADMIN' ? 'admin' : 'worker',  // role_type -> role
-            is_active: true
-          })
-
-        if (roleError) {
-          console.error('Role assignment error:', roleError)
+        if (!roleResult.success) {
+          console.error('Role assignment error:', roleResult.error)
         }
-      }
-
-      // 6. 청소년인 경우 계약 정보에 표시
-      if (age < 18) {
-        // contracts 테이블에 청소년 표시를 위한 준비
-        // 실제 계약은 나중에 생성됨
-        await this.supabase
-          .from('employees')
-          .update({
-            metadata: {
-              ...employee.metadata,
-              is_teen: true,
-              requires_parent_consent: true
-            }
-          })
-          .eq('id', employee.id)
       }
 
       return {
         success: true,
         user: authUser.user,
-        employee,
+        identity: identityResult.identity,
         organization
       }
     } catch (error) {
