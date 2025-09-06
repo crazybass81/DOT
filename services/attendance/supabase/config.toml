@@ -49,6 +49,5 @@ gcp_project_id = "analytics"
 gcp_project_number = "1234567890"
 gcp_jwt_path = "supabase/gcloud.json"
 
-[functions]
+[edge_functions]
 enabled = true
-verify_jwt = false
