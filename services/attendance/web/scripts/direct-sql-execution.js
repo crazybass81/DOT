@@ -71,7 +71,7 @@ async function executeStepByStep() {
     console.log(unifiedIdentitiesSQL)
     
     console.log('\\n2. ORGANIZATIONS_V3 TABLE:')
-    console.log(\`
+    console.log(`
       CREATE TABLE IF NOT EXISTS organizations_v3 (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         code TEXT UNIQUE NOT NULL,
@@ -95,7 +95,7 @@ async function executeStepByStep() {
     `)
     
     console.log('\\n3. ROLE ASSIGNMENTS TABLE:')
-    console.log(\`
+    console.log(`
       CREATE TABLE IF NOT EXISTS role_assignments (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         identity_id UUID NOT NULL REFERENCES unified_identities(id) ON DELETE CASCADE,
@@ -117,14 +117,14 @@ async function executeStepByStep() {
     `)
     
     console.log('\\n4. Enable RLS on all tables:')
-    console.log(\`
+    console.log(`
       ALTER TABLE unified_identities ENABLE ROW LEVEL SECURITY;
       ALTER TABLE organizations_v3 ENABLE ROW LEVEL SECURITY;
       ALTER TABLE role_assignments ENABLE ROW LEVEL SECURITY;
     \`)
     
     console.log('\\n5. Create basic RLS policies:')
-    console.log(\`
+    console.log(`
       CREATE POLICY "Users can view own identity" ON unified_identities FOR SELECT USING (auth_user_id = auth.uid());
       CREATE POLICY "Users can update own identity" ON unified_identities FOR UPDATE USING (auth_user_id = auth.uid());
       CREATE POLICY "Allow identity creation for authenticated users" ON unified_identities FOR INSERT WITH CHECK (auth_user_id = auth.uid());
