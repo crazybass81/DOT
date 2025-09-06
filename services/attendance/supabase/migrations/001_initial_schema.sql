@@ -376,8 +376,8 @@ CREATE POLICY "Employees can view their own attendance"
     ON attendance FOR SELECT
     TO authenticated
     USING (
-        employee_id::text IN (
-            SELECT id::text FROM employees WHERE user_id = auth.uid()
+        employee_id IN (
+            SELECT id FROM employees WHERE user_id = auth.uid()
         )
     );
 
