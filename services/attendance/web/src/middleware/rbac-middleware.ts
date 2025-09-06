@@ -75,54 +75,39 @@ async function getUserRoles(userId: string, useCache = false): Promise<MultiRole
   }
 
   try {
-    // 사용자와 역할 정보를 JOIN으로 한번에 조회
-    const { data, error } = await supabase
-      .from('employees')
-      .select(`
-        id,
-        email,
-        name,
-        is_master_admin,
-        user_roles (
-          id,
-          employee_id,
-          organization_id,
-          role_type,
-          is_active,
-          granted_at
-        )
-      `)
-      .eq('id', userId)
-      .single();
-
-    if (error || !data) {
+    // 통합 시스템에서 사용자 정보와 역할 조회
+    const user = await supabaseAuthService.getCurrentUser();
+    if (!user || user.id !== userId) {
       throw new Error('User not found');
     }
 
-    const user: MultiRoleUser = {
-      id: data.id,
-      email: data.email,
-      name: data.name,
-      isMasterAdmin: data.is_master_admin,
-      roles: (data.user_roles || []).map((role: any) => ({
+    const userRoles = await organizationService.getUserRoles(userId);
+    const isMasterAdmin = await supabaseAuthService.isMasterAdmin();
+
+    const multiRoleUser: MultiRoleUser = {
+      id: user.id,
+      email: user.email,
+      name: user.full_name,
+      isMasterAdmin: isMasterAdmin,
+      roles: (userRoles || []).map((role: any) => ({
         id: role.id,
-        employeeId: role.employee_id,
-        organizationId: role.organization_id,
-        roleType: role.role_type as RoleType,
-        isActive: role.is_active,
-        grantedAt: new Date(role.granted_at)
+        employeeId: role.identityId, // unified system uses identityId
+        organizationId: role.organizationId,
+        roleType: role.role.toUpperCase() as RoleType, // Convert to RoleType enum
+        isActive: role.isActive,
+        grantedAt: new Date(role.assignedAt)
       }))
     };
 
     // 캐시에 저장 (5분 TTL)
     if (useCache) {
       permissionCache.set(cacheKey, {
-        data: user,
+        data: multiRoleUser,
         expires: Date.now() + 5 * 60 * 1000
       });
     }
 
-    return user;
+    return multiRoleUser;
   } catch (error) {
     console.error('Error fetching user roles:', error);
     throw error;
