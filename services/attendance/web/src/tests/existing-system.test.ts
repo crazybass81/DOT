@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals'
 import { createClient } from '@supabase/supabase-js'
-import { supabaseAuthService } from '../services/supabaseAuthService'
+// import { supabaseAuthService } from '../services/supabaseAuthService' // Commented out for now
 
 // Get environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co'
