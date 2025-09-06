@@ -50,11 +50,17 @@ export class IdentityService {
       }
 
       // Insert identity
-      const { data, error } = await this.supabase
+      const response = await this.supabase
         .from('unified_identities')
         .insert(identityData)
         .select()
         .single()
+
+      if (!response) {
+        return { success: false, error: 'No response from database' }
+      }
+
+      const { data, error } = response
 
       if (error) {
         console.error('Failed to create identity:', error)
