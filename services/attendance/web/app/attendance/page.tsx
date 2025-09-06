@@ -190,7 +190,7 @@ export default function AttendancePage() {
   // Check authentication
   useEffect(() => {
     const checkAuth = () => {
-      const isAuthenticated = cognitoAuthService.isAuthenticated();
+      const isAuthenticated = await unifiedAuthService.isAuthenticated();
       if (!isAuthenticated) {
         router.push('/login');
       }
