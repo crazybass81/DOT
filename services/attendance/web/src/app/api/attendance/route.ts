@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withRBAC } from '@/middleware/rbac-middleware';
-import { RoleType } from '@/types/multi-role';
+import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { organizationService } from '@/services/organizationService';
 
 /**
  * 출근 기록 조회 API
@@ -23,72 +23,75 @@ export async function GET(request: NextRequest) {
 
       try {
         let query = supabase
-          .from('attendance')
+          .from('attendance_records')
           .select(`
             id,
-            user_id,
-            organization_id,
+            employee_id,
+            business_id,
             check_in_time,
             check_out_time,
-            break_start_time,
-            break_end_time,
-            total_hours,
-            overtime_hours,
-            location_lat,
-            location_lng,
-            location_address,
-            notes,
+            work_date,
+            check_in_location,
+            check_out_location,
+            verification_method,
             status,
-            approved_by,
+            notes,
+            break_time_minutes,
+            overtime_minutes,
             created_at,
             updated_at,
-            users (
+            unified_identities:employee_id (
               id,
-              name,
+              full_name,
               email,
               phone
             ),
-            organizations (
+            organizations_v3:business_id (
               id,
               name,
               type
             )
           `);
 
+        // Get current authenticated user
+        const currentUser = await supabaseAuthService.getCurrentUser();
+        if (!currentUser) {
+          return NextResponse.json(
+            { error: '인증이 필요합니다.' },
+            { status: 401 }
+          );
+        }
+
+        // Check if user has admin role
+        const isAdmin = await supabaseAuthService.hasRole('admin');
+        const isMaster = await supabaseAuthService.hasRole('master');
+        
         // 마스터 어드민이 아닌 경우, 접근 권한 제한
-        if (!user.is_master_admin) {
+        if (!isMaster) {
           // 관리자 권한이 있는 조직들 조회
-          const userRolesQuery = await supabase
-            .from('user_roles')
-            .select('organization_id, role')
-            .eq('user_id', user.id)
-            .eq('is_active', true);
-
-          if (userRolesQuery.error) {
-            throw userRolesQuery.error;
-          }
-
-          const managementRoles = [RoleType.ADMIN, RoleType.MANAGER, RoleType.FRANCHISE];
-          const managedOrganizationIds = userRolesQuery.data
+          const userRoles = await organizationService.getUserRoles(currentUser.id);
+          
+          const managementRoles = ['admin', 'manager', 'franchise_admin'];
+          const managedOrganizationIds = userRoles
             .filter(role => managementRoles.includes(role.role))
-            .map(role => role.organization_id);
+            .map(role => role.organizationId);
 
           // 자신의 기록 또는 관리 권한이 있는 조직의 기록만 조회
           if (managedOrganizationIds.length > 0) {
-            query = query.or(`user_id.eq.${user.id},organization_id.in.(${managedOrganizationIds.join(',')})`);
+            query = query.or(`employee_id.eq.${currentUser.id},business_id.in.(${managedOrganizationIds.join(',')})`);
           } else {
             // 관리 권한이 없는 경우, 자신의 기록만 조회
-            query = query.eq('user_id', user.id);
+            query = query.eq('employee_id', currentUser.id);
           }
         }
 
         // 필터링 조건 적용
         if (organizationId) {
-          query = query.eq('organization_id', organizationId);
+          query = query.eq('business_id', organizationId);
         }
 
         if (userId) {
-          query = query.eq('user_id', userId);
+          query = query.eq('employee_id', userId);
         }
 
         if (startDate) {
@@ -114,30 +117,25 @@ export async function GET(request: NextRequest) {
 
         // 전체 카운트 조회 (페이지네이션용)
         let countQuery = supabase
-          .from('attendance')
+          .from('attendance_records')
           .select('id', { count: 'exact', head: true });
 
-        if (!user.is_master_admin) {
-          const userRolesQuery = await supabase
-            .from('user_roles')
-            .select('organization_id, role')
-            .eq('user_id', user.id)
-            .eq('is_active', true);
-
-          const managementRoles = [RoleType.ADMIN, RoleType.MANAGER, RoleType.FRANCHISE];
-          const managedOrganizationIds = userRolesQuery.data
+        if (!isMaster) {
+          const userRoles = await organizationService.getUserRoles(currentUser.id);
+          const managementRoles = ['admin', 'manager', 'franchise_admin'];
+          const managedOrganizationIds = userRoles
             .filter(role => managementRoles.includes(role.role))
-            .map(role => role.organization_id);
+            .map(role => role.organizationId);
 
           if (managedOrganizationIds.length > 0) {
-            countQuery = countQuery.or(`user_id.eq.${user.id},organization_id.in.(${managedOrganizationIds.join(',')})`);
+            countQuery = countQuery.or(`employee_id.eq.${currentUser.id},business_id.in.(${managedOrganizationIds.join(',')})`);
           } else {
-            countQuery = countQuery.eq('user_id', user.id);
+            countQuery = countQuery.eq('employee_id', currentUser.id);
           }
         }
 
-        if (organizationId) countQuery = countQuery.eq('organization_id', organizationId);
-        if (userId) countQuery = countQuery.eq('user_id', userId);
+        if (organizationId) countQuery = countQuery.eq('business_id', organizationId);
+        if (userId) countQuery = countQuery.eq('employee_id', userId);
         if (startDate) countQuery = countQuery.gte('check_in_time', startDate);
         if (endDate) countQuery = countQuery.lte('check_in_time', endDate);
         if (status) countQuery = countQuery.eq('status', status);
