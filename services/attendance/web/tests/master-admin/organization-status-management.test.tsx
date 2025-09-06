@@ -77,19 +77,24 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-describe('🔴 Red Phase: OrganizationStatusToggle', () => {
+describe('🟢 Green Phase: OrganizationStatusToggle', () => {
   test('개별 조직의 상태 토글 버튼이 렌더링된다', () => {
-    expect(() => {
-      render(
-        <TestWrapper>
-          <OrganizationStatusToggle 
-            organization={mockOrganization}
-            onStatusChange={jest.fn()}
-            currentUser={mockMasterAdminUser}
-          />
-        </TestWrapper>
-      );
-    }).toThrow(); // 컴포넌트가 아직 존재하지 않으므로 에러 발생
+    render(
+      <TestWrapper>
+        <OrganizationStatusToggle 
+          organization={mockOrganization}
+          onStatusChange={jest.fn()}
+          currentUser={mockMasterAdminUser}
+        />
+      </TestWrapper>
+    );
+    
+    // 상태 토글 버튼이 존재하는지 확인
+    const statusToggle = screen.getByTestId(`status-toggle-${mockOrganization.id}`);
+    expect(statusToggle).toBeInTheDocument();
+    
+    // 현재 상태가 표시되는지 확인
+    expect(statusToggle).toHaveTextContent('활성');
   });
 
   test('MASTER_ADMIN만 SUSPENDED 상태로 변경할 수 있다', () => {
