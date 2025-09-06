@@ -556,7 +556,13 @@ export class SupabaseAuthService {
    */
   async isMasterAdmin(): Promise<boolean> {
     try {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      const result = await supabase.auth.getUser();
+      
+      if (!result || !result.data) {
+        return false;
+      }
+
+      const { data: { user: supabaseUser } } = result;
       
       if (!supabaseUser) {
         return false;
@@ -593,7 +599,13 @@ export class SupabaseAuthService {
    */
   async isVerified(): Promise<boolean> {
     try {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      const result = await supabase.auth.getUser();
+      
+      if (!result || !result.data) {
+        return false;
+      }
+
+      const { data: { user: supabaseUser } } = result;
       
       if (!supabaseUser) {
         return false;
@@ -628,7 +640,13 @@ export class SupabaseAuthService {
    */
   async hasRole(role: string): Promise<boolean> {
     try {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      const result = await supabase.auth.getUser();
+      
+      if (!result || !result.data) {
+        return false;
+      }
+
+      const { data: { user: supabaseUser } } = result;
       
       if (!supabaseUser) {
         return false;
@@ -665,7 +683,13 @@ export class SupabaseAuthService {
    */
   async getUserRoles(): Promise<string[]> {
     try {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      const result = await supabase.auth.getUser();
+      
+      if (!result || !result.data) {
+        return false;
+      }
+
+      const { data: { user: supabaseUser } } = result;
       
       if (!supabaseUser) {
         return [];
