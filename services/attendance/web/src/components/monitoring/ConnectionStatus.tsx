@@ -265,4 +265,3 @@ const ConnectionStatusComponent = function ConnectionStatus({
 
 // Memoize the component to prevent unnecessary re-renders
 export const ConnectionStatus = memo(ConnectionStatusComponent);
-}
