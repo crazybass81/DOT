@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { cognitoAuthService } from '@/services/cognitoAuthService';
+import { unifiedAuthService } from '@/services/unifiedAuthService';
 import { apiService } from '@/services/apiService';
 import { businessService } from '@/services/businessService';
 
