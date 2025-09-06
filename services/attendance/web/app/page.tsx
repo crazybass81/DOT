@@ -26,13 +26,6 @@ export default function Home() {
     ? testAccounts.filter(acc => acc.id.toLowerCase().includes(id.toLowerCase()))
     : testAccounts;
 
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const handleAccountSelect = (account: { id: string, password?: string }) => {
     setId(account.id);
