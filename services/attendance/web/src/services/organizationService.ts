@@ -22,7 +22,7 @@ import {
 import { identityService } from './identityService'
 
 export class OrganizationService {
-  private supabase = createClient()
+  private supabase = supabase
 
   /**
    * Create new organization with business validation
