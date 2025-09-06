@@ -397,8 +397,8 @@ CREATE POLICY "Workers can create their own attendance"
     ON attendance FOR INSERT
     TO authenticated
     WITH CHECK (
-        employee_id::text IN (
-            SELECT id::text FROM employees WHERE user_id = auth.uid()
+        employee_id IN (
+            SELECT id FROM employees WHERE user_id = auth.uid()
         )
     );
 
