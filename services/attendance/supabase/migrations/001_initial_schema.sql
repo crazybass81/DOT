@@ -338,12 +338,12 @@ CREATE POLICY "Managers can view their team members"
     TO authenticated
     USING (
         auth.jwt() ->> 'role' = 'manager' AND
-        organization_id::text = auth.jwt() ->> 'organization_id' AND
-        id::text IN (
-            SELECT user_id::text FROM employees 
-            WHERE manager_id::text = (
-                SELECT id::text FROM employees 
-                WHERE user_id::text = auth.uid()::text
+        organization_id = (auth.jwt() ->> 'organization_id')::uuid AND
+        id IN (
+            SELECT user_id FROM employees 
+            WHERE manager_id = (
+                SELECT id FROM employees 
+                WHERE user_id = auth.uid()
             )
         )
     );
