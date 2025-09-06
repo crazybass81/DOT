@@ -7,6 +7,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { Organization, OrganizationListSort, OrganizationType, OrganizationStatus } from '@/types/organization.types';
+import { OrganizationStatusToggle } from './OrganizationStatusToggle';
 
 interface PaginationInfo {
   total: number;
