@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type {
   ConnectionUser,
@@ -8,7 +8,7 @@ import type {
   UseRealtimeConnectionsOptions,
 } from '../types/monitoring';
 
-const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'ws://localhost:3003';
+const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3003';
 
 const initialStats: ConnectionStats = {
   totalConnections: 0,
@@ -35,6 +35,10 @@ export function useRealtimeConnections(options: UseRealtimeConnectionsOptions = 
     onError,
   } = options;
 
+  // Memoize callbacks to prevent unnecessary re-renders
+  const memoizedOnConnectionStateChange = useMemo(() => onConnectionStateChange, [onConnectionStateChange]);
+  const memoizedOnError = useMemo(() => onError, [onError]);
+
   const [state, setState] = useState<RealtimeConnectionsState>(initialState);
   const socketRef = useRef<Socket | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -43,17 +47,17 @@ export function useRealtimeConnections(options: UseRealtimeConnectionsOptions = 
   const updateConnectionStatus = useCallback(
     (status: RealtimeConnectionsState['connectionStatus']) => {
       setState(prev => ({ ...prev, connectionStatus: status }));
-      onConnectionStateChange?.(status);
+      memoizedOnConnectionStateChange?.(status);
     },
-    [onConnectionStateChange]
+    [memoizedOnConnectionStateChange]
   );
 
   const handleError = useCallback(
     (errorMessage: string) => {
       setState(prev => ({ ...prev, error: errorMessage, connectionStatus: 'error' }));
-      onError?.(errorMessage);
+      memoizedOnError?.(errorMessage);
     },
-    [onError]
+    [memoizedOnError]
   );
 
   const handleConnectionUpdate = useCallback((event: WebSocketConnectionEvent) => {
