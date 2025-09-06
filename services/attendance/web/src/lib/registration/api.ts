@@ -289,43 +289,18 @@ export class RegistrationAPI {
   async login(email: string, password: string): Promise<{
     success: boolean
     user?: any
-    employee?: Employee
-    roles?: UserRole[]
+    identity?: any
+    roles?: any[]
     error?: string
   }> {
     try {
-      const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (authError || !authData.user) {
-        return { success: false, error: authError?.message || '로그인 실패' }
-      }
-
-      // 직원 정보 조회
-      const { data: employee } = await this.supabase
-        .from('employees')
-        .select('*')
-        .eq('user_id', authData.user.id)  // auth_user_id -> user_id
-        .single()
-
-      if (!employee) {
-        return { success: false, error: '직원 정보를 찾을 수 없습니다.' }
-      }
-
-      // 역할 정보 조회
-      const { data: roles } = await this.supabase
-        .from('user_roles')
-        .select('*')
-        .eq('employee_id', employee.id)
-        .eq('is_active', true)
-
+      const result = await supabaseAuthService.signIn(email, password)
+      
       return {
         success: true,
-        user: authData.user,
-        employee,
-        roles: roles || []
+        user: result,
+        identity: result,
+        roles: [] // Will be populated by the auth service
       }
     } catch (error) {
       return {
