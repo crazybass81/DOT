@@ -3,7 +3,7 @@
  * Supabase Functions API를 통하지 않고 직접 HTTP 요청으로 테스트
  */
 
-import fetch from 'node-fetch'
+import 'cross-fetch/polyfill'
 
 describe('Edge Functions 직접 HTTP 호출 테스트', () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co'
