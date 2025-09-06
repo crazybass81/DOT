@@ -22,6 +22,8 @@
     "test:sql-injection": "jest --testPathPattern=tests/security/sql-injection.test.ts",
     "test:performance": "jest --config=../tests/jest.integration.config.js --testNamePattern='Performance|performance'",
     "test:cleanup": "node -e \"console.log('Manual cleanup would run here')\"",
+    "test:real-connection": "REAL_SUPABASE_TEST=true jest __tests__/lib/supabase/connection.test.ts",
+    "test:connection": "npx tsx scripts/test-real-connection.ts",
     "deploy": "./scripts/deploy.sh",
     "setup:test-user": "node ../scripts/setup-test-user.js",
     "test:auth": "node ../scripts/setup-test-user.js && echo '✅ 인증 테스트 완료!'"
