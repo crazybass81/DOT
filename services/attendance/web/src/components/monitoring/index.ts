@@ -1,10 +1,11 @@
-export { ConnectionStatus } from './ConnectionStatus';
-export { ConnectionStatusErrorBoundary } from './ConnectionStatusErrorBoundary';
-export { RealtimeMonitoringDashboard } from './RealtimeMonitoringDashboard';
-export type { 
-  ConnectionUser, 
-  ConnectionStats, 
-  RealtimeConnectionsState,
-  WebSocketConnectionEvent,
-  UseRealtimeConnectionsOptions
-} from '../../types/monitoring';
+/**
+ * Monitoring Components Export Index
+ * API 성능 모니터링 컴포넌트들
+ */
+
+export { ApiMetricsDashboard } from './ApiMetricsDashboard';
+
+// 추가적인 모니터링 컴포넌트들은 여기에 export
+// export { RealtimeChart } from './RealtimeChart';
+// export { AlertNotifications } from './AlertNotifications';
+// export { MetricsTable } from './MetricsTable';
