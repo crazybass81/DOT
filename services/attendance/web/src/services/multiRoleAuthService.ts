@@ -277,15 +277,18 @@ export class MultiRoleAuthService {
   }
 
   /**
-   * 사용자 역할 비활성화
+   * 사용자 역할 비활성화 (통합 테이블 사용)
    */
   async deactivateUserRole(userId: string, roleId: string): Promise<ApiResponse<void>> {
     try {
       const { error } = await supabase
-        .from('user_roles')
-        .update({ is_active: false })
+        .from('role_assignments')  // Updated table name
+        .update({ 
+          is_active: false,
+          revoked_at: new Date().toISOString()  // Track when role was revoked
+        })
         .eq('id', roleId)
-        .eq('employees.user_id', userId);
+        .eq('identity_id', userId);  // Updated field name
 
       if (error) {
         return {
