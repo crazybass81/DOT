@@ -80,30 +80,32 @@ global.Headers = class MockHeaders extends Map {
   }
 };
 
-// Mock Supabase
-jest.mock('./src/lib/supabase-config', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockResolvedValue({ error: null }),
-      update: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn(),
-      maybeSingle: jest.fn(),
-    })),
-    auth: {
-      getUser: jest.fn(),
-      getSession: jest.fn(),
-      signIn: jest.fn(),
-      signUp: jest.fn(),
-      signOut: jest.fn(),
+// Conditionally mock Supabase - skip for real connection tests
+if (!process.env.REAL_SUPABASE_TEST) {
+  // Mock Supabase
+  jest.mock('./src/lib/supabase-config', () => ({
+    supabase: {
+      from: jest.fn(() => ({
+        select: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockResolvedValue({ error: null }),
+        update: jest.fn().mockReturnThis(),
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn(),
+        maybeSingle: jest.fn(),
+      })),
+      auth: {
+        getUser: jest.fn(),
+        getSession: jest.fn(),
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+      }
     }
-  }
-}));
+  }));
 
-// Mock Supabase Server Client
-jest.mock('./src/lib/supabase/server', () => ({
+  // Mock Supabase Server Client
+  jest.mock('./src/lib/supabase/server', () => ({
   createClient: jest.fn(() => {
     const mockQuery = {
       select: jest.fn().mockReturnThis(),
