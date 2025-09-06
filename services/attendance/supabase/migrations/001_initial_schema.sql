@@ -330,7 +330,7 @@ CREATE POLICY "Admins can view users in their organization"
     TO authenticated
     USING (
         auth.jwt() ->> 'role' = 'admin' AND
-        organization_id::text = auth.jwt() ->> 'organization_id'
+        organization_id = (auth.jwt() ->> 'organization_id')::uuid
     );
 
 CREATE POLICY "Managers can view their team members"
