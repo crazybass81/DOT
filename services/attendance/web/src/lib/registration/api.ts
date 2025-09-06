@@ -108,7 +108,7 @@ export class RegistrationAPI {
   }): Promise<{
     success: boolean
     user?: any
-    employee?: Employee
+    identity?: any
     error?: string
   }> {
     try {
@@ -135,37 +135,33 @@ export class RegistrationAPI {
         return { success: false, error: authError?.message || '계정 생성 실패' }
       }
 
-      // 3. employees 테이블 생성 시도 (실패해도 계속 진행)
-      let employee = null
-      try {
-        const { data: emp, error: empError } = await this.supabase
-          .from('employees')
-          .insert({
-            user_id: authUser.user.id,
-            name: data.fullName,
-            email: data.email,
-            phone: data.phone,
-            birth_date: data.birthDate,
-            is_active: true
-          })
-          .select()
-          .single()
-          
-        if (empError) {
-          console.log('Employee record creation failed (table may not exist):', empError.message)
-          // employees 테이블이 없어도 auth 계정은 생성되었으므로 성공으로 처리
-        } else {
-          employee = emp
+      // 3. unified_identities 테이블에 통합 신원 생성
+      const identityResult = await unifiedIdentityService.createIdentity({
+        email: data.email,
+        full_name: data.fullName,
+        phone: data.phone,
+        birth_date: data.birthDate,
+        id_type: 'personal',
+        auth_user_id: authUser.user.id,
+        verification_status: 'pending',
+        verification_method: 'email'
+      })
+
+      if (!identityResult.success) {
+        console.error('Identity creation error:', identityResult.error)
+        // Auth 계정 정리
+        try {
+          await this.supabase.auth.signOut()
+        } catch (cleanupError) {
+          console.error('Cleanup error:', cleanupError)
         }
-      } catch (err) {
-        console.log('Employee table access failed, continuing without it')
+        return { success: false, error: identityResult.error || '신원 생성 실패' }
       }
 
-      // Auth 계정은 생성되었으므로 성공 반환
       return {
         success: true,
         user: authUser.user,
-        employee
+        identity: identityResult.identity
       }
     } catch (error) {
       console.error('Registration error:', error)
