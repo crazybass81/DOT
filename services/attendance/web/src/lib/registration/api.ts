@@ -1,5 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { supabase, supabaseUrl, supabaseAnonKey } from '../supabase-config'
+import { unifiedIdentityService } from '../../services/unifiedIdentityService'
+import { organizationService } from '../../services/organizationService'
+import { supabaseAuthService } from '../../services/supabaseAuthService'
 
 export interface RegistrationData {
   email: string
