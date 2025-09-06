@@ -312,7 +312,7 @@ CREATE POLICY "Master admins can view all organizations"
 CREATE POLICY "Users can view their own organization"
     ON organizations FOR SELECT
     TO authenticated
-    USING (id = auth.jwt() ->> 'organization_id');
+    USING (id::text = auth.jwt() ->> 'organization_id');
 
 CREATE POLICY "Master admins can manage all organizations"
     ON organizations FOR ALL
