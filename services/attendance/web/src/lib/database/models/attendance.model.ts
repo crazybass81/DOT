@@ -1,14 +1,17 @@
-// Attendance Model for Supabase
-export interface AttendanceRecord {
-  // Primary Key
-  attendanceId: string;
-  employeeId: string;
-  
-  // Attendance Details
-  date: string;         // ISO date string (YYYY-MM-DD)
-  checkInTime?: string; // ISO timestamp
-  checkOutTime?: string; // ISO timestamp
-  status: AttendanceStatus;
+// 통합 출근 관리 모델 (공통 타입 사용)
+import { 
+  AttendanceRecord as CommonAttendanceRecord,
+  AttendanceStatus,
+  AttendanceMethod,
+  LocationData,
+  DeviceInfo
+} from '../../types/common-attendance-types';
+
+// Supabase 데이터베이스용 출근 기록 (공통 타입 확장)
+export interface AttendanceRecord extends CommonAttendanceRecord {
+  // 기본 식별자 (공통 타입과 호환성 유지)
+  attendanceId?: string; // 레거시 호환성을 위해 선택적으로 유지
+}
   
   // Work Details
   scheduledStartTime?: string;
