@@ -38,15 +38,17 @@ describe('Phase 4.1.1: Supabase 실제 DB 연결 및 기본 설정', () => {
     // organizations 테이블이 존재하는지 확인
     const { data, error } = await supabase
       .from('organizations')
-      .select('count(*)', { count: 'exact', head: true })
+      .select('*')
+      .limit(1)
 
     console.log('organizations 테이블 접근 결과:', { data, error })
 
     // 테이블이 존재하면 접근 가능해야 함 (RLS에 의해 데이터는 안 보일 수 있음)
     if (error) {
-      console.log('organizations 테이블이 아직 존재하지 않음:', error.message)
+      console.log('⚠️  organizations 테이블이 아직 존재하지 않음:', error.message)
       expect(error.message).toContain('relation "public.organizations" does not exist')
     } else {
+      console.log('✅ organizations 테이블 존재 확인')
       expect(error).toBeNull()
     }
   })
