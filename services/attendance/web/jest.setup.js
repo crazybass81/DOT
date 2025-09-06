@@ -22,6 +22,21 @@ global.Response = class MockResponse {
 };
 
 global.Headers = class MockHeaders extends Map {
+  constructor(init) {
+    super();
+    if (init) {
+      if (typeof init === 'object' && !Array.isArray(init)) {
+        Object.entries(init).forEach(([key, value]) => {
+          this.set(key, value);
+        });
+      } else if (Array.isArray(init)) {
+        init.forEach(([key, value]) => {
+          this.set(key, value);
+        });
+      }
+    }
+  }
+  
   get(key) {
     return super.get(key.toLowerCase());
   }
@@ -32,6 +47,10 @@ global.Headers = class MockHeaders extends Map {
   
   has(key) {
     return super.has(key.toLowerCase());
+  }
+  
+  forEach(callback) {
+    super.forEach((value, key) => callback(value, key, this));
   }
 };
 
