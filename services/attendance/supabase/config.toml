@@ -22,7 +22,7 @@ max_client_conn = 100
 
 [realtime]
 enabled = true
-ip_version = "ipv4"
+ip_version = "IPv4"
 
 [storage]
 enabled = true
@@ -35,12 +35,6 @@ additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
 enable_signup = true
 email = true
-phone = true
-external_anonymous_users_enabled = false
-mailer_secure_email_change_enabled = true
-change_email_token_new = "You requested to change your email to {{ .Email }}. Please click the link to confirm: {{ .ConfirmationURL }}"
-change_email_token_current = "You requested to change your email to {{ .Email }}. Please click the link to confirm: {{ .ConfirmationURL }}"
-subject_line = "Confirm Your Email"
 
 [auth.external.apple]
 enabled = false
@@ -57,3 +51,4 @@ gcp_jwt_path = "supabase/gcloud.json"
 
 [functions]
 enabled = true
+verify_jwt = false
