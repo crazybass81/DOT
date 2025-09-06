@@ -38,8 +38,8 @@ const SQL_INJECTION_PATTERNS = [
 ];
 
 function getClientIp(request: NextRequest): string {
-  return request.headers.get('x-forwarded-for') || 
-         request.headers.get('x-real-ip') || 
+  return request.headers.get('x-real-ip') ||  // Prioritize real IP (more secure)
+         request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
          request.ip || 
          'unknown';
 }
@@ -56,26 +56,6 @@ function detectSQLInjection(value: string): boolean {
   }
   
   return false;
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const record = requestCounts.get(ip);
-  
-  if (!record || now > record.resetTime) {
-    requestCounts.set(ip, {
-      count: 1,
-      resetTime: now + RATE_LIMIT_WINDOW
-    });
-    return true;
-  }
-  
-  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
-    return false;
-  }
-  
-  record.count++;
-  return true;
 }
 
 export async function middleware(request: NextRequest) {
