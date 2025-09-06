@@ -65,7 +65,7 @@ async function executeStepByStep() {
     console.log('\\n📋 MANUAL CREATION REQUIRED:')
     console.log('Since we cannot execute DDL statements directly with the anon key,')
     console.log('you need to create the tables manually in Supabase Dashboard.')
-    console.log('\\nHere\\'s the simplified approach:')
+    console.log('\nHere\'s the simplified approach:')
     
     console.log('\\n1. UNIFIED IDENTITIES TABLE:')
     console.log(unifiedIdentitiesSQL)
