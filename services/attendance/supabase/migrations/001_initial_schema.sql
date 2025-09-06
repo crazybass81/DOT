@@ -386,9 +386,9 @@ CREATE POLICY "Managers can view team attendance"
     TO authenticated
     USING (
         auth.jwt() ->> 'role' IN ('admin', 'manager', 'master_admin') AND
-        employee_id::text IN (
-            SELECT id::text FROM employees 
-            WHERE organization_id = auth.jwt() ->> 'organization_id' OR
+        employee_id IN (
+            SELECT id FROM employees 
+            WHERE organization_id = (auth.jwt() ->> 'organization_id')::uuid OR
                   auth.jwt() ->> 'role' = 'master_admin'
         )
     );
