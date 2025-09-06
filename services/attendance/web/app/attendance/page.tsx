@@ -189,7 +189,7 @@ export default function AttendancePage() {
 
   // Check authentication
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const isAuthenticated = await unifiedAuthService.isAuthenticated();
       if (!isAuthenticated) {
         router.push('/login');
@@ -267,7 +267,7 @@ export default function AttendancePage() {
 
   const handleLogout = () => {
     console.log('[DEBUG] handleLogout called');
-    cognitoAuthService.signOut();
+    await unifiedAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {
