@@ -303,7 +303,8 @@ class _AttendancePageState extends ConsumerState<AttendancePage>
             title: const Text('Location Check'),
             subtitle: const Text('Check-in with location verification'),
             onTap: () {
-              // Navigate to location check
+              // PLAN-1: GPS 기반 출퇴근 처리로 이동
+              _navigateToLocationCheck();
             },
           ),
         ),
