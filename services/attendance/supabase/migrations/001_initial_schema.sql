@@ -150,6 +150,22 @@ CREATE TABLE attendance (
 );
 
 -- =====================================================
+-- TABLE: breaks
+-- =====================================================
+
+CREATE TABLE breaks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    attendance_id UUID NOT NULL REFERENCES attendance(id) ON DELETE CASCADE,
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ,
+    duration_minutes INTEGER,
+    status VARCHAR(20) DEFAULT 'ACTIVE', -- 'ACTIVE', 'COMPLETED'
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =====================================================
 -- TABLE: permissions
 -- =====================================================
 
