@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetc
 
 class ApiService {
   private async getAuthHeaders(): Promise<HeadersInit> {
-    const token = cognitoAuthService.getAccessToken();
+    const token = await unifiedAuthService.getSessionToken();
     
     return {
       'Content-Type': 'application/json',
