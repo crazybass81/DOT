@@ -334,7 +334,7 @@ export class SupabaseAuthService {
   }
 
   /**
-   * Link employee account to Supabase user
+   * Link employee account to Supabase user - Updated for unified identity system
    */
   async linkEmployeeAccount(employeeData: {
     name: string;
@@ -350,28 +350,39 @@ export class SupabaseAuthService {
         throw new Error('Not authenticated');
       }
 
-      // Check if employee record already exists - user_id 컬럼 사용
-      const { data: existingEmployee } = await supabase
-        .from('employees')
+      // Check if unified identity already exists
+      const { data: existingIdentity } = await supabase
+        .from('unified_identities')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('auth_user_id', session.user.id)
         .single();
 
-      if (existingEmployee) {
-        return existingEmployee;
+      if (existingIdentity) {
+        // Return existing identity mapped to Employee interface
+        return {
+          id: existingIdentity.id,
+          user_id: session.user.id,
+          name: existingIdentity.full_name,
+          email: existingIdentity.email,
+          phone: existingIdentity.phone,
+          employee_code: employeeData.employeeCode || null,
+          position: 'EMPLOYEE',
+          is_active: existingIdentity.is_active,
+          organization_id: null,
+          created_at: existingIdentity.created_at,
+          updated_at: existingIdentity.updated_at
+        };
       }
 
-      // Create new employee record - 컬럼명 수정
-      const { data: employee, error } = await supabase
-        .from('employees')
+      // Create new unified identity
+      const { data: identity, error } = await supabase
+        .from('unified_identities')
         .insert({
-          user_id: session.user.id,  // auth_user_id → user_id
-          organization_id: null,  // 조직 없이 시작
-          employee_code: employeeData.employeeCode,
-          name: employeeData.name,
+          auth_user_id: session.user.id,
           email: session.user.email!,
+          full_name: employeeData.name,
           phone: employeeData.phone,
-          position: 'EMPLOYEE',  // role → position
+          id_type: 'personal',
           is_active: true
         })
         .select()
@@ -382,7 +393,20 @@ export class SupabaseAuthService {
         throw new Error(error.message);
       }
 
-      return employee;
+      // Return unified identity mapped to Employee interface for backward compatibility
+      return {
+        id: identity.id,
+        user_id: session.user.id,
+        name: identity.full_name,
+        email: identity.email,
+        phone: identity.phone,
+        employee_code: employeeData.employeeCode || null,
+        position: 'EMPLOYEE',
+        is_active: identity.is_active,
+        organization_id: null,
+        created_at: identity.created_at,
+        updated_at: identity.updated_at
+      };
     } catch (error: any) {
       console.error('Link employee account error:', error);
       throw new Error(error.message || 'Failed to link employee account');
