@@ -253,14 +253,6 @@ CREATE TABLE IF NOT EXISTS employment_contracts (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     
-    -- Constraints for teen workers
-    CONSTRAINT teen_work_hours CHECK (
-        NOT EXISTS (
-            SELECT 1 FROM personal_accounts 
-            WHERE id = employee_id AND is_teen = true
-        ) OR work_hours_per_week <= 35
-    ),
-    
     -- Prevent duplicate active contracts
     CONSTRAINT unique_active_contract UNIQUE (employee_id, organization_id, status)
 );
