@@ -429,9 +429,9 @@ describe('Phase 4.3 웹 대시보드 TDD 테스트', () => {
         ]
       }
       
-      expect(systemArchitecture.Backend['Phase 4.2.1 (Core)'].length).toBe(2)
-      expect(systemArchitecture.Backend['Phase 4.2.2 (Additional)'].length).toBe(3)
-      expect(Object.keys(systemArchitecture.Frontend).length).toBe(5)
+      expect(systemArchitecture['Backend (Edge Functions)']['Phase 4.2.1 (Core)'].length).toBe(2)
+      expect(systemArchitecture['Backend (Edge Functions)']['Phase 4.2.2 (Additional)'].length).toBe(3)
+      expect(Object.keys(systemArchitecture['Frontend (React Components)']).length).toBe(5)
       expect(systemArchitecture['Architecture Principles'].length).toBe(7)
       
       console.log('🏗️ 전체 시스템 아키텍처:')
