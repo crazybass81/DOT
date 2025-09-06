@@ -358,7 +358,7 @@ CREATE POLICY "Organization members can view employees"
     ON employees FOR SELECT
     TO authenticated
     USING (
-        organization_id::text = auth.jwt() ->> 'organization_id' OR
+        organization_id = (auth.jwt() ->> 'organization_id')::uuid OR
         auth.jwt() ->> 'role' = 'master_admin'
     );
 
