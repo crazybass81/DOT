@@ -1,300 +1,183 @@
-# DOT Attendance Service - DynamoDB Implementation
+# Supabase CLI
 
-## 📋 Overview
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-Complete DynamoDB implementation for the DOT attendance management system, designed for Korean restaurant businesses. This service provides comprehensive attendance tracking, employee management, and scheduling capabilities using AWS DynamoDB.
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-## 🏗️ Architecture
+This repository contains all the functionality for Supabase CLI.
 
-### Database Design
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-The system uses a single-table design pattern with composite keys and Global Secondary Indexes (GSIs) for efficient querying:
+## Getting started
 
-#### Tables
-1. **dot-attendance** - Main attendance records
-2. **dot-employees** - Employee information
-3. **dot-schedules** - Work schedules
+### Install the CLI
 
-#### Key Patterns
-- **Primary Key (PK)**: `ATTENDANCE#<uuid>`, `EMPLOYEE#<id>`, `SCHEDULE#<id>`
-- **Sort Key (SK)**: `EMPLOYEE#<id>`, `ORG#<id>`, `DATE#<date>`
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-#### Global Secondary Indexes
-- **employee-date-index**: Query attendance by employee and date range
-- **date-status-index**: Query all attendance for a specific date
-- **organization-index**: Query employees by organization
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Docker & Docker Compose
-- AWS Account (for production)
-
-### Local Development Setup
-
-1. **Start Local DynamoDB**
 ```bash
-docker-compose up -d dynamodb-local dynamodb-admin
+npm i supabase --save-dev
 ```
 
-2. **Install Dependencies**
+To install the beta release channel:
+
 ```bash
-cd services/attendance
-npm install
+npm i supabase@beta --save-dev
 ```
 
-3. **Set Environment Variables**
-```bash
-cp .env.example .env
-# Edit .env with your configuration
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
+
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
 ```
 
-4. **Create Tables**
-```bash
-npm run db:create-tables
-```
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-5. **Run Tests**
-```bash
-npm test
-```
+<details>
+  <summary><b>macOS</b></summary>
 
-## 📦 Features Implemented
+  Available via [Homebrew](https://brew.sh). To install:
 
-### ✅ Complete Features
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-#### 1. **DynamoDB Client Configuration** (`dynamodb-client.ts`)
-- Auto-detection of local vs AWS environment
-- Optimized retry and marshalling settings
-- Connection pooling for performance
-
-#### 2. **Data Models** (`models/attendance.model.ts`)
-- AttendanceRecord with location tracking
-- Employee with role-based access
-- Schedule with recurring patterns
-- Statistics aggregation model
-
-#### 3. **Repository Layer** (`repositories/`)
-- **AttendanceRepository**
-  - Check-in/Check-out operations
-  - Attendance history queries
-  - Statistics calculation
-  - Batch operations
-  - Status updates
+  To install the beta release channel:
   
-- **EmployeeRepository**
-  - CRUD operations
-  - Organization/Department queries
-  - Search functionality
-  - Batch get operations
-  - Soft delete support
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-#### 4. **API Endpoints** (`api/attendance.api.ts`)
-- RESTful Lambda functions
-- CORS configuration
-- Error handling
-- Request validation
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-#### 5. **Local Development**
-- Docker Compose setup
-- DynamoDB Admin GUI (port 8001)
-- LocalStack option for full AWS simulation
+<details>
+  <summary><b>Windows</b></summary>
 
-#### 6. **Testing Suite**
-- Repository unit tests
-- Integration tests
-- Mock data generators
+  Available via [Scoop](https://scoop.sh). To install:
 
-## 🔧 API Endpoints
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-### Attendance Operations
+  To upgrade:
 
-```typescript
-POST   /attendance/check-in
-POST   /attendance/check-out
-GET    /attendance/today/{employeeId}
-GET    /attendance/history/{employeeId}?startDate=&endDate=
-GET    /attendance/date/{date}?organizationId=
-GET    /attendance/statistics/{employeeId}?period=
-PUT    /attendance/status/{attendanceId}
-POST   /attendance/batch
-DELETE /attendance/{attendanceId}?employeeId=
-```
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-### Employee Operations
+<details>
+  <summary><b>Linux</b></summary>
 
-```typescript
-POST   /employees
-GET    /employees/{employeeId}?organizationId=
-GET    /employees/organization/{organizationId}
-GET    /employees/department/{departmentId}
-GET    /employees/search?organizationId=&q=
-PUT    /employees/{employeeId}
-DELETE /employees/{employeeId}?organizationId=
-```
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
-## 💻 Usage Examples
+  #### via Homebrew
 
-### Check-in Operation
-```typescript
-const attendanceRepo = new AttendanceRepository();
+  To install:
 
-const result = await attendanceRepo.checkIn(
-  'employee-123',
-  'org-456',
-  { latitude: 37.5665, longitude: 126.9780 }, // Seoul
-  { deviceId: 'mobile-001', deviceType: 'iOS' }
-);
-```
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-### Get Monthly Statistics
-```typescript
-const stats = await attendanceRepo.getAttendanceStatistics(
-  'employee-123',
-  '2024-01' // YYYY-MM format
-);
+  To upgrade:
 
-console.log(`Attendance Rate: ${stats.attendanceRate}%`);
-console.log(`Total Work Hours: ${stats.totalWorkHours}`);
-```
+  ```sh
+  brew upgrade supabase
+  ```
 
-### Search Employees
-```typescript
-const employeeRepo = new EmployeeRepository();
+  #### via Linux packages
 
-const results = await employeeRepo.searchEmployees(
-  'org-456',
-  '김' // Search Korean names
-);
-```
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
 
-## 🛠️ Development Commands
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
 
 ```bash
-# Start local DynamoDB
-npm run db:local
-
-# Create tables
-npm run db:create-tables
-
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Deploy to AWS
-npm run deploy
-
-# View DynamoDB Admin
-open http://localhost:8001
+supabase bootstrap
 ```
 
-## 📊 Performance Optimizations
+Or using npx:
 
-1. **Composite Keys**: Efficient querying without table scans
-2. **GSI Design**: Optimized for common access patterns
-3. **Batch Operations**: Reduce API calls for bulk operations
-4. **Connection Reuse**: DynamoDB client singleton pattern
-5. **Adaptive Retry**: Automatic retry with exponential backoff
-
-## 🔒 Security Features
-
-- Cognito integration for authentication
-- Role-based access control (RBAC)
-- Location verification for check-ins
-- Device fingerprinting
-- Audit trails for all modifications
-
-## 🌏 Localization
-
-- Korean timezone support (Asia/Seoul)
-- Korean language ready
-- Local date/time formatting
-- Cultural business rules (Korean work week)
-
-## 📈 Monitoring
-
-### CloudWatch Metrics
-- Request latency
-- Error rates
-- Throttling events
-- Consumed capacity
-
-### Application Metrics
-- Check-in/out success rates
-- Average response times
-- Daily active users
-- Peak usage hours
-
-## 🚨 Error Handling
-
-All errors are properly caught and returned with appropriate HTTP status codes:
-
-- `400` - Bad Request (validation errors)
-- `404` - Not Found
-- `409` - Conflict (duplicate operations)
-- `500` - Internal Server Error
-
-## 🔄 Migration Guide
-
-### From RDS/MySQL
-1. Export existing data to JSON
-2. Transform to DynamoDB format
-3. Use batch import scripts
-4. Verify data integrity
-
-### Table Creation Script
 ```bash
-cd services/attendance/scripts
-npx ts-node create-dynamodb-tables.ts
+npx supabase bootstrap
 ```
 
-## 📝 Environment Variables
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
 
-```env
-# Required
-AWS_REGION=ap-northeast-2
-ATTENDANCE_TABLE_NAME=dot-attendance
-EMPLOYEES_TABLE_NAME=dot-employees
+## Docs
 
-# Optional
-DYNAMODB_LOCAL_ENDPOINT=http://localhost:8000
-ENABLE_XRAY=true
-LOG_LEVEL=debug
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
 ```
-
-## 🧪 Testing
-
-### Unit Tests
-```bash
-npm run test:unit
-```
-
-### Integration Tests
-```bash
-npm run test:integration
-```
-
-### Load Testing
-```bash
-npm run test:load
-```
-
-## 📚 Additional Resources
-
-- [AWS DynamoDB Best Practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html)
-- [Single Table Design](https://www.alexdebrie.com/posts/dynamodb-single-table/)
-- [DynamoDB Toolbox](https://github.com/jeremydaly/dynamodb-toolbox)
-
-## 👥 Support
-
-For issues or questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the troubleshooting guide
-
-## 📄 License
-
-Internal use only - Proprietary
