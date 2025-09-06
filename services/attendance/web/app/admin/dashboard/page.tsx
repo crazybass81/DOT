@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Check authentication and admin rights
     const checkAuth = () => {
-      if (!cognitoAuthService.isAuthenticated()) {
+      if (!await unifiedAuthService.isAuthenticated()) {
         router.push('/login');
         return;
       }
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
   }, []);
 
   const handleLogout = () => {
-    cognitoAuthService.signOut();
+    await unifiedAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {
