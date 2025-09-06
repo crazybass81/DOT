@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useRealtimeConnections } from '../../hooks/useRealtimeConnections';
 import type { ConnectionUser } from '../../types/monitoring';
 
@@ -9,7 +9,7 @@ interface ConnectionStatusProps {
   refreshInterval?: number;
 }
 
-export function ConnectionStatus({ 
+const ConnectionStatusComponent = function ConnectionStatus({ 
   className = '',
   refreshInterval = 5000 
 }: ConnectionStatusProps) {
@@ -261,4 +261,8 @@ export function ConnectionStatus({
       </div>
     </div>
   );
+}
+
+// Memoize the component to prevent unnecessary re-renders
+export const ConnectionStatus = memo(ConnectionStatusComponent);
 }
