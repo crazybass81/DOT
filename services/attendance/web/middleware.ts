@@ -17,13 +17,130 @@ const publicRoutes = [
   '/auth'
 ];
 
+// SQL Injection patterns to detect
+const SQL_INJECTION_PATTERNS = [
+  /(\b(DROP|DELETE|TRUNCATE|UPDATE|INSERT|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
+  /(\b(UNION|SELECT)\b.*\b(FROM|WHERE)\b)/gi,
+  /(--|\#|\/\*|\*\/)/g,
+  /(\bOR\b\s*\d+\s*=\s*\d+)/gi,
+  /(\bAND\b\s*\d+\s*=\s*\d+)/gi,
+  /('|")\s*(OR|AND)\s*('|")\d*\s*=\s*('|")\d*/gi,
+  /(';|";|\);|");)/g,
+  /\b(xp_|sp_|0x|exec|execute|declare|cast|convert)\b/gi,
+  /(WAITFOR|DELAY|SLEEP|BENCHMARK)/gi,
+];
+
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 100;
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+
+function getClientIp(request: NextRequest): string {
+  return request.headers.get('x-forwarded-for') || 
+         request.headers.get('x-real-ip') || 
+         request.ip || 
+         'unknown';
+}
+
+function detectSQLInjection(value: string): boolean {
+  if (!value) return false;
+  
+  const decodedValue = decodeURIComponent(value);
+  
+  for (const pattern of SQL_INJECTION_PATTERNS) {
+    if (pattern.test(decodedValue)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = requestCounts.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    requestCounts.set(ip, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW
+    });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const clientIp = getClientIp(request);
   
-  // Skip middleware for static files, API routes, and _next
+  // Apply SQL injection checks to API routes
+  if (pathname.startsWith('/api/')) {
+    // Check rate limiting
+    if (!checkRateLimit(clientIp)) {
+      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Too many requests. Please try again later.' 
+        },
+        { status: 429 }
+      );
+    }
+
+    // Check all URL parameters for SQL injection
+    const searchParams = request.nextUrl.searchParams;
+    const suspiciousParams: string[] = [];
+    
+    for (const [key, value] of searchParams.entries()) {
+      if (detectSQLInjection(value)) {
+        suspiciousParams.push(`${key}=${value}`);
+      }
+    }
+    
+    if (suspiciousParams.length > 0) {
+      console.error(`SQL Injection attempt detected from ${clientIp}:`, suspiciousParams);
+      
+      // Log the attempt
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        ip: clientIp,
+        path: pathname,
+        method: request.method,
+        suspicious_params: suspiciousParams,
+        user_agent: request.headers.get('user-agent')
+      };
+      
+      console.error('SECURITY ALERT:', JSON.stringify(logEntry));
+      
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid input detected. This incident has been logged.' 
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Add security headers for API responses
+    const response = NextResponse.next();
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-XSS-Protection', '1; mode=block');
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    
+    return response;
+  }
+  
+  // Skip middleware for static files and _next
   if (
     pathname.startsWith('/_next/') ||
-    pathname.startsWith('/api/') ||
     pathname.includes('.') // files with extensions
   ) {
     return NextResponse.next();
