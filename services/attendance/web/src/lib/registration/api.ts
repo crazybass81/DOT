@@ -327,38 +327,21 @@ export class RegistrationAPI {
    * 기존 직원에게 역할 추가
    */
   async addRole(
-    employeeId: string,
+    identityId: string,
     organizationId: string,
     roleType: 'WORKER' | 'ADMIN' | 'MANAGER' | 'FRANCHISE'
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await this.supabase
-        .from('user_roles')
-        .insert({
-          employee_id: employeeId,
-          organization_id: organizationId,
-          role: roleType.toLowerCase() as 'worker' | 'admin' | 'manager' | 'owner',
-          is_active: true,
-          granted_at: new Date().toISOString(),
-          granted_by: employeeId // 임시로 자기 자신
-        })
+      const role = roleType.toLowerCase() as 'worker' | 'admin' | 'manager' | 'franchise_admin'
+      
+      const result = await organizationService.assignRole({
+        identityId,
+        organizationId,
+        role: role === 'franchise' ? 'franchise_admin' : role,
+        assignedBy: identityId // Self-assignment for now
+      })
 
-      if (error) throw error
-
-      // employees 테이블의 role도 업데이트 (필요한 경우)
-      if (roleType === 'ADMIN') {
-        await this.supabase
-          .from('employees')
-          .update({ role: 'ADMIN' })
-          .eq('id', employeeId)
-      } else if (roleType === 'MANAGER') {
-        await this.supabase
-          .from('employees')
-          .update({ role: 'MANAGER' })
-          .eq('id', employeeId)
-      }
-
-      return { success: true }
+      return result
     } catch (error) {
       return {
         success: false,
