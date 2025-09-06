@@ -41,7 +41,7 @@ async function executeStepByStep() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
-    \`
+    `
     
     // Try direct table creation through insert operation
     try {
@@ -92,7 +92,7 @@ async function executeStepByStep() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         UNIQUE(name)
       )
-    \`)
+    `)
     
     console.log('\\n3. ROLE ASSIGNMENTS TABLE:')
     console.log(\`
@@ -114,7 +114,7 @@ async function executeStepByStep() {
         CHECK (CASE WHEN role = 'master' THEN organization_id IS NULL ELSE organization_id IS NOT NULL END),
         UNIQUE(identity_id, organization_id, role)
       )
-    \`)
+    `)
     
     console.log('\\n4. Enable RLS on all tables:')
     console.log(\`
