@@ -409,50 +409,26 @@ export class RegistrationAPI {
    */
   async getCurrentUser(): Promise<{
     user: any
-    employee: Employee | null
-    roles: UserRole[]
-    organizations: Organization[]
+    identity: any | null
+    roles: any[]
+    organizations: any[]
   } | null> {
-    const { data: { user } } = await this.supabase.auth.getUser()
-    
-    if (!user) return null
+    try {
+      const user = await supabaseAuthService.getCurrentUser()
+      if (!user) return null
 
-    // 직원 정보 조회
-    const { data: employee } = await this.supabase
-      .from('employees')
-      .select('*')
-      .eq('user_id', user.id)  // auth_user_id -> user_id
-      .single()
+      const roles = await organizationService.getUserRoles(user.id)
+      const organizations = await organizationService.getUserOrganizations(user.id)
 
-    if (!employee) {
-      return { user, employee: null, roles: [], organizations: [] }
-    }
-
-    // 역할 조회
-    const { data: roles } = await this.supabase
-      .from('user_roles')
-      .select('*')
-      .eq('employee_id', employee.id)
-      .eq('is_active', true)
-
-    // 조직 정보 조회
-    const orgIds = roles?.map(r => r.organization_id).filter(Boolean) || []
-    let organizations: Organization[] = []
-    
-    if (orgIds.length > 0) {
-      const { data: orgs } = await this.supabase
-        .from('organizations')
-        .select('*')
-        .in('id', orgIds)
-      
-      organizations = orgs || []
-    }
-
-    return {
-      user,
-      employee,
-      roles: roles || [],
-      organizations
+      return {
+        user,
+        identity: user,
+        roles: roles || [],
+        organizations: organizations || []
+      }
+    } catch (error) {
+      console.error('Get current user error:', error)
+      return null
     }
   }
 
