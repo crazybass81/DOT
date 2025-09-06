@@ -1,4 +1,4 @@
-import { cognitoAuthService } from './cognitoAuthService';
+import { unifiedAuthService } from './unifiedAuthService';
 import { userService } from './userService';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';
