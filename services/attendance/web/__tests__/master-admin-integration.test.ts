@@ -169,13 +169,13 @@ describe('Phase 4.1.5: 실제 데이터로 Master Admin 계정 생성 및 권한
     // 직원 생성 시도
     const { data, error } = await adminSupabase
       .from('employees')
-      .insert({
+      .insert([{
         email: testEmployee.email,
         name: testEmployee.name,
         position: testEmployee.position,
         organization_id: testOrgId,
         is_active: true
-      })
+      }])
       .select()
 
     if (error) {
