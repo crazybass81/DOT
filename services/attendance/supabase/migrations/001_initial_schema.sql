@@ -341,9 +341,9 @@ CREATE POLICY "Managers can view their team members"
         organization_id::text = auth.jwt() ->> 'organization_id' AND
         id::text IN (
             SELECT user_id::text FROM employees 
-            WHERE manager_id = (
+            WHERE manager_id::text = (
                 SELECT id::text FROM employees 
-                WHERE user_id = auth.uid()::text
+                WHERE user_id::text = auth.uid()::text
             )
         )
     );
