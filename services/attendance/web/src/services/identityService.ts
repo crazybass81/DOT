@@ -1,65 +1,51 @@
 /**
- * Identity Service - Core identity management
- * Handles unified identity creation, verification, and business validation
+ * Identity Service - Unified identity management
+ * Handles identity creation, verification, and role management
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '../lib/supabase-config'
 import { 
-  UnifiedIdentity, 
-  IdType, 
-  CreateIdentityRequest, 
+  Identity, 
+  IdType,
+  CreateIdentityRequest,
   CreateIdentityResponse,
-  BusinessStatus,
-  ParentConsentData,
   VALIDATION_PATTERNS,
-  calculateAge,
-  isTeen,
   ERROR_CODES
-} from '@/types/unified.types'
+} from '../types/unified.types'
 
 export class IdentityService {
   private supabase = createClient()
 
   /**
-   * Create new unified identity with business validation
+   * Create new unified identity
    */
   async createIdentity(request: CreateIdentityRequest): Promise<CreateIdentityResponse> {
     try {
       // Validate input
-      const validation = this.validateCreateRequest(request)
+      const validation = await this.validateCreateRequest(request)
       if (!validation.isValid) {
         return { success: false, error: validation.error }
       }
 
       // Check for existing identity
-      const existing = await this.findExistingIdentity(request.email, request.phone)
-      if (existing) {
-        return { success: false, error: 'Identity already exists with this email or phone' }
-      }
-
-      // Calculate age and teen status
-      const age = calculateAge(request.birthDate)
-      const isTeenUser = isTeen(request.birthDate)
-
-      // Validate age requirements
-      if (age < 15) {
-        return { 
-          success: false, 
-          error: 'Minimum age requirement not met (15 years required)' 
-        }
+      const existingIdentity = await this.getByEmail(request.email)
+      if (existingIdentity) {
+        return { success: false, error: 'Identity with this email already exists' }
       }
 
       // Prepare identity data
       const identityData = {
         email: request.email.toLowerCase().trim(),
-        phone: request.phone.trim(),
+        phone: request.phone?.trim(),
         full_name: request.fullName.trim(),
         birth_date: request.birthDate,
         id_type: request.idType,
+        id_number: request.idNumber?.trim(),
+        business_verification_data: request.businessData || {},
+        business_verification_status: this.getInitialVerificationStatus(request.idType),
+        auth_user_id: request.authUserId || null,
+        profile_data: request.profileData || {},
         is_verified: false,
-        business_number: request.businessNumber || null,
-        business_name: request.businessName || null,
-        business_verification_status: this.getInitialBusinessStatus(request.idType),
         is_active: true
       }
 
@@ -75,18 +61,13 @@ export class IdentityService {
         return { success: false, error: 'Failed to create identity' }
       }
 
-      // Convert to typed interface
-      const identity = this.mapToUnifiedIdentity(data)
-
-      // Determine verification requirements
-      const requiresVerification = this.requiresVerification(identity)
-      const verificationMethod = this.getVerificationMethod(identity)
+      const identity = this.mapToIdentity(data)
 
       return {
         success: true,
         identity,
-        requiresVerification,
-        verificationMethod
+        requiresVerification: this.requiresVerification(request.idType),
+        verificationMethod: this.getVerificationMethod(request.idType)
       }
 
     } catch (error) {
@@ -96,117 +77,22 @@ export class IdentityService {
   }
 
   /**
-   * Verify business identity with external APIs
-   */
-  async verifyBusinessIdentity(
-    identityId: string, 
-    businessNumber: string, 
-    businessName: string
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      // Get identity
-      const identity = await this.getById(identityId)
-      if (!identity) {
-        return { success: false, error: 'Identity not found' }
-      }
-
-      if (!this.isBusinessIdentity(identity.idType)) {
-        return { success: false, error: 'Not a business identity' }
-      }
-
-      // Call external verification API (e.g., Korean NTS API)
-      const verificationResult = await this.callBusinessVerificationAPI(
-        businessNumber, 
-        businessName
-      )
-
-      if (!verificationResult.success) {
-        // Update verification status to failed
-        await this.updateBusinessVerificationStatus(
-          identityId,
-          'rejected',
-          verificationResult.data
-        )
-        return { success: false, error: verificationResult.error }
-      }
-
-      // Update verification status to verified
-      await this.updateBusinessVerificationStatus(
-        identityId,
-        'verified',
-        verificationResult.data
-      )
-
-      return { success: true }
-
-    } catch (error) {
-      console.error('Error verifying business identity:', error)
-      return { success: false, error: 'Verification failed' }
-    }
-  }
-
-  /**
-   * Add parent consent for teen users
-   */
-  async addParentConsent(
-    identityId: string,
-    consentData: ParentConsentData
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const identity = await this.getById(identityId)
-      if (!identity) {
-        return { success: false, error: 'Identity not found' }
-      }
-
-      if (!identity.isTeen) {
-        return { success: false, error: 'Parent consent not required for this user' }
-      }
-
-      // Validate parent consent data
-      const validation = this.validateParentConsent(consentData)
-      if (!validation.isValid) {
-        return { success: false, error: validation.error }
-      }
-
-      // Update identity with parent consent
-      const { error } = await this.supabase
-        .from('unified_identities')
-        .update({
-          parent_consent_data: consentData,
-          parent_verified_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', identityId)
-
-      if (error) {
-        console.error('Failed to add parent consent:', error)
-        return { success: false, error: 'Failed to add parent consent' }
-      }
-
-      return { success: true }
-
-    } catch (error) {
-      console.error('Error adding parent consent:', error)
-      return { success: false, error: 'Internal server error' }
-    }
-  }
-
-  /**
    * Get identity by ID
    */
-  async getById(id: string): Promise<UnifiedIdentity | null> {
+  async getById(id: string): Promise<Identity | null> {
     try {
       const { data, error } = await this.supabase
         .from('unified_identities')
         .select('*')
         .eq('id', id)
+        .eq('is_active', true)
         .single()
 
       if (error || !data) {
         return null
       }
 
-      return this.mapToUnifiedIdentity(data)
+      return this.mapToIdentity(data)
     } catch (error) {
       console.error('Error getting identity by ID:', error)
       return null
@@ -216,21 +102,45 @@ export class IdentityService {
   /**
    * Get identity by auth user ID
    */
-  async getByAuthUserId(authUserId: string): Promise<UnifiedIdentity | null> {
+  async getByAuthUserId(authUserId: string): Promise<Identity | null> {
     try {
       const { data, error } = await this.supabase
         .from('unified_identities')
         .select('*')
         .eq('auth_user_id', authUserId)
+        .eq('is_active', true)
         .single()
 
       if (error || !data) {
         return null
       }
 
-      return this.mapToUnifiedIdentity(data)
+      return this.mapToIdentity(data)
     } catch (error) {
       console.error('Error getting identity by auth user ID:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get identity by email
+   */
+  async getByEmail(email: string): Promise<Identity | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from('unified_identities')
+        .select('*')
+        .eq('email', email.toLowerCase())
+        .eq('is_active', true)
+        .single()
+
+      if (error || !data) {
+        return null
+      }
+
+      return this.mapToIdentity(data)
+    } catch (error) {
+      console.error('Error getting identity by email:', error)
       return null
     }
   }
@@ -239,21 +149,22 @@ export class IdentityService {
    * Update identity verification status
    */
   async updateVerificationStatus(
-    identityId: string,
-    isVerified: boolean,
-    verificationMethod?: string
+    identityId: string, 
+    status: 'pending' | 'verified' | 'rejected',
+    verificationData?: any
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const updateData: any = {
-        is_verified: isVerified,
+        business_verification_status: status,
         updated_at: new Date().toISOString()
       }
 
-      if (isVerified) {
-        updateData.verified_at = new Date().toISOString()
-        if (verificationMethod) {
-          updateData.verification_method = verificationMethod
-        }
+      if (status === 'verified') {
+        updateData.is_verified = true
+      }
+
+      if (verificationData) {
+        updateData.business_verification_data = verificationData
       }
 
       const { error } = await this.supabase
@@ -275,7 +186,7 @@ export class IdentityService {
   }
 
   /**
-   * Link identity to Supabase auth user
+   * Link auth user to existing identity
    */
   async linkAuthUser(identityId: string, authUserId: string): Promise<{ success: boolean; error?: string }> {
     try {
@@ -286,6 +197,7 @@ export class IdentityService {
           updated_at: new Date().toISOString()
         })
         .eq('id', identityId)
+        .is('auth_user_id', null) // Only link if not already linked
 
       if (error) {
         console.error('Failed to link auth user:', error)
@@ -300,114 +212,116 @@ export class IdentityService {
     }
   }
 
+  /**
+   * Update identity profile
+   */
+  async updateProfile(
+    identityId: string, 
+    updates: {
+      fullName?: string
+      phone?: string
+      profileData?: any
+    }
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      }
+
+      if (updates.fullName) updateData.full_name = updates.fullName.trim()
+      if (updates.phone) updateData.phone = updates.phone.trim()
+      if (updates.profileData) updateData.profile_data = updates.profileData
+
+      const { error } = await this.supabase
+        .from('unified_identities')
+        .update(updateData)
+        .eq('id', identityId)
+
+      if (error) {
+        console.error('Failed to update profile:', error)
+        return { success: false, error: 'Failed to update profile' }
+      }
+
+      return { success: true }
+
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      return { success: false, error: 'Internal server error' }
+    }
+  }
+
   // =====================================================
   // Private Helper Methods
   // =====================================================
 
-  private validateCreateRequest(request: CreateIdentityRequest): { isValid: boolean; error?: string } {
+  private async validateCreateRequest(request: CreateIdentityRequest): Promise<{ isValid: boolean; error?: string }> {
+    // Email validation
     if (!request.email || !VALIDATION_PATTERNS.email.test(request.email)) {
-      return { isValid: false, error: 'Invalid email format' }
+      return { isValid: false, error: 'Valid email is required' }
     }
 
+    // Phone validation
     if (!request.phone || !VALIDATION_PATTERNS.phone.test(request.phone)) {
-      return { isValid: false, error: 'Invalid phone format' }
+      return { isValid: false, error: 'Valid phone number is required' }
     }
 
+    // Full name validation
     if (!request.fullName || request.fullName.trim().length < 2) {
       return { isValid: false, error: 'Full name must be at least 2 characters' }
     }
 
+    // Birth date validation
     if (!request.birthDate) {
       return { isValid: false, error: 'Birth date is required' }
     }
 
-    // Validate business-specific fields
-    if (this.isBusinessIdentity(request.idType)) {
-      if (!request.businessNumber || !VALIDATION_PATTERNS.businessNumber.test(request.businessNumber)) {
+    // ID type validation
+    const validIdTypes: IdType[] = ['personal', 'business_owner', 'corporation', 'franchise_hq']
+    if (!validIdTypes.includes(request.idType)) {
+      return { isValid: false, error: 'Invalid ID type' }
+    }
+
+    // Business-specific validation
+    if (['business_owner', 'corporation', 'franchise_hq'].includes(request.idType)) {
+      if (!request.idNumber || !VALIDATION_PATTERNS.businessNumber.test(request.idNumber)) {
         return { isValid: false, error: 'Valid business number is required for business identities' }
       }
-
-      if (!request.businessName || request.businessName.trim().length < 2) {
-        return { isValid: false, error: 'Business name is required for business identities' }
-      }
     }
 
     return { isValid: true }
   }
 
-  private async findExistingIdentity(email: string, phone: string): Promise<boolean> {
-    const { data } = await this.supabase
-      .from('unified_identities')
-      .select('id')
-      .or(`email.eq.${email.toLowerCase()},phone.eq.${phone}`)
-      .limit(1)
-
-    return (data && data.length > 0) || false
+  private getInitialVerificationStatus(idType: IdType): string {
+    switch (idType) {
+      case 'personal':
+        return 'verified' // Personal identities are auto-verified
+      case 'business_owner':
+      case 'corporation':
+      case 'franchise_hq':
+        return 'pending' // Business identities require verification
+      default:
+        return 'pending'
+    }
   }
 
-  private getInitialBusinessStatus(idType: IdType): BusinessStatus {
-    return this.isBusinessIdentity(idType) ? 'unverified' : 'verified'
+  private requiresVerification(idType: IdType): boolean {
+    return ['business_owner', 'corporation', 'franchise_hq'].includes(idType)
   }
 
-  private requiresVerification(identity: UnifiedIdentity): boolean {
-    return this.isBusinessIdentity(identity.idType) || identity.isTeen
+  private getVerificationMethod(idType: IdType): string {
+    switch (idType) {
+      case 'business_owner':
+        return 'business_registration'
+      case 'corporation':
+        return 'corporate_registration'
+      case 'franchise_hq':
+        return 'franchise_license'
+      default:
+        return 'none'
+    }
   }
 
-  private getVerificationMethod(identity: UnifiedIdentity): string | undefined {
-    if (this.isBusinessIdentity(identity.idType)) {
-      return 'business_verification'
-    }
-    if (identity.isTeen) {
-      return 'parent_consent'
-    }
-    return undefined
-  }
-
-  private isBusinessIdentity(idType: IdType): boolean {
-    return idType === 'business_owner' || idType === 'corporation'
-  }
-
-  private async updateBusinessVerificationStatus(
-    identityId: string,
-    status: BusinessStatus,
-    verificationData?: any
-  ): Promise<void> {
-    const updateData: any = {
-      business_verification_status: status,
-      updated_at: new Date().toISOString()
-    }
-
-    if (status === 'verified') {
-      updateData.business_verified_at = new Date().toISOString()
-    }
-
-    if (verificationData) {
-      updateData.business_verification_data = verificationData
-    }
-
-    await this.supabase
-      .from('unified_identities')
-      .update(updateData)
-      .eq('id', identityId)
-  }
-
-  private validateParentConsent(consentData: ParentConsentData): { isValid: boolean; error?: string } {
-    if (!consentData.parentName || consentData.parentName.trim().length < 2) {
-      return { isValid: false, error: 'Parent name is required' }
-    }
-
-    if (!consentData.parentPhone || !VALIDATION_PATTERNS.phone.test(consentData.parentPhone)) {
-      return { isValid: false, error: 'Valid parent phone number is required' }
-    }
-
-    if (!consentData.consentedAt) {
-      return { isValid: false, error: 'Consent date is required' }
-    }
-
-    return { isValid: true }
-  }
-
-  private mapToUnifiedIdentity(data: any): UnifiedIdentity {
+  private mapToIdentity(data: any): Identity {
     return {
       id: data.id,
       email: data.email,
@@ -415,52 +329,15 @@ export class IdentityService {
       fullName: data.full_name,
       birthDate: data.birth_date,
       idType: data.id_type,
-      isVerified: data.is_verified,
-      verifiedAt: data.verified_at ? new Date(data.verified_at) : undefined,
-      verificationMethod: data.verification_method,
-      age: data.age || calculateAge(data.birth_date),
-      isTeen: data.is_teen || isTeen(data.birth_date),
-      parentConsentData: data.parent_consent_data,
-      parentVerifiedAt: data.parent_verified_at ? new Date(data.parent_verified_at) : undefined,
-      authUserId: data.auth_user_id,
-      businessNumber: data.business_number,
-      businessName: data.business_name,
+      idNumber: data.id_number,
       businessVerificationStatus: data.business_verification_status,
-      businessVerifiedAt: data.business_verified_at ? new Date(data.business_verified_at) : undefined,
-      businessVerificationData: data.business_verification_data,
+      businessVerificationData: data.business_verification_data || {},
+      authUserId: data.auth_user_id,
+      profileData: data.profile_data || {},
+      isVerified: data.is_verified,
       isActive: data.is_active,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
-    }
-  }
-
-  private async callBusinessVerificationAPI(
-    businessNumber: string,
-    businessName: string
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
-    // TODO: Implement actual business verification API call
-    // This would typically call Korean NTS (National Tax Service) API
-    
-    // Mock implementation for now
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API delay
-    
-    // Simple validation for demo purposes
-    if (businessNumber && businessName && VALIDATION_PATTERNS.businessNumber.test(businessNumber)) {
-      return {
-        success: true,
-        data: {
-          businessNumber,
-          businessName,
-          status: 'active',
-          verifiedAt: new Date().toISOString(),
-          verificationSource: 'nts_api'
-        }
-      }
-    }
-
-    return {
-      success: false,
-      error: 'Business verification failed'
     }
   }
 }
