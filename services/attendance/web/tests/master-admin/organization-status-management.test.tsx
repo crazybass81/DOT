@@ -13,7 +13,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrganizationStatus } from '@/types/organization.types';
 
 // 테스트 대상 컴포넌트들 (아직 구현되지 않음 - Red Phase)
