@@ -23,7 +23,7 @@ async function executeStepByStep() {
     // Step 2: Create unified_identities table
     console.log('\\n👥 Step 2: Creating unified_identities table...')
     
-    const unifiedIdentitiesSQL = \`
+    const unifiedIdentitiesSQL = `
       CREATE TABLE IF NOT EXISTS unified_identities (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         email TEXT UNIQUE NOT NULL,
