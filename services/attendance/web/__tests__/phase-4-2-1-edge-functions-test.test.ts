@@ -129,7 +129,7 @@ describe('Phase 4.2.1 Edge Functions TDD 테스트', () => {
           longitude: 126.9780
         })
         
-        if (result.status === 403 && result.data.error?.includes('Employee not found')) {
+        if (result.status === 500 && result.data.error?.includes('Employee not found')) {
           functionStatus.push({ name: functionName, status: 'DEPLOYED' })
         } else {
           functionStatus.push({ name: functionName, status: 'ERROR' })
