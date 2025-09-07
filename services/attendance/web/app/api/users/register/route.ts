@@ -54,14 +54,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 2: Create user identity record (following ID-ROLE-PAPER system)
+    // Only use fields that definitely exist in the database
     const userIdentityData = {
       email: `${phone.replace(/-/g, '')}@temp.local`, // Temporary email based on phone
       full_name: name,
       phone: phone.replace(/-/g, ''), // Store without hyphens
-      id_type: 'personal', // Default to personal identity
-      is_active: true
-      // Note: Metadata field may not exist or may need different structure
-      // Will add metadata later once we confirm the schema
+      id_type: 'personal' as const, // Default to personal identity
+      is_active: true,
+      login_count: 0
     };
 
     const { data: userIdentity, error: identityError } = await supabase
