@@ -31,22 +31,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 1: Check if user already exists
-    const { data: existingEmployee, error: checkError } = await supabase
-      .from('employees')
-      .select('id, name, phone, is_active')
+    // Step 1: Check if user already exists (using unified_identities table)
+    const { data: existingUser, error: checkError } = await supabase
+      .from('unified_identities')
+      .select('id, full_name, phone, is_active')
       .eq('phone', phone.replace(/-/g, ''))
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows found
-      console.error('Employee check error:', checkError);
+      console.error('User identity check error:', checkError);
       return NextResponse.json(
         { error: '등록 확인 중 오류가 발생했습니다' },
         { status: 500 }
       );
     }
 
-    if (existingEmployee) {
+    if (existingUser) {
       return NextResponse.json(
         { error: '이미 등록된 전화번호입니다' },
         { status: 400 }
