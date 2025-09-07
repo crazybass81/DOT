@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Step 2: Create user identity record (following ID-ROLE-PAPER system)
     const userIdentityData = {
+      email: `${phone.replace(/-/g, '')}@temp.local`, // Temporary email based on phone
       full_name: name,
       phone: phone.replace(/-/g, ''), // Store without hyphens
       id_type: 'personal', // Default to personal identity
