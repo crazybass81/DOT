@@ -157,29 +157,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 3: Try to log registration event in audit_logs if available
-    try {
-      await supabase
-        .from('audit_logs')
-        .insert({
-          action: 'user_registration',
-          table_name: userIdentity.id.startsWith('temp-') ? 'temporary' : 'profiles',
-          record_id: userIdentity.id,
-          user_id: userIdentity.id,
-          metadata: {
-            registration_method: 'qr_scan',
-            business_id: businessId,
-            location_id: locationId,
-            device_fingerprint: deviceFingerprint,
-            name: name,
-            phone: phone.replace(/-/g, ''),
-            birth_date: birthDate
-          }
-        });
-      console.log('Registration logged to audit_logs');
-    } catch (auditError) {
-      console.log('Audit logging failed (non-critical):', auditError);
-    }
+    // Step 3: Log the registration attempt and result
+    const registrationLog = {
+      timestamp: new Date().toISOString(),
+      user_id: userIdentity.id,
+      registration_method: 'qr_scan',
+      name: name,
+      phone: phone.replace(/-/g, ''),
+      birth_date: birthDate,
+      account_number: accountNumber,
+      business_id: businessId,
+      location_id: locationId,
+      device_fingerprint: deviceFingerprint,
+      status: userIdentity.is_active ? 'active' : 'pending',
+      auth_user_id: userIdentity.auth_user_id || null
+    };
+    
+    console.log('REGISTRATION COMPLETED:', JSON.stringify(registrationLog, null, 2));
     
     console.log('Registration completed for user:', userIdentity.id);
 
