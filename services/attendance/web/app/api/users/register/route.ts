@@ -104,12 +104,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: '등록이 완료되었습니다',
-      employee: {
-        id: employee.id,
-        name: employee.name,
-        phone: employee.phone,
-        role: employee.role,
-        isActive: employee.is_active
+      user: {
+        id: userIdentity.id,
+        name: userIdentity.full_name,
+        phone: userIdentity.phone,
+        idType: userIdentity.id_type,
+        isActive: userIdentity.is_active
       }
     }, { status: 201 });
 
