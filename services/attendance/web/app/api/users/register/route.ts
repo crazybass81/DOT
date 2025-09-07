@@ -58,16 +58,9 @@ export async function POST(request: NextRequest) {
       full_name: name,
       phone: phone.replace(/-/g, ''), // Store without hyphens
       id_type: 'personal', // Default to personal identity
-      is_active: true,
-      metadata: {
-        registration_method: 'qr_scan',
-        birth_date: birthDate,
-        account_number: accountNumber || null,
-        business_id: businessId || null,
-        location_id: locationId || null,
-        device_fingerprint: deviceFingerprint || null,
-        registration_timestamp: new Date().toISOString()
-      }
+      is_active: true
+      // Note: Metadata field may not exist or may need different structure
+      // Will add metadata later once we confirm the schema
     };
 
     const { data: userIdentity, error: identityError } = await supabase
