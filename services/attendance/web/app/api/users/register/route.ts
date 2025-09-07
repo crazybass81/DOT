@@ -60,13 +60,11 @@ export async function POST(request: NextRequest) {
     
     console.log('Registration attempt for:', { name, phone: phone.replace(/-/g, ''), birthDate });
     
-    // Approach 1: Try profiles table (standard Supabase table)
+    // Approach 1: Try profiles table with minimal data
     try {
       const profileData = {
         full_name: name,
-        phone: phone.replace(/-/g, ''),
-        avatar_url: null,
-        updated_at: new Date().toISOString()
+        phone: phone.replace(/-/g, '')
       };
       
       const { data: profileResult, error: profileError } = await supabase
