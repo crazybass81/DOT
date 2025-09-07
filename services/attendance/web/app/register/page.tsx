@@ -8,6 +8,7 @@ interface FormData {
   phone: string;
   birthDate: string;
   accountNumber: string;
+  userType: 'worker' | 'individual_business' | 'corporate_business' | '';
 }
 
 export default function RegisterPage() {
