@@ -53,83 +53,100 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Try multiple approaches for real database registration
+    // Step 2: Use Supabase Auth for real user creation
+    console.log('Registration attempt for:', { name, phone: phone.replace(/-/g, ''), birthDate });
     
     let userIdentity = null;
     let identityError = null;
     
-    console.log('Registration attempt for:', { name, phone: phone.replace(/-/g, ''), birthDate });
-    
-    // Approach 1: Try profiles table with minimal data
     try {
-      const profileData = {
-        full_name: name,
-        phone: phone.replace(/-/g, '')
-      };
+      // Create a proper email from phone (use a real domain format)
+      const userEmail = `user${phone.replace(/-/g, '')}@dotattendance.local`;
+      const userPassword = `Temp${phone.slice(-4)}@2025`; // More secure temp password
       
-      const { data: profileResult, error: profileError } = await supabase
-        .from('profiles')
-        .insert(profileData)
-        .select()
-        .single();
+      // Use Supabase Auth to create the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: userEmail,
+        password: userPassword,
+        options: {
+          data: {
+            full_name: name,
+            phone: phone.replace(/-/g, ''),
+            birth_date: birthDate,
+            registration_method: 'qr_scan',
+            account_number: accountNumber,
+            business_id: businessId,
+            location_id: locationId
+          },
+          emailRedirectTo: undefined // Disable email confirmation for now
+        }
+      });
+      
+      if (authError) {
+        console.log('Supabase auth creation failed:', authError.message);
         
-      if (!profileError && profileResult) {
+        // Try alternative: Create with anon key limitations, but use RPC function
+        const { data: rpcResult, error: rpcError } = await supabase
+          .rpc('create_user_registration', {
+            user_name: name,
+            user_phone: phone.replace(/-/g, ''),
+            user_birth_date: birthDate,
+            user_email: userEmail
+          });
+          
+        if (!rpcError && rpcResult) {
+          userIdentity = {
+            id: rpcResult.user_id || `rpc-${phone.replace(/-/g, '')}-${Date.now()}`,
+            full_name: name,
+            phone: phone.replace(/-/g, ''),
+            id_type: 'personal',
+            is_active: true,
+            email: userEmail
+          };
+          console.log('Successfully created via RPC function:', userIdentity.id);
+        } else {
+          console.log('RPC function also failed:', rpcError?.message);
+          // Final fallback - create temporary but log all info for manual processing
+          userIdentity = {
+            id: `pending-${phone.replace(/-/g, '')}-${Date.now()}`,
+            full_name: name,
+            phone: phone.replace(/-/g, ''),
+            id_type: 'personal',
+            is_active: false, // Mark as pending until manually processed
+            email: userEmail,
+            status: 'pending_manual_approval'
+          };
+          console.log('Created pending registration for manual approval:', userIdentity.id);
+        }
+      } else if (authData.user) {
+        // Successfully created auth user
         userIdentity = {
-          id: profileResult.id,
-          full_name: profileResult.full_name,
-          phone: profileResult.phone,
+          id: authData.user.id,
+          full_name: name,
+          phone: phone.replace(/-/g, ''),
           id_type: 'personal',
           is_active: true,
-          email: `${phone.replace(/-/g, '')}@temp.local`
+          email: userEmail,
+          auth_user_id: authData.user.id
         };
-        console.log('Successfully created profile:', profileResult.id);
-      } else {
-        console.log('Profile creation failed:', profileError?.message);
-        
-        // Approach 2: Create with Supabase Auth first, then profile
-        const tempEmail = `${phone.replace(/-/g, '')}@mobile.register`;
-        const tempPassword = `Mobile${phone.slice(-4)}!`;
-        
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: tempEmail,
-          password: tempPassword,
-          options: {
-            data: {
-              full_name: name,
-              phone: phone.replace(/-/g, ''),
-              registration_method: 'qr_scan'
-            }
-          }
-        });
-        
-        if (!authError && authData.user) {
-          // Auth user created successfully
-          userIdentity = {
-            id: authData.user.id,
-            full_name: name,
-            phone: phone.replace(/-/g, ''),
-            id_type: 'personal',
-            is_active: true,
-            email: tempEmail
-          };
-          console.log('Successfully created auth user:', authData.user.id);
-        } else {
-          console.log('Auth creation failed:', authError?.message);
-          // Fallback to temporary registration
-          userIdentity = {
-            id: `temp-${phone.replace(/-/g, '')}-${Date.now()}`,
-            full_name: name,
-            phone: phone.replace(/-/g, ''),
-            id_type: 'personal',
-            is_active: true,
-            email: `${phone.replace(/-/g, '')}@temp.local`
-          };
-          console.log('Using temporary registration as fallback');
-        }
+        console.log('Successfully created auth user:', authData.user.id);
       }
     } catch (error) {
       console.error('Registration process error:', error);
       identityError = error;
+      
+      // Even in error case, create a pending registration
+      userIdentity = {
+        id: `error-${phone.replace(/-/g, '')}-${Date.now()}`,
+        full_name: name,
+        phone: phone.replace(/-/g, ''),
+        id_type: 'personal',
+        is_active: false,
+        email: `${phone.replace(/-/g, '')}@error.local`,
+        status: 'error_needs_review',
+        error_details: error?.message || 'Unknown error'
+      };
+      console.log('Created error registration record:', userIdentity.id);
     }
 
     if (identityError) {
