@@ -53,24 +53,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Create employee record
-    const employeeData = {
-      name,
+    // Step 2: Create user identity record (following ID-ROLE-PAPER system)
+    const userIdentityData = {
+      full_name: name,
       phone: phone.replace(/-/g, ''), // Store without hyphens
-      birth_date: birthDate,
-      account_number: accountNumber || null,
-      business_id: businessId || null,
-      location_id: locationId || null,
-      device_fingerprint: deviceFingerprint || null,
-      role: 'WORKER', // Default role for attendance registration
+      id_type: 'personal', // Default to personal identity
       is_active: true,
-      registration_method: 'qr_scan',
-      created_at: new Date().toISOString()
+      metadata: {
+        registration_method: 'qr_scan',
+        birth_date: birthDate,
+        account_number: accountNumber || null,
+        business_id: businessId || null,
+        location_id: locationId || null,
+        device_fingerprint: deviceFingerprint || null,
+        registration_timestamp: new Date().toISOString()
+      }
     };
 
-    const { data: employee, error: employeeError } = await supabase
-      .from('employees')
-      .insert(employeeData)
+    const { data: userIdentity, error: identityError } = await supabase
+      .from('unified_identities')
+      .insert(userIdentityData)
       .select()
       .single();
 
