@@ -4,91 +4,117 @@ import { supabase } from '../../../../src/lib/supabase-config';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, fullName, phone } = body;
+    const { 
+      name, 
+      phone, 
+      birthDate, 
+      accountNumber, 
+      businessId, 
+      locationId, 
+      deviceFingerprint 
+    } = body;
 
     // Validate required fields
-    if (!email || !password || !fullName) {
+    if (!name || !phone || !birthDate) {
       return NextResponse.json(
-        { error: 'Email, password, and full name are required' },
+        { error: '필수 정보를 모두 입력해주세요' },
         { status: 400 }
       );
     }
 
-    // Step 1: Create Supabase Auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone || null
-        }
-      }
-    });
-
-    if (authError) {
-      console.error('Auth creation error:', authError);
+    // Validate phone number format
+    const phoneRegex = /^01[0-9]-?[0-9]{4}-?[0-9]{4}$/;
+    if (!phoneRegex.test(phone.replace(/-/g, ''))) {
       return NextResponse.json(
-        { error: authError.message },
+        { error: '올바른 전화번호 형식이 아닙니다' },
         { status: 400 }
       );
     }
 
-    if (!authData.user) {
+    // Step 1: Check if user already exists
+    const { data: existingEmployee, error: checkError } = await supabase
+      .from('employees')
+      .select('id, name, phone, is_active')
+      .eq('phone', phone.replace(/-/g, ''))
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows found
+      console.error('Employee check error:', checkError);
       return NextResponse.json(
-        { error: 'User creation failed' },
+        { error: '등록 확인 중 오류가 발생했습니다' },
         { status: 500 }
       );
     }
 
-    // Step 2: Create unified identity record
-    const { data: identityData, error: identityError } = await supabase
-      .from('unified_identities')
-      .insert({
-        email,
-        full_name: fullName,
-        phone: phone || null,
-        id_type: 'personal',
-        auth_user_id: authData.user.id,
-        is_active: true,
-        metadata: {
-          registration_method: 'web_form',
-          created_at: new Date().toISOString()
-        },
-        login_count: 0
-      })
+    if (existingEmployee) {
+      return NextResponse.json(
+        { error: '이미 등록된 전화번호입니다' },
+        { status: 400 }
+      );
+    }
+
+    // Step 2: Create employee record
+    const employeeData = {
+      name,
+      phone: phone.replace(/-/g, ''), // Store without hyphens
+      birth_date: birthDate,
+      account_number: accountNumber || null,
+      business_id: businessId || null,
+      location_id: locationId || null,
+      device_fingerprint: deviceFingerprint || null,
+      role: 'WORKER', // Default role for attendance registration
+      is_active: true,
+      registration_method: 'qr_scan',
+      created_at: new Date().toISOString()
+    };
+
+    const { data: employee, error: employeeError } = await supabase
+      .from('employees')
+      .insert(employeeData)
       .select()
       .single();
 
-    if (identityError) {
-      console.error('Identity creation error:', identityError);
-      
-      // Clean up auth user if identity creation failed
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      
+    if (employeeError) {
+      console.error('Employee creation error:', employeeError);
       return NextResponse.json(
-        { error: 'Failed to create user identity' },
+        { error: '직원 등록 중 오류가 발생했습니다' },
         { status: 500 }
       );
     }
 
-    // Step 3: Return success response
+    // Step 3: Log registration event
+    await supabase
+      .from('audit_logs')
+      .insert({
+        action: 'employee_registration',
+        table_name: 'employees',
+        record_id: employee.id,
+        user_id: employee.id,
+        metadata: {
+          registration_method: 'qr_scan',
+          business_id: businessId,
+          location_id: locationId,
+          device_fingerprint: deviceFingerprint
+        }
+      });
+
+    // Step 4: Return success response
     return NextResponse.json({
       success: true,
-      message: 'User registered successfully',
-      user: {
-        id: identityData.id,
-        email: identityData.email,
-        fullName: identityData.full_name,
-        phone: identityData.phone,
-        authUserId: authData.user.id
+      message: '등록이 완료되었습니다',
+      employee: {
+        id: employee.id,
+        name: employee.name,
+        phone: employee.phone,
+        role: employee.role,
+        isActive: employee.is_active
       }
     }, { status: 201 });
 
   } catch (error: any) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { error: 'Internal server error during registration' },
+      { error: '등록 중 오류가 발생했습니다' },
       { status: 500 }
     );
   }
