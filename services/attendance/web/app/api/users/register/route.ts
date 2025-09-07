@@ -88,10 +88,10 @@ export async function POST(request: NextRequest) {
     await supabase
       .from('audit_logs')
       .insert({
-        action: 'employee_registration',
-        table_name: 'employees',
-        record_id: employee.id,
-        user_id: employee.id,
+        action: 'user_identity_registration',
+        table_name: 'unified_identities',
+        record_id: userIdentity.id,
+        user_id: userIdentity.id,
         metadata: {
           registration_method: 'qr_scan',
           business_id: businessId,
