@@ -79,21 +79,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 3: Log registration event
-    await supabase
-      .from('audit_logs')
-      .insert({
-        action: 'user_identity_registration',
-        table_name: 'unified_identities',
-        record_id: userIdentity.id,
-        user_id: userIdentity.id,
-        metadata: {
-          registration_method: 'qr_scan',
-          business_id: businessId,
-          location_id: locationId,
-          device_fingerprint: deviceFingerprint
-        }
-      });
+    // Step 3: Log registration event (simplified for now)
+    console.log('Registration completed for user:', userIdentity.id);
+    console.log('Registration metadata:', {
+      registration_method: 'qr_scan',
+      business_id: businessId,
+      location_id: locationId,
+      device_fingerprint: deviceFingerprint
+    });
 
     // Step 4: Return success response
     return NextResponse.json({
