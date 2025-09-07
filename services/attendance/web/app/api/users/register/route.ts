@@ -76,10 +76,10 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (employeeError) {
-      console.error('Employee creation error:', employeeError);
+    if (identityError) {
+      console.error('User identity creation error:', identityError);
       return NextResponse.json(
-        { error: '직원 등록 중 오류가 발생했습니다' },
+        { error: '사용자 등록 중 오류가 발생했습니다' },
         { status: 500 }
       );
     }
