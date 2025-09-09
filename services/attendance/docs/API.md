@@ -12,10 +12,12 @@ https://your-project.supabase.co/functions/v1/
 
 ## Authentication
 
-All API endpoints require authentication via JWT tokens. Include the token in the `Authorization` header:
+All API endpoints require authentication via JWT tokens containing ID type (Personal/Corporate) and role information. Include the token in the `Authorization` header along with business registration context:
 
 ```http
 Authorization: Bearer <jwt-token>
+X-Business-Registration-ID: business-reg-uuid
+X-ID-Type: Personal | Corporate
 ```
 
 ## Rate Limiting
