@@ -2,124 +2,17 @@
   "name": "@dot/attendance",
   "version": "1.0.0",
   "private": true,
-  "description": "DOT 출석 관리 서비스 - ID-ROLE-PAPER 시스템",
   "scripts": {
     "dev": "next dev --port 3002",
-    "dev:clean": "rm -rf .next && next dev --port 3002",
     "build": "next build",
-    "start": "next start --port 3002",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "type-check": "tsc --noEmit",
-    "test": "jest",
-    "test:unit": "jest --testPathPattern=tests/unit",
-    "test:integration": "jest --testPathPattern=tests/integration",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:rls": "jest --testPathPattern=tests/integration/rls",
-    "test:master-admin": "jest --testPathPattern=tests/integration/master-admin",
-    "test:workflow": "jest --testPathPattern=tests/integration/workflow",
-    "test:security": "jest --testPathPattern=tests/integration/security",
-    "test:performance": "jest --testPathPattern=tests/integration/performance",
-    "setup:test-user": "node scripts/setup-test-user.js",
-    "test:auth": "jest --testPathPattern=tests/integration/auth",
-    "deploy": "npm run build && npm run test && echo 'Ready for deployment'",
-    "clean": "rm -rf .next node_modules dist"
+    "start": "next start --port 3002"
   },
   "dependencies": {
-    "next": "^15.5.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@supabase/supabase-js": "^2.45.4",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "typescript": "^5.9.2",
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31",
-    "zod": "^3.22.4",
-    "date-fns": "^3.6.0",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.400.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.3.0",
-    "@testing-library/react": "^16.0.1",
-    "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/user-event": "^14.5.2",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.25.4",
-    "@babel/preset-react": "^7.24.7",
-    "@babel/preset-typescript": "^7.24.7",
-    "babel-jest": "^29.7.0",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^15.5.0",
-    "@typescript-eslint/eslint-plugin": "^8.5.0",
-    "@typescript-eslint/parser": "^8.5.0",
-    "prettier": "^3.3.3"
-  },
-  "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup/jest.setup.js"],
-    "moduleNameMapping": {
-      "^@/(.*)$": "<rootDir>/src/$1",
-      "^@components/(.*)$": "<rootDir>/src/components/$1",
-      "^@lib/(.*)$": "<rootDir>/src/lib/$1",
-      "^@contexts/(.*)$": "<rootDir>/src/contexts/$1",
-      "^@types/(.*)$": "<rootDir>/src/types/$1"
-    },
-    "testMatch": [
-      "<rootDir>/tests/unit/**/*.test.{js,jsx,ts,tsx}",
-      "<rootDir>/tests/integration/**/*.test.{js,jsx,ts,tsx}"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
-      "!src/**/*.d.ts",
-      "!src/**/*.stories.{js,jsx,ts,tsx}",
-      "!src/**/index.{js,jsx,ts,tsx}"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 70,
-        "functions": 70,
-        "lines": 70,
-        "statements": 70
-      }
-    }
-  },
-  "keywords": [
-    "attendance",
-    "identity",
-    "rbac",
-    "business-management",
-    "korean-business",
-    "next.js",
-    "react",
-    "supabase",
-    "typescript"
-  ],
-  "author": "DOT Team",
-  "license": "MIT"
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.4"
+  }
 }
