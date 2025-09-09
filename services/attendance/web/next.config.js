@@ -143,17 +143,21 @@ const nextConfig = {
       };
     }
 
-    // Add custom aliases - Fixed path resolution for src directory structure
+    // Add custom aliases - Hybrid structure support
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(__dirname, 'src'),
-      '@components': path.resolve(__dirname, 'src/components'),
+      '@': path.resolve(__dirname, '.'),
+      '@/lib': path.resolve(__dirname, 'src/lib'),
+      '@/src': path.resolve(__dirname, 'src'),
+      '@/components': path.resolve(__dirname, 'components'),
+      '@/hooks': path.resolve(__dirname, 'hooks'),
+      '@components': path.resolve(__dirname, 'components'),
       '@lib': path.resolve(__dirname, 'src/lib'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
       '@types': path.resolve(__dirname, 'src/types'),
       '@services': path.resolve(__dirname, 'src/services'),
       '@utils': path.resolve(__dirname, 'src/utils'),
-      '@hooks': path.resolve(__dirname, 'src/hooks'),
+      '@hooks': path.resolve(__dirname, 'hooks'),
       '@middleware': path.resolve(__dirname, 'src/middleware'),
     };
 
