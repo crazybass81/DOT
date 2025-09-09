@@ -48,20 +48,20 @@ export async function POST(request: NextRequest) {
     if (user?.id) {
       // const threatLevel = await privilegeEscalationDetector.getUserThreatLevel(user.id);
       
-      // If threat level is concerning, log additional warning
-      if (threatLevel === 'HIGH' || threatLevel === 'CRITICAL') {
-        await securityAuditLogger.logCriticalEvent({
-          type: 'HIGH_RISK_USER_ACTIVITY',
-          userId: user.id,
-          endpoint: body.page,
-          threatLevel,
-          timestamp: new Date(),
-          details: {
-            message: 'User with high threat level attempted unauthorized access',
-            userEmail: user.email,
-            attemptedPage: body.page
-          }
-        });
+      // TODO: If threat level is concerning, log additional warning
+      // if (threatLevel === 'HIGH' || threatLevel === 'CRITICAL') {
+      //   await securityAuditLogger.logCriticalEvent({
+      //     type: 'HIGH_RISK_USER_ACTIVITY',
+      //     userId: user.id,
+      //     endpoint: body.page,
+      //     threatLevel,
+      //     timestamp: new Date(),
+      //     details: {
+      //       message: 'User with high threat level attempted unauthorized access',
+      //       userEmail: user.email,
+      //       attemptedPage: body.page
+      //     }
+      //   });
       }
     }
     
