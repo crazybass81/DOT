@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOT 근태관리 시스템</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .logo-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .logo-section p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .test-accounts {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .test-accounts h3 {
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .account-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .account-item:hover {
+            background: #e0e7ff;
+        }
+        
+        .account-item strong {
+            color: #667eea;
+        }
+        
+        .links {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .links span {
+            cursor: pointer;
+            color: #667eea;
+            transition: color 0.2s;
+        }
+        
+        .links span:hover {
+            color: #5b6bc7;
+        }
+        
+        .separator {
+            margin: 0 15px;
+            color: #d1d5db;
+        }
+        
+        .status-message {
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <h1>DOT</h1>
+            <p>근태관리 시스템</p>
+        </div>
+        
+        <div class="test-accounts">
+            <h3>🧪 테스트 계정 (클릭하여 자동 입력)</h3>
+            <div class="account-item" onclick="fillAccount('archt723@gmail.com', 'Master123!@#')">
+                <strong>관리자:</strong> archt723@gmail.com / Master123!@#
+            </div>
+            <div class="account-item" onclick="fillAccount('crazybass81@naver.com', 'Test123!')">
+                <strong>사업자:</strong> crazybass81@naver.com / Test123!
+            </div>
+        </div>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="email">이메일 또는 사용자 ID</label>
+                <input type="text" id="email" required placeholder="이메일을 입력하세요">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" required placeholder="비밀번호를 입력하세요">
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                로그인
+            </button>
+        </form>
+        
+        <div class="links">
+            <span onclick="alert('회원가입 기능은 관리자에게 문의하세요.')">회원가입</span>
+            <span class="separator">|</span>
+            <span onclick="alert('ID/PW 찾기는 관리자에게 문의하세요.')">ID/PW 찾기</span>
+        </div>
+        
+        <div id="statusMessage"></div>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+            <small style="color: #9ca3af;">
+                💡 실제 인증 시스템이 연결되면 대시보드로 이동됩니다.<br>
+                현재는 테스트 모드로 동작 중입니다.
+            </small>
+        </div>
+    </div>
+
+    <script>
+        function fillAccount(email, password) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+            showStatus('계정 정보가 입력되었습니다.', 'info');
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+            }
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // 로딩 상태
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading"></span> 로그인 중...';
+            
+            try {
+                // 가상의 로그인 프로세스
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // 성공 메시지
+                showStatus(`🎉 환영합니다, ${email}님!`, 'success');
+                
+                // 실제 시스템에서는 여기서 대시보드로 리다이렉트
+                setTimeout(() => {
+                    showStatus('실제 시스템에서는 대시보드로 이동합니다.', 'info');
+                }, 2000);
+                
+            } catch (error) {
+                showStatus('로그인에 실패했습니다. 다시 시도해주세요.', 'error');
+            } finally {
+                // 버튼 원상복구
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '로그인';
+            }
+        }
+        
+        // 페이지 로드 시 환영 메시지
+        window.onload = function() {
+            setTimeout(() => {
+                showStatus('DOT 근태관리 시스템에 오신 것을 환영합니다!', 'info');
+            }, 500);
+        };
+    </script>
+</body>
+</html>
