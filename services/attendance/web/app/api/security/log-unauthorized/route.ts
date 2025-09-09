@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       //       attemptedPage: body.page
       //     }
       //   });
-      }
+      // }
     }
     
     // Store in database for persistent logging (optional)
