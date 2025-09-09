@@ -27,10 +27,13 @@ export default function ManualAttendancePage() {
 
   useEffect(() => {
     // Check admin authentication
-    // if (!await unifiedAuthService.isAuthenticated()) {
-      router.push('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      if (!(await unifiedAuthService.isAuthenticated())) {
+        router.push('/login');
+        return;
+      }
+    };
+    checkAuth();
 
     const user = userService.getCurrentUser();
     if (!user || !userService.isAdmin()) {
