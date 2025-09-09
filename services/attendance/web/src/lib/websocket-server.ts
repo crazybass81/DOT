@@ -505,6 +505,103 @@ export class WebSocketServerManager {
   }
 
   /**
+   * JWT 토큰 검증
+   */
+  private async validateJWTToken(token: string): Promise<JWTValidationResult> {
+    try {
+      // Import JWT library dynamically to avoid issues if not installed
+      const jwt = await import('jsonwebtoken');
+      
+      const secret = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
+      if (!secret) {
+        return {
+          isValid: false,
+          error: 'JWT secret not configured',
+          errorCode: 'JWT_SECRET_MISSING'
+        };
+      }
+
+      // Remove Bearer prefix if present
+      const cleanToken = token.replace(/^Bearer\s+/, '');
+      
+      // Verify token
+      const decoded = jwt.verify(cleanToken, secret, {
+        algorithms: ['HS256', 'RS256']
+      }) as any;
+
+      // Validate token structure
+      if (!decoded || typeof decoded !== 'object') {
+        return {
+          isValid: false,
+          error: 'Invalid token structure',
+          errorCode: 'INVALID_TOKEN_STRUCTURE'
+        };
+      }
+
+      // Check expiration
+      if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+        return {
+          isValid: false,
+          error: 'Token expired',
+          errorCode: 'TOKEN_EXPIRED'
+        };
+      }
+
+      // Extract user information
+      const payload = {
+        userId: decoded.sub || decoded.user_id || decoded.id,
+        email: decoded.email,
+        organizationId: decoded.organization_id || decoded.org_id,
+        roles: decoded.roles || decoded.role ? [decoded.role] : [],
+        exp: decoded.exp,
+        iat: decoded.iat
+      };
+
+      // Validate required fields
+      if (!payload.userId) {
+        return {
+          isValid: false,
+          error: 'Token missing user ID',
+          errorCode: 'MISSING_USER_ID'
+        };
+      }
+
+      return {
+        isValid: true,
+        payload
+      };
+
+    } catch (error: any) {
+      if (error.name === 'JsonWebTokenError') {
+        return {
+          isValid: false,
+          error: 'Invalid token format',
+          errorCode: 'INVALID_TOKEN_FORMAT'
+        };
+      } else if (error.name === 'TokenExpiredError') {
+        return {
+          isValid: false,
+          error: 'Token expired',
+          errorCode: 'TOKEN_EXPIRED'
+        };
+      } else if (error.name === 'NotBeforeError') {
+        return {
+          isValid: false,
+          error: 'Token not yet valid',
+          errorCode: 'TOKEN_NOT_BEFORE'
+        };
+      } else {
+        console.error('JWT validation error:', error);
+        return {
+          isValid: false,
+          error: 'Token validation failed',
+          errorCode: 'VALIDATION_FAILED'
+        };
+      }
+    }
+  }
+
+  /**
    * Socket.IO 서버 인스턴스 반환
    */
   public getSocketIOServer(): SocketIOServer | undefined {
