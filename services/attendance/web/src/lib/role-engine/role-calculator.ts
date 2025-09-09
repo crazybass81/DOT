@@ -623,3 +623,66 @@ export class RoleCalculationUtils {
       .map(dep => dep.parentRole);
   }
 }
+
+/**
+ * Role Calculator Service - Singleton wrapper for role calculation functionality
+ */
+export class RoleCalculatorService {
+  private static instance: RoleCalculatorService;
+
+  private constructor() {}
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): RoleCalculatorService {
+    if (!RoleCalculatorService.instance) {
+      RoleCalculatorService.instance = new RoleCalculatorService();
+    }
+    return RoleCalculatorService.instance;
+  }
+
+  /**
+   * Calculate roles with validation
+   */
+  async calculateRoles(context: RoleCalculationContext): Promise<RoleCalculationResult> {
+    return RoleCalculator.calculateRoles(context);
+  }
+
+  /**
+   * Get role hierarchy information
+   */
+  getRoleHierarchy(): Record<RoleType, number> {
+    return ROLE_HIERARCHY;
+  }
+
+  /**
+   * Get role calculation rules
+   */
+  getRoleCalculationRules() {
+    return ROLE_CALCULATION_RULES;
+  }
+
+  /**
+   * Get role dependencies
+   */
+  getRoleDependencies() {
+    return ROLE_DEPENDENCIES;
+  }
+
+  /**
+   * Validate role assignment
+   */
+  validateRoleAssignment(papers: PaperType[], role: RoleType): boolean {
+    const rule = ROLE_CALCULATION_RULES.find(r => r.resultRole === role);
+    if (!rule) return false;
+    return RoleCalculator['checkRuleMatch'](papers, rule.papers);
+  }
+
+  /**
+   * Get role information
+   */
+  getRoleInfo(role: RoleType) {
+    return RoleCalculationUtils.getRoleInfo(role);
+  }
+}
