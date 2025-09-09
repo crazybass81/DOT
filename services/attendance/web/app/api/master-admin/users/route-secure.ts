@@ -5,8 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/src/lib/supabase/server';
-import { auditLogger, AuditAction, AuditResult } from '@/lib/audit-logger';
-import { sqlInjectionMiddleware } from '@/lib/security/sql-injection-prevention';
+import { auditLogger, AuditAction, AuditResult } from '@/src/lib/audit-logger';
+import { sqlInjectionMiddleware } from '@/src/lib/security/sql-injection-prevention';
 
 interface UserListResponse {
   success: true;

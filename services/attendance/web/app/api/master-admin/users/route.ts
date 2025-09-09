@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/src/lib/supabase/server';
-import { auditLogger, AuditAction, AuditResult } from '@/lib/audit-logger';
+import { auditLogger, AuditAction, AuditResult } from '@/src/lib/audit-logger';
 
 interface UserSearchParams {
   search?: string;
