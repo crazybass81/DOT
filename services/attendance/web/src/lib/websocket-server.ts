@@ -211,14 +211,57 @@ export class WebSocketServerManager {
       return;
     }
 
-    // TODO: 실제 환경에서는 JWT 토큰 검증 로직 추가
-    // if (authData.token) {
-    //   const isValidToken = await this.validateToken(authData.token);
-    //   if (!isValidToken) {
-    //     socket.emit('auth_error', { error: 'Invalid token', code: 'INVALID_TOKEN' });
-    //     return;
-    //   }
-    // }
+    // JWT 토큰 검증
+    if (authData.token) {
+      const validationResult = await this.validateJWTToken(authData.token);
+      if (!validationResult.isValid) {
+        socket.emit('auth_error', { 
+          error: validationResult.error || 'Invalid token', 
+          code: validationResult.errorCode || 'INVALID_TOKEN' 
+        });
+        
+        // 감사 로그 기록 - 인증 실패
+        try {
+          await auditLogger.log({
+            user_id: authData.userId || 'unknown',
+            organization_id: authData.organizationId,
+            action: AuditAction.WEBSOCKET_AUTH_FAILED,
+            result: AuditResult.FAILURE,
+            resource_type: 'websocket_authentication',
+            resource_id: socket.id,
+            details: {
+              socket_id: socket.id,
+              error: validationResult.error,
+              token_expired: validationResult.errorCode === 'TOKEN_EXPIRED'
+            },
+            ip_address: socket.handshake.address || 'unknown',
+            user_agent: socket.handshake.headers['user-agent'] || 'unknown'
+          });
+        } catch (error) {
+          console.error('Failed to log authentication failure:', error);
+        }
+        
+        return;
+      }
+      
+      // 토큰에서 추출된 사용자 정보와 요청된 정보 비교
+      if (validationResult.payload && validationResult.payload.userId !== authData.userId) {
+        socket.emit('auth_error', { 
+          error: 'Token user ID mismatch', 
+          code: 'USER_MISMATCH' 
+        });
+        return;
+      }
+    } else {
+      // 프로덕션에서는 토큰이 필수여야 함
+      if (process.env.NODE_ENV === 'production') {
+        socket.emit('auth_error', { 
+          error: 'Authentication token required', 
+          code: 'TOKEN_REQUIRED' 
+        });
+        return;
+      }
+    }
 
     // 연결 정보 업데이트
     connection.userId = authData.userId;
