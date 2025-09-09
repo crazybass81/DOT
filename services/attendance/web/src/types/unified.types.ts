@@ -72,11 +72,17 @@ export function generateOrgCode(): string {
   for (let i = 0; i < 4; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
+  return result;
+}
 
-/**
- * Validate business ownership rules
- */
-export function validateBusinessOwnership(ownerType: IdType, orgType: OrgType): boolean {
+// All remaining functions are deprecated and should use the new ID-ROLE-PAPER system
+// This file serves only as a compatibility layer during migration
+
+export default {
+  // Export mappings for easy reference during migration
+  LEGACY_ID_TYPE_MAPPING,
+  LEGACY_UNIFIED_ROLE_MAPPING,
+};
   switch (orgType) {
     case 'personal':
       return true // Personal orgs can be owned by anyone
