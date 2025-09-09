@@ -30,8 +30,8 @@ export default function AttendanceMonitoring() {
     const checkAuth = async () => {
       const isAuthenticated = await authService.isAuthenticated();
       if (!isAuthenticated) {
-        // router.push("/login");
-        // return;
+        router.push('/login');
+        return;
       }
       setLoading(false);
     };
@@ -107,7 +107,7 @@ export default function AttendanceMonitoring() {
 
   // Auto refresh every 30 seconds
   useEffect(() => {
-    if (!autoRefresh) // return;
+    if (!autoRefresh) return;
 
     const interval = setInterval(() => {
       // Refresh data here

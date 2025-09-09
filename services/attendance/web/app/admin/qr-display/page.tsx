@@ -18,17 +18,16 @@ export default function QRDisplayPage() {
   // Check authentication and admin rights
   useEffect(() => {
     const checkAuth = () => {
-      // TODO: Implement proper auth check
-    // if (!await unifiedAuthService.isAuthenticated()) {
-        // router.push("/login");
-        // return;
+      // if (!await unifiedAuthService.isAuthenticated()) {
+        router.push('/login');
+        return;
       }
 
       const user = userService.getCurrentUser();
       if (!user || !userService.isAdmin()) {
         alert('관리자 권한이 필요합니다');
         router.push('/attendance');
-        // return;
+        return;
       }
     };
 

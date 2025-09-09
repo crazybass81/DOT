@@ -22,17 +22,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Check authentication and admin rights
     const checkAuth = async () => {
-      // TODO: Implement proper auth check
-    // if (!await unifiedAuthService.isAuthenticated()) {
-        // router.push("/login");
-        // return;
+      // if (!await unifiedAuthService.isAuthenticated()) {
+        router.push('/login');
+        return;
       }
 
       const user = userService.getCurrentUser();
       if (!user || !userService.isAdmin()) {
         alert('관리자 권한이 필요합니다');
         router.push('/attendance');
-        // return;
+        return;
       }
 
       setUserName(user.name || user.email);

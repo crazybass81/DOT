@@ -32,8 +32,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       const currentUser = await supabaseAuthService.getCurrentUser();
       
       if (!currentUser) {
-        // router.push("/login");
-        // return;
+        router.push('/login');
+        return;
       }
 
       // Check if user is master admin
@@ -41,13 +41,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (!isMasterAdmin) {
         alert('Master admin access required');
         router.push('/attendance');
-        // return;
+        return;
       }
 
       setUser(currentUser);
     } catch (error) {
       console.error('Auth check failed:', error);
-      // router.push("/login");
+      router.push('/login');
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const handleLogout = async () => {
     try {
       await supabaseAuthService.signOut();
-      // router.push("/login");
+      router.push('/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }
