@@ -48,10 +48,11 @@ DOT/
 - Neo Brutal Theme
 
 ### Backend  
-- AWS Lambda (서버리스)
-- DynamoDB (NoSQL)
-- API Gateway
-- Cognito (인증)
+- **Supabase** - Primary backend for attendance service (PostgreSQL, Auth, Realtime)
+- **AWS Lambda** - Serverless functions for marketing service
+- **DynamoDB** - NoSQL database for marketing data
+- **API Gateway** - REST API management
+- **Cognito** - Authentication for marketing service
 
 ### Infrastructure
 - AWS CDK
