@@ -694,6 +694,13 @@ export class RoleCalculatorService {
   }
 
   /**
+   * Calculate roles with additional validation
+   */
+  async calculateRolesWithValidation(context: RoleCalculationContext): Promise<RoleCalculationResult> {
+    return RoleCalculator.calculateRoles(context);
+  }
+
+  /**
    * Get role hierarchy information
    */
   getRoleHierarchy(): Record<RoleType, number> {
