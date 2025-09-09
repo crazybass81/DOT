@@ -81,12 +81,20 @@ POST /attendance-check-v2
 ```json
 {
   "action": "check_in" | "check_out",
-  "employeeId": "550e8400-e29b-41d4-a716-446655440000",
+  "idInfo": {
+    "idType": "Personal" | "Corporate",
+    "personalId": "550e8400-e29b-41d4-a716-446655440000",
+    "corporateId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "businessRegistration": {
+    "businessRegistrationId": "550e8400-e29b-41d4-a716-446655440002",
+    "businessType": "individual" | "corporate"
+  },
   "location": {
     "latitude": 37.7749,
     "longitude": -122.4194,
     "accuracy": 10,
-    "locationId": "550e8400-e29b-41d4-a716-446655440001"
+    "locationId": "550e8400-e29b-41d4-a716-446655440003"
   },
   "verificationMethod": {
     "type": "biometric" | "pin" | "face_id" | "fingerprint",
@@ -98,7 +106,7 @@ POST /attendance-check-v2
     }
   },
   "shift": {
-    "shiftId": "550e8400-e29b-41d4-a716-446655440002",
+    "shiftId": "550e8400-e29b-41d4-a716-446655440004",
     "expectedStart": "09:00:00",
     "expectedEnd": "17:00:00"
   },
