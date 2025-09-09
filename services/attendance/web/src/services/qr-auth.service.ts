@@ -255,4 +255,4 @@ class QRAuthService {
   }
 }
 
-export const qrAuthService = QRAuthService.getInstance();
+export const qr-auth.service = QRAuthService.getInstance();
