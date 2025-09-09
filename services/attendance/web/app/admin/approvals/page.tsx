@@ -41,7 +41,7 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     // Check auth and admin rights
-    if (!await unifiedAuthService.isAuthenticated()) {
+    // if (!await unifiedAuthService.isAuthenticated()) {
       router.push('/login');
       return;
     }

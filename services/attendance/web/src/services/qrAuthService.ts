@@ -1,4 +1,4 @@
-import { UserRole, UserStatus, User } from '@/types/user.types';
+import { UserRole, UserStatus, User } from '@/src/types/user.types';
 
 interface QRCodeData {
   type: 'attendance';
