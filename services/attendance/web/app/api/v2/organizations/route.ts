@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create organization
-    const result = await organizationService.createOrganization(body)
+    const result = // await organizationService.createOrganization(body)
 
     if (!result.success) {
       return NextResponse.json({
@@ -66,9 +66,9 @@ export async function GET(request: NextRequest) {
 
     let organization
     if (id) {
-      organization = await organizationService.getById(id)
+      organization = // await organizationService.getById(id)
     } else if (code) {
-      organization = await organizationService.getByCode(code)
+      organization = // await organizationService.getByCode(code)
     }
 
     if (!organization) {

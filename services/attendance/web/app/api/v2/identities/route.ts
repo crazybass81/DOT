@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create identity
-    const result = await identityService.createIdentity(body)
+    const result = // await identityService.createIdentity(body)
 
     if (!result.success) {
       return NextResponse.json({
@@ -67,9 +67,9 @@ export async function GET(request: NextRequest) {
 
     let identity
     if (id) {
-      identity = await identityService.getById(id)
+      identity = // await identityService.getById(id)
     } else if (authUserId) {
-      identity = await identityService.getByAuthUserId(authUserId)
+      identity = // await identityService.getByAuthUserId(authUserId)
     }
 
     if (!identity) {
