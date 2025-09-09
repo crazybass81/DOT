@@ -472,24 +472,5 @@ export interface TestScenario {
 /**
  * Export all types for easy importing
  */
-export type {
-  UnifiedIdentity,
-  BusinessRegistration,
-  Paper,
-  ComputedRole,
-  RoleDependency,
-  RoleCalculationRule,
-  RoleCalculationContext,
-  RoleCalculationResult,
-  Permission,
-  RolePermissions,
-  IdentityWithContext,
-  CreatePaperRequest,
-  CreateBusinessRegistrationRequest,
-  AttendanceRecordUpdate,
-  IdRolePaperError,
-  TestIdentityData,
-  TestPaperData,
-  TestBusinessRegistrationData,
-  TestScenario
+// Note: Types already exported individually above, no need to re-export
 };
