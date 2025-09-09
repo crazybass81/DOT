@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn, Shield, Users, Clock, CheckCircle } from 'lucide-react';
-import { supabaseAuthService } from '../src/services/supabase-auth.service';
+import { supabaseAuth } from '../src/services/supabase-auth.service';
 
 export default function Home() {
   const router = useRouter();
@@ -54,11 +54,11 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const user = await supabaseAuthService.signIn(id, password);
+      const user = await supabaseAuth.signIn(id, password);
       
       if (user) {
         // employee 정보에서 position과 organization 확인
-        const { data: employee } = await supabaseAuthService.supabase
+        const { data: employee } = await supabaseAuth.supabase
           .from('employees')
           .select('position, organization_id')
           .eq('user_id', user.id)
