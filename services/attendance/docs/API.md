@@ -2,7 +2,7 @@
 
 ## Overview
 
-The DOT Attendance Service provides a comprehensive REST API for enterprise attendance management with multi-tenant support, biometric verification, and real-time capabilities.
+The DOT Attendance Service provides a comprehensive REST API for enterprise attendance management with the ID-ROLE-PAPER architecture, supporting Personal and Corporate IDs with role-based access control through business registration papers, biometric verification, and real-time capabilities.
 
 ## Base URL
 
