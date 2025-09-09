@@ -23,6 +23,10 @@ export const DialogTitle = ({ children, className = "", ...props }: any) => (
   <h2 className={`text-lg font-semibold ${className}`} {...props}>{children}</h2>
 );
 
+export const DialogDescription = ({ children, className = "", ...props }: any) => (
+  <p className={`text-sm text-gray-600 ${className}`} {...props}>{children}</p>
+);
+
 export const DialogFooter = ({ children, className = "", ...props }: any) => (
   <div className={`mt-6 flex justify-end space-x-2 ${className}`} {...props}>{children}</div>
 );
