@@ -8,6 +8,7 @@
 import React from 'react';
 import { AuthProvider } from '../../contexts/AuthContext';
 import PaperManagement from '../../components/id-role-paper/PaperManagement';
+import Navigation from '../../components/common/Navigation';
 
 const PapersPage: React.FC = () => {
   return (
