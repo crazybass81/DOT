@@ -91,13 +91,13 @@ export class BusinessVerificationService {
         error: '사업자등록번호 조회 중 오류가 발생했습니다.'
       };
     }
-  },
+  }
 
   /**
    * 법인등록번호 검증
    * @param registrationNumber 법인등록번호
    */
-  async verifyCorporationRegistration(registrationNumber: string): Promise<BusinessVerificationResult> {
+  static async verifyCorporationRegistration(registrationNumber: string): Promise<BusinessVerificationResult> {
     // 기본적인 포맷 검증
     const cleanNumber = registrationNumber.replace(/[-]/g, '');
     
