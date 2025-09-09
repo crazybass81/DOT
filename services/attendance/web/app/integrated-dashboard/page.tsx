@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User, LogOut, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { supabaseAuthService } from '@/src/services/supabaseAuthService'
-import { supabase } from '@/lib/supabase-config'
+import { supabase } from '@/src/lib/supabase-config'
 
 // Phase 4.3 컴포넌트들 import
 import AttendanceStatusCard from '@/components/dashboard/AttendanceStatusCard'
