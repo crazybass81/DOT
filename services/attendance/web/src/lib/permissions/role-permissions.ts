@@ -688,10 +688,8 @@ export const checkMultiRolePermission = (
   return permissionService.hasMultiRolePermission(roles, resource, action, context);
 };
 
-// Export types and constants
+// Export types and constants (Resource and Action already exported as enums)
 export {
-  Resource,
-  Action,
   PermissionCondition,
   EnhancedPermission
 };
