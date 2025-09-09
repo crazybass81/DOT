@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>디버그 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+        }
+        .success {
+            color: #059669;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .info {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+        }
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        button {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">🎉 정적 HTML 성공!</div>
+        
+        <div class="info">
+            <strong>상태:</strong> 이 페이지가 보인다면 서버는 정상입니다.
+        </div>
+        
+        <div class="info">
+            <strong>문제:</strong> Next.js의 클라이언트 사이드 JavaScript에 문제가 있습니다.
+        </div>
+        
+        <div class="info">
+            <strong>현재 시간:</strong> <span id="time"></span>
+        </div>
+        
+        <button onclick="testFetch()">서버 연결 테스트</button>
+        <button onclick="window.location.reload()">페이지 새로고침</button>
+        
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        // 현재 시간 표시
+        document.getElementById('time').textContent = new Date().toLocaleString('ko-KR');
+        
+        // 서버 연결 테스트
+        async function testFetch() {
+            const result = document.getElementById('result');
+            try {
+                result.innerHTML = '테스트 중...';
+                const response = await fetch('/api/health');
+                if (response.ok) {
+                    result.innerHTML = '<div style="color: green;">✅ API 서버 정상</div>';
+                } else {
+                    result.innerHTML = '<div style="color: orange;">⚠️ API 응답 이상: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div style="color: red;">❌ API 서버 연결 실패: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>
