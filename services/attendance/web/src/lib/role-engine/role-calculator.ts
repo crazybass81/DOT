@@ -14,7 +14,6 @@ import {
   UnifiedIdentity,
   BusinessRegistration,
   Paper,
-  ComputedRole,
   RoleCalculationContext,
   RoleCalculationResult,
   ROLE_CALCULATION_RULES,
