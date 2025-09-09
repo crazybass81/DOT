@@ -1,67 +1,86 @@
 /**
  * Organization Management API v2
  * RESTful API for organization and role management
+ * Enhanced with Zod runtime validation
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { organizationService } from '@/src/services/organizationService'
-import { CreateOrganizationRequest, AssignRoleRequest } from '@/src/types/unified.types'
+import { CreateOrganizationRequest, AssignRoleRequest, ERROR_CODES } from '@/src/types/unified.types'
+import { 
+  CreateOrganizationRequestSchema,
+  CreateOrganizationResponseSchema,
+  OrganizationQuerySchema
+} from '@/src/schemas/organization.schema'
+import { 
+  validateRequestBody,
+  validateSearchParams,
+  createValidationErrorResponse,
+  createSuccessResponse,
+  createErrorResponse
+} from '@/src/lib/validation'
+import { z } from 'zod'
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CreateOrganizationRequest = await request.json()
-
-    // Validate required fields
-    if (!body.name || !body.orgType || !body.ownerIdentityId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Missing required fields: name, orgType, ownerIdentityId',
-        code: 'VALIDATION_ERROR'
-      }, { status: 400 })
+    // Runtime validation with Zod schema
+    const bodyValidation = await validateRequestBody(request, CreateOrganizationRequestSchema)
+    
+    if (!bodyValidation.success) {
+      return createValidationErrorResponse(bodyValidation)
     }
+    
+    const body = bodyValidation.data!
 
     // Create organization
     const result = await organizationService.createOrganization(body)
 
     if (!result.success) {
-      return NextResponse.json({
-        success: false,
-        error: result.error,
-        code: 'CREATION_FAILED'
-      }, { status: 400 })
+      return createErrorResponse(result.error, 'CREATION_FAILED', 400)
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        organization: result.organization,
-        code: result.code
-      }
-    }, { status: 201 })
+    // Validate response with schema
+    const responseValidation = CreateOrganizationResponseSchema.safeParse(result)
+    
+    if (!responseValidation.success) {
+      console.error('Response validation failed:', responseValidation.error)
+      return createErrorResponse('응답 데이터 형식 오류', 'RESPONSE_VALIDATION_ERROR')
+    }
+
+    return createSuccessResponse({
+      organization: result.organization,
+      code: result.code
+    }, '조직이 성공적으로 생성되었습니다', 201)
 
   } catch (error) {
     console.error('Error in POST /api/v2/organizations:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      code: 'INTERNAL_ERROR'
-    }, { status: 500 })
+    return createErrorResponse(
+      '조직 생성 중 서버 오류가 발생했습니다',
+      ERROR_CODES.INTERNAL_ERROR
+    )
   }
 }
+
+// Query parameter schema for GET requests
+const OrganizationGetQuerySchema = z.object({
+  id: z.string().uuid('올바른 UUID 형식이 아닙니다').optional(),
+  code: z.string().length(4, '조직 코드는 4자리여야 합니다').optional()
+}).refine(data => data.id || data.code, {
+  message: 'id 또는 code 매개변수가 필요합니다'
+})
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-    const code = searchParams.get('code')
-
-    if (!id && !code) {
-      return NextResponse.json({
-        success: false,
-        error: 'Either id or code parameter is required',
-        code: 'VALIDATION_ERROR'
-      }, { status: 400 })
+    
+    // Validate query parameters
+    const queryValidation = validateSearchParams(searchParams, OrganizationGetQuerySchema)
+    
+    if (!queryValidation.success) {
+      return createValidationErrorResponse(queryValidation)
     }
+    
+    const { id, code } = queryValidation.data!
 
     let organization
     if (id) {
@@ -71,24 +90,23 @@ export async function GET(request: NextRequest) {
     }
 
     if (!organization) {
-      return NextResponse.json({
-        success: false,
-        error: 'Organization not found',
-        code: 'NOT_FOUND'
-      }, { status: 404 })
+      return createErrorResponse(
+        '조직을 찾을 수 없습니다',
+        ERROR_CODES.ORGANIZATION_NOT_FOUND,
+        404
+      )
     }
 
-    return NextResponse.json({
-      success: true,
-      data: { organization }
-    })
+    return createSuccessResponse(
+      { organization },
+      '조직 조회가 완료되었습니다'
+    )
 
   } catch (error) {
     console.error('Error in GET /api/v2/organizations:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      code: 'INTERNAL_ERROR'
-    }, { status: 500 })
+    return createErrorResponse(
+      '조직 조회 중 서버 오류가 발생했습니다',
+      ERROR_CODES.INTERNAL_ERROR
+    )
   }
 }
