@@ -191,8 +191,8 @@ const nextConfig = {
     // Production source maps (disable for security)
     productionBrowserSourceMaps: false,
     
-    // Enable SWC minification
-    swcMinify: true,
+    // SWC minification is now default in Next.js 15
+    // swcMinify: true, // Removed as it's default
   }),
 };
 
