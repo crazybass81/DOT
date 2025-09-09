@@ -28,12 +28,22 @@ export const LEGACY_ORG_TYPE_MAPPING: Record<OrganizationType, BusinessType> = {
   [OrganizationType.FRANCHISE]: BusinessType.CORPORATE, // Franchises are corporate entities
 };
 
+// Legacy OrganizationStatus enum - DEPRECATED: Use VerificationStatus from unified system
+/** @deprecated Use VerificationStatus from id-role-paper-unified.ts instead */
 export enum OrganizationStatus {
   ACTIVE = 'ACTIVE',          // 활성
   INACTIVE = 'INACTIVE',      // 비활성
   SUSPENDED = 'SUSPENDED',    // 정지
   PENDING = 'PENDING'         // 승인 대기
 }
+
+// Legacy to new status mapping
+export const LEGACY_ORG_STATUS_MAPPING: Record<OrganizationStatus, VerificationStatus> = {
+  [OrganizationStatus.PENDING]: VerificationStatus.PENDING,
+  [OrganizationStatus.ACTIVE]: VerificationStatus.VERIFIED,
+  [OrganizationStatus.INACTIVE]: VerificationStatus.REJECTED,
+  [OrganizationStatus.SUSPENDED]: VerificationStatus.REJECTED,
+};
 
 export interface Organization {
   id: string;
