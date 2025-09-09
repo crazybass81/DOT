@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { securityAuditLogger } from '@/lib/security/SecurityAuditLogger';
-import { privilegeEscalationDetector } from '@/lib/security/PrivilegeEscalationDetector';
+import { createClient } from '@/src/lib/supabase/server';
+import { securityAuditLogger } from '@/src/lib/security/SecurityAuditLogger';
+import { privilegeEscalationDetector } from '@/src/lib/security/PrivilegeEscalationDetector';
 
 interface UnauthorizedAccessLog {
   page: string;
