@@ -168,8 +168,13 @@ export class RoleCalculator {
 
     const paperTypes = papers.map(p => p.paperType);
     
-    // Check each role calculation rule
-    for (const rule of ROLE_CALCULATION_RULES) {
+    // Sort rules by role hierarchy (highest first) to ensure only the highest role is assigned
+    const sortedRules = [...ROLE_CALCULATION_RULES].sort((a, b) => 
+      (ROLE_HIERARCHY[b.resultRole] || 0) - (ROLE_HIERARCHY[a.resultRole] || 0)
+    );
+    
+    // Check each role calculation rule, starting with highest priority
+    for (const rule of sortedRules) {
       if (this.checkRuleMatch(paperTypes, rule.papers)) {
         // Validate dependencies if any
         if (rule.dependencies && rule.dependencies.length > 0) {
@@ -202,6 +207,12 @@ export class RoleCalculator {
         };
 
         roles.push(role);
+
+        // For business roles, only assign the highest priority role
+        // Exception: WORKER role can coexist with MANAGER/SUPERVISOR
+        if (rule.resultRole !== RoleType.WORKER) {
+          break;
+        }
       }
     }
 
