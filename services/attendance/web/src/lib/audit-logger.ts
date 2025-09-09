@@ -1,4 +1,4 @@
-import { createClient } from '@/src/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 export enum AuditAction {
   // 사용자 관련

@@ -1,4 +1,4 @@
-import { createClient } from '@/src/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { webSocketServer } from './websocket-server';
 import { auditLogger, AuditAction, AuditResult } from './audit-logger';
 
