@@ -336,7 +336,7 @@ export class IdentityService {
    */
   async recalculateRoles(identityId: string): Promise<ComputedRole[]> {
     try {
-      const identity = await this.getIdentity(identityId);
+      const identity = await this._getIdentity(identityId);
       if (!identity) {
         throw new Error(`Identity not found: ${identityId}`);
       }
