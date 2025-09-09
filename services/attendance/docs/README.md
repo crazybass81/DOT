@@ -4,7 +4,11 @@
 
 ### Core Documentation
 - [**Project Overview**](../README.md) - Main project README with architecture and features
-- [**API Reference**](./API.md) - Complete REST API documentation with examples
+- [**ID-ROLE-PAPER Architecture**](./Final-ID-ROLE-PAPER-Architecture.md) - Complete system architecture with Personal/Corporate IDs, 7 roles, and 6 paper types
+- [**API Reference**](./API-Reference.md) - Complete REST API documentation with ID-ROLE-PAPER system
+- [**Implementation Guide**](./Implementation-Guide.md) - Step-by-step implementation guide for the ID-ROLE-PAPER system
+- [**Architecture Diagrams**](./Architecture-Diagrams.md) - Visual system architecture and data flow diagrams
+- [**Legacy API Documentation**](./API.md) - Legacy REST API documentation with examples
 - [**OpenAPI Specification**](./openapi.yml) - Machine-readable API specification (Swagger)
 - [**Supabase Setup Guide**](./SUPABASE_SETUP.md) - Complete Supabase configuration and deployment
 
