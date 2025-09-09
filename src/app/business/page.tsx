@@ -8,6 +8,7 @@
 import React from 'react';
 import { AuthProvider } from '../../contexts/AuthContext';
 import BusinessRegistrationManagement from '../../components/id-role-paper/BusinessRegistration';
+import Navigation from '../../components/common/Navigation';
 
 const BusinessPage: React.FC = () => {
   return (
