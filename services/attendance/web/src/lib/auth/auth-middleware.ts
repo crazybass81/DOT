@@ -130,8 +130,34 @@ export async function withAuth(
         organizations: userOrganizations,
         hasRole: (role: string) => userRoles.some(r => r.role === role),
         hasPermission: (permission: string) => {
-          // TODO: 권한 체크 로직 구현
-          return userRoles.some(r => ['admin', 'master'].includes(r.role));
+          // Super admin has all permissions
+          if (userRoles.some(r => r.role === 'SUPER_ADMIN')) return true;
+          
+          // Business admin permissions
+          if (userRoles.some(r => r.role === 'BUSINESS_ADMIN')) {
+            const businessPermissions = [
+              'manage_employees',
+              'view_reports', 
+              'approve_registrations',
+              'manage_settings',
+              'view_audit_logs',
+              'manage_organizations'
+            ];
+            return businessPermissions.includes(permission);
+          }
+          
+          // Employee permissions
+          if (userRoles.some(r => r.role === 'EMPLOYEE')) {
+            const employeePermissions = [
+              'check_in',
+              'check_out',
+              'view_own_records',
+              'view_schedule'
+            ];
+            return employeePermissions.includes(permission);
+          }
+          
+          return false;
         }
       };
 
