@@ -133,7 +133,7 @@ module.exports = {
     //   strategy: 'class',
     // }),
     // require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
+    // require('@tailwindcss/aspect-ratio'),
     // Custom plugin for Korean-specific utilities
     function({ addUtilities, theme }) {
       const newUtilities = {
