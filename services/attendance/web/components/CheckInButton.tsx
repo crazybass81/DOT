@@ -14,13 +14,15 @@ interface CheckInButtonProps {
 export const CheckInButton: React.FC<CheckInButtonProps> = ({
   employeeId,
   businessId,
+  isCheckedIn = false,
   onCheckIn,
+  onSuccess,
   onError,
   disabled = false,
   className = ''
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [checkedInState, setCheckedInState] = useState(isCheckedIn);
 
   const handleClick = async () => {
     if (disabled || isLoading) return;
@@ -44,8 +46,9 @@ export const CheckInButton: React.FC<CheckInButtonProps> = ({
         }
       };
 
-      setIsCheckedIn(true);
+      setCheckedInState(true);
       onCheckIn?.(result);
+      onSuccess?.(result);
       
     } catch (error) {
       console.error('Check-in failed:', error);
