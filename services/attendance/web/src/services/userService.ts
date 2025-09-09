@@ -1,13 +1,10 @@
-import { UserRole } from '@/src/types/user.types';
+/**
+ * User Service - Compatibility layer for user management
+ * Updated to work with unified auth service
+ */
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  businessId?: string;
-  employeeId?: string;
-}
+import { authService, User } from './authService';
+import { UserRole } from '../types/user.types';
 
 class UserService {
   private static instance: UserService;
@@ -21,78 +18,119 @@ class UserService {
     return UserService.instance;
   }
 
+  /**
+   * Get current user (synchronous compatibility method)
+   * Note: For real implementations, use authService.getCurrentUser() which is async
+   */
   getCurrentUser(): User | null {
-    // In real implementation, this would get from session/token
-    // For now, return mock data based on localStorage
-    const userEmail = localStorage.getItem('userEmail');
-    
-    if (!userEmail) return null;
-    
-    // Mock user data - in production, this would come from API/token
-    if (userEmail === 'admin@dotattendance.com') {
-      return {
-        id: 'admin-001',
-        email: userEmail,
-        name: '관리자',
-        role: UserRole.BUSINESS_ADMIN,
-        businessId: 'biz-001',
-        employeeId: 'emp-admin'
-      };
-    }
-    
-    if (userEmail === 'superadmin@dotattendance.com') {
-      return {
-        id: 'super-001',
-        email: userEmail,
-        name: '서비스 관리자',
-        role: UserRole.SUPER_ADMIN
-      };
-    }
-    
-    // Default employee user
-    return {
-      id: 'emp-001',
-      email: userEmail,
-      name: userEmail.split('@')[0],
-      role: UserRole.EMPLOYEE,
-      businessId: 'biz-001',
-      employeeId: 'emp-001'
-    };
+    // This is a synchronous compatibility method
+    // In practice, auth data should be fetched asynchronously
+    return null;
   }
 
+  /**
+   * Get current user (async - recommended)
+   */
+  async getCurrentUserAsync(): Promise<User | null> {
+    return await authService.getCurrentUser();
+  }
+
+  /**
+   * Static method for backward compatibility
+   */
   static getCurrentUser(): User | null {
     return UserService.getInstance().getCurrentUser();
   }
 
+  /**
+   * Check if current user is admin (synchronous compatibility)
+   */
   static isAdmin(): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === UserRole.BUSINESS_ADMIN || user?.role === UserRole.SUPER_ADMIN;
+    // Synchronous compatibility method
+    // For real implementations, use authService.hasRole() or authService.isMasterAdmin()
+    return false;
   }
 
+  /**
+   * Check if current user is admin (async - recommended)
+   */
+  static async isAdminAsync(): Promise<boolean> {
+    const isAdmin = await authService.hasRole('admin') || 
+                    await authService.hasRole('master_admin') ||
+                    await authService.isMasterAdmin();
+    return isAdmin;
+  }
+
+  /**
+   * Check if current user is business admin
+   */
   static isBusinessAdmin(): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === UserRole.BUSINESS_ADMIN;
+    return false; // Synchronous compatibility - use async version
   }
 
+  /**
+   * Check if current user is business admin (async)
+   */
+  static async isBusinessAdminAsync(): Promise<boolean> {
+    return await authService.hasRole(UserRole.BUSINESS_ADMIN) ||
+           await authService.hasRole(UserRole.ADMIN);
+  }
+
+  /**
+   * Check if current user is super admin
+   */
   static isSuperAdmin(): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === UserRole.SUPER_ADMIN;
+    return false; // Synchronous compatibility - use async version
   }
 
+  /**
+   * Check if current user is super admin (async)
+   */
+  static async isSuperAdminAsync(): Promise<boolean> {
+    return await authService.hasRole(UserRole.SUPER_ADMIN) ||
+           await authService.hasRole(UserRole.MASTER_ADMIN) ||
+           await authService.isMasterAdmin();
+  }
+
+  /**
+   * Check if current user is employee
+   */
   static isEmployee(): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === UserRole.EMPLOYEE;
+    return false; // Synchronous compatibility - use async version
   }
 
+  /**
+   * Check if current user is employee (async)
+   */
+  static async isEmployeeAsync(): Promise<boolean> {
+    return await authService.hasRole(UserRole.EMPLOYEE) ||
+           await authService.hasRole(UserRole.WORKER);
+  }
+
+  /**
+   * Check if user has specific permission
+   */
   static hasPermission(permission: string): boolean {
-    const user = this.getCurrentUser();
+    // Synchronous compatibility method
+    return false;
+  }
+
+  /**
+   * Check if user has specific permission (async)
+   */
+  static async hasPermissionAsync(permission: string): Promise<boolean> {
+    const user = await authService.getCurrentUser();
     if (!user) return false;
     
-    // Super admin has all permissions
-    if (user.role === UserRole.SUPER_ADMIN) return true;
+    // Master/Super admin has all permissions
+    if (await authService.isMasterAdmin() || 
+        await authService.hasRole(UserRole.SUPER_ADMIN)) {
+      return true;
+    }
     
-    // Business admin has all business-level permissions
-    if (user.role === UserRole.BUSINESS_ADMIN) {
+    // Admin has business-level permissions
+    if (await authService.hasRole(UserRole.ADMIN) ||
+        await authService.hasRole(UserRole.BUSINESS_ADMIN)) {
       const businessPermissions = [
         'manage_employees',
         'view_reports',
@@ -102,17 +140,34 @@ class UserService {
       return businessPermissions.includes(permission);
     }
     
-    // Employee has limited permissions
-    if (user.role === UserRole.EMPLOYEE) {
-      const employeePermissions = [
+    // Manager has mid-level permissions
+    if (await authService.hasRole(UserRole.MANAGER)) {
+      const managerPermissions = [
+        'view_reports',
+        'approve_registrations'
+      ];
+      return managerPermissions.includes(permission);
+    }
+    
+    // Worker/Employee has limited permissions
+    if (await authService.hasRole(UserRole.WORKER) ||
+        await authService.hasRole(UserRole.EMPLOYEE)) {
+      const workerPermissions = [
         'check_in',
         'check_out',
         'view_own_records'
       ];
-      return employeePermissions.includes(permission);
+      return workerPermissions.includes(permission);
     }
     
     return false;
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  static async isAuthenticated(): Promise<boolean> {
+    return await authService.isAuthenticated();
   }
 }
 
