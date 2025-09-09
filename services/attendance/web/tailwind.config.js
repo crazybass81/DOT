@@ -131,8 +131,8 @@ module.exports = {
     // require('@tailwindcss/forms')({ // Temporarily disabled - install needed
     //   strategy: 'class',
     // }),
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
+    // require('@tailwindcss/typography'), // Temporarily disabled - install needed
+    // require('@tailwindcss/aspect-ratio'), // Temporarily disabled - install needed
     // Custom plugin for Korean-specific utilities
     function({ addUtilities, theme }) {
       const newUtilities = {
