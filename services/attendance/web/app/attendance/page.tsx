@@ -190,7 +190,7 @@ export default function AttendancePage() {
   // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuthenticated = await unifiedAuthService.isAuthenticated();
+      const isAuthenticated = await unifiedAuth.isAuthenticated();
       if (!isAuthenticated) {
         router.push('/login');
       }
@@ -267,7 +267,7 @@ export default function AttendancePage() {
 
   const handleLogout = async () => {
     console.log('[DEBUG] handleLogout called');
-    await unifiedAuthService.signOut();
+    await unifiedAuth.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {
