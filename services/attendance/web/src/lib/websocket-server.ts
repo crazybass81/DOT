@@ -19,6 +19,21 @@ export interface AuthData {
   token?: string;
 }
 
+// JWT 검증 결과 인터페이스
+export interface JWTValidationResult {
+  isValid: boolean;
+  payload?: {
+    userId: string;
+    email?: string;
+    organizationId?: string;
+    roles?: string[];
+    exp?: number;
+    iat?: number;
+  };
+  error?: string;
+  errorCode?: string;
+}
+
 // WebSocket 이벤트 타입
 export interface WebSocketEvents {
   // 클라이언트 -> 서버
