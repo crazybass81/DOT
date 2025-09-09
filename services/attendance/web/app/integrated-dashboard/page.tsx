@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User, LogOut, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
-import { supabaseAuthService } from '@/services/supabaseAuthService'
+import { supabaseAuthService } from '@/src/services/supabaseAuthService'
 import { supabase } from '@/lib/supabase-config'
 
 // Phase 4.3 컴포넌트들 import
