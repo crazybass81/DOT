@@ -58,7 +58,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       
       if (requireAuth && !isAuth) {
         if (showToastOnFail) {
-          toast.error('로그인이 필요합니다.');
+          console.log('로그인이 필요합니다.');
         }
         setState(prev => ({ 
           ...prev, 
