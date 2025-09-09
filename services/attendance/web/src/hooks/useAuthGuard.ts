@@ -106,8 +106,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
                       await authService.hasRole('master_admin');
 
       // Check approval requirement
-      if (requireApproval && !isApproved && user.employee) {
-        if (user.employee.approval_status === 'PENDING') {
+      if (requireApproval && !isApproved) {
+        const approvalStatus = user.approvalStatus || 'pending';
+        
+        if (approvalStatus === 'PENDING') {
           setState(prev => ({ 
             ...prev, 
             isLoading: false, 
@@ -115,16 +117,16 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.employee?.name || '',
+              name: user.name || user.email.split('@')[0],
               email: user.email,
-              role: user.employee?.role || '',
-              approval_status: user.employee?.approval_status || 'pending'
+              role: user.role || 'EMPLOYEE',
+              approval_status: approvalStatus
             },
             error: '승인 대기 중입니다.' 
           }));
           router.push('/approval-pending');
           return;
-        } else if (user.employee.approval_status === 'REJECTED') {
+        } else if (approvalStatus === 'REJECTED') {
           setState(prev => ({ 
             ...prev, 
             isLoading: false, 
@@ -132,18 +134,18 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.employee?.name || '',
+              name: user.name || user.email.split('@')[0],
               email: user.email,
-              role: user.employee?.role || '',
-              approval_status: user.employee?.approval_status || 'pending'
+              role: user.role || 'EMPLOYEE',
+              approval_status: approvalStatus
             },
             error: '등록이 거절되었습니다.' 
           }));
           router.push('/approval-pending');
           return;
-        } else if (!user.employee.is_active) {
+        } else if (!isApproved) {
           if (showToastOnFail) {
-            toast.error('계정이 비활성화되었습니다.');
+            console.log('계정이 비활성화되었습니다.');
           }
           setState(prev => ({ 
             ...prev, 
@@ -152,10 +154,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.employee?.name || '',
+              name: user.name || user.email.split('@')[0],
               email: user.email,
-              role: user.employee?.role || '',
-              approval_status: user.employee?.approval_status || 'pending'
+              role: user.role || 'EMPLOYEE',
+              approval_status: approvalStatus
             },
             error: '계정이 비활성화되었습니다.' 
           }));
