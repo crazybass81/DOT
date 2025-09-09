@@ -465,7 +465,7 @@ export class RoleCalculator {
         if (!possibleRoles.includes(expectedRole)) {
           const rule = ROLE_CALCULATION_RULES.find(r => r.resultRole === expectedRole);
           if (rule) {
-            const missingPapers = rule.papers.filter(p => !papers.includes(p));
+            const missingPapers = rule.papers.filter(p => !paperTypes.includes(p));
             if (missingPapers.length > 0) {
               issues.push(`Missing papers for ${expectedRole}: ${missingPapers.join(', ')}`);
               suggestions.push(`Add ${missingPapers.join(', ')} to achieve ${expectedRole} role`);
@@ -476,19 +476,19 @@ export class RoleCalculator {
     }
 
     // Validate paper combinations are logical
-    if (papers.includes(PaperType.EMPLOYMENT_CONTRACT) && 
-        papers.includes(PaperType.BUSINESS_REGISTRATION)) {
+    if (paperTypes.includes(PaperType.EMPLOYMENT_CONTRACT) && 
+        paperTypes.includes(PaperType.BUSINESS_REGISTRATION)) {
       issues.push('Cannot have both Employment Contract and Business Registration for same identity');
     }
 
-    if (papers.includes(PaperType.AUTHORITY_DELEGATION) && 
-        !papers.includes(PaperType.EMPLOYMENT_CONTRACT)) {
+    if (paperTypes.includes(PaperType.AUTHORITY_DELEGATION) && 
+        !paperTypes.includes(PaperType.EMPLOYMENT_CONTRACT)) {
       issues.push('Authority Delegation requires Employment Contract');
       suggestions.push('Add Employment Contract to use Authority Delegation');
     }
 
-    if (papers.includes(PaperType.SUPERVISOR_AUTHORITY_DELEGATION) && 
-        !papers.includes(PaperType.EMPLOYMENT_CONTRACT)) {
+    if (paperTypes.includes(PaperType.SUPERVISOR_AUTHORITY_DELEGATION) && 
+        !paperTypes.includes(PaperType.EMPLOYMENT_CONTRACT)) {
       issues.push('Supervisor Authority Delegation requires Employment Contract');
       suggestions.push('Add Employment Contract to use Supervisor Authority Delegation');
     }
