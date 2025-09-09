@@ -14,7 +14,7 @@ import {
   UnifiedIdentity,
   BusinessRegistration,
   Paper,
-  ComputedRole, // Used in method signatures
+  ComputedRole,
   RoleCalculationContext,
   RoleCalculationResult,
   ROLE_CALCULATION_RULES,
