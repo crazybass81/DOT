@@ -32,12 +32,9 @@ jest.mock('../../../src/services/authService', () => ({
 
 const mockSupabase = supabase as jest.Mocked<typeof supabase>;
 
-describe('SupabaseAuthService', () => {
-  let authService: SupabaseAuthService;
-
+describe('AuthService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    authService = new SupabaseAuthService();
   });
 
   describe('signUp', () => {
