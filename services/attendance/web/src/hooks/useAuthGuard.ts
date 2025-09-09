@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseAuthService } from '@/services/supabaseAuthService';
-import { toast } from 'react-hot-toast';
+import { authService } from '../services/authService';
+import { UserRole } from '../types/user.types';
 
 export interface AuthGuardState {
   isLoading: boolean;
