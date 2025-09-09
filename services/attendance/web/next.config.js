@@ -1,3 +1,6 @@
+// Import path module for webpack aliases
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // App Router configuration (appDir is now stable in Next.js 15)
@@ -198,8 +201,5 @@ const nextConfig = {
     // swcMinify: true, // Removed as it's default
   }),
 };
-
-// Import path module for webpack aliases
-const path = require('path');
 
 module.exports = nextConfig;
