@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { CheckInButton } from '../CheckInButton';
+import { CheckInButton } from '@/components/CheckInButton';
 import { AttendanceService } from '@/lib/services/attendance';
 
 // Mock the attendance service
