@@ -42,15 +42,10 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     // Check super admin authentication
-    const checkAuth = async () => {
-      // TODO: Implement proper auth check
-      // if (!await unifiedAuthService.isAuthenticated()) {
-      //   router.push('/login');
-      //   return;
-      // }
-    };
-    
-    checkAuth();
+    if (!await unifiedAuthService.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
 
     const user = userService.getCurrentUser();
     if (!user || !userService.isSuperAdmin()) {
@@ -163,10 +158,7 @@ export default function SuperAdminDashboard() {
                 <option value="month">이번 달</option>
               </select>
               <button
-                onClick={async () => {
-                  // TODO: Implement proper signout
-                  // await unifiedAuthService.signOut();
-                }}
+                onClick={() => await unifiedAuthService.signOut()}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
               >
                 로그아웃

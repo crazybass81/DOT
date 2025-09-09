@@ -4,9 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-// TODO: Implement organization service
-// import { organizationService } from '@/services/organizationService'
-import { CreateOrganizationRequest, AssignRoleRequest } from '@/src/types/unified.types'
+import { organizationService } from '@/services/organizationService'
+import { CreateOrganizationRequest, AssignRoleRequest } from '@/types/unified.types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create organization
-    const result = // await organizationService.createOrganization(body)
+    const result = await organizationService.createOrganization(body)
 
     if (!result.success) {
       return NextResponse.json({
@@ -66,9 +65,9 @@ export async function GET(request: NextRequest) {
 
     let organization
     if (id) {
-      organization = // await organizationService.getById(id)
+      organization = await organizationService.getById(id)
     } else if (code) {
-      organization = // await organizationService.getByCode(code)
+      organization = await organizationService.getByCode(code)
     }
 
     if (!organization) {

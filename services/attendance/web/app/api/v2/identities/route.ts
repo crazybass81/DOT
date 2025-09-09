@@ -4,9 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-// TODO: Implement identity service
-// import { identityService } from '@/services/identityService'
-import { CreateIdentityRequest, VALIDATION_PATTERNS, ERROR_CODES } from '@/src/types/unified.types'
+import { identityService } from '@/services/identityService'
+import { CreateIdentityRequest, VALIDATION_PATTERNS, ERROR_CODES } from '@/types/unified.types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +20,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // TODO: Create identity
-    // const result = await identityService.createIdentity(body)
-    const result = { success: false, error: 'Service not implemented' };
+    // Create identity
+    const result = await identityService.createIdentity(body)
 
     if (!result.success) {
       return NextResponse.json({
@@ -68,9 +66,9 @@ export async function GET(request: NextRequest) {
 
     let identity
     if (id) {
-      identity = // await identityService.getById(id)
+      identity = await identityService.getById(id)
     } else if (authUserId) {
-      identity = // await identityService.getByAuthUserId(authUserId)
+      identity = await identityService.getByAuthUserId(authUserId)
     }
 
     if (!identity) {

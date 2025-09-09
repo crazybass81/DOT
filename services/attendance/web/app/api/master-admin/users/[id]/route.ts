@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/src/lib/supabase/server';
-import { auditLogger, AuditAction, AuditResult } from '@/src/lib/audit-logger';
+import { createClient } from '@/lib/supabase/server';
+import { auditLogger, AuditAction, AuditResult } from '@/lib/audit-logger';
 
 interface RouteParams {
   params: {

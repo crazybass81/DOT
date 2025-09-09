@@ -4,10 +4,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/src/lib/supabase/server';
-import { auditLogger, AuditAction, AuditResult } from '@/src/lib/audit-logger';
-import { notificationManager, NotificationType } from '@/src/lib/notification-manager';
-import { OrganizationStatus, OrganizationStatusChangeRequest, OrganizationStatusChangeResponse } from '@/src/types/organization.types';
+import { createClient } from '@/lib/supabase/server';
+import { auditLogger, AuditAction, AuditResult } from '@/lib/audit-logger';
+import { notificationManager, NotificationType } from '@/lib/notification-manager';
+import { OrganizationStatus, OrganizationStatusChangeRequest, OrganizationStatusChangeResponse } from '@/types/organization.types';
 
 interface RouteParams {
   params: {

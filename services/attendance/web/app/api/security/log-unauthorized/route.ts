@@ -4,10 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/src/lib/supabase/server';
-// TODO: Implement proper security modules
-// import { securityAuditLogger } from '@/src/lib/security/SecurityAuditLogger';
-// import { privilegeEscalationDetector } from '@/src/lib/security/PrivilegeEscalationDetector';
+import { createClient } from '@/lib/supabase/server';
+import { securityAuditLogger } from '@/lib/security/SecurityAuditLogger';
+import { privilegeEscalationDetector } from '@/lib/security/PrivilegeEscalationDetector';
 
 interface UnauthorizedAccessLog {
   page: string;
@@ -28,41 +27,41 @@ export async function POST(request: NextRequest) {
                      request.headers.get('x-real-ip') || 
                      'unknown';
     
-    // TODO: Log the unauthorized access attempt
-    // await securityAuditLogger.logSecurityEvent({
-    //   type: 'UNAUTHORIZED_PAGE_ACCESS',
-    //   userId: user?.id || null,
-    //   endpoint: body.page,
-    //   timestamp: new Date(body.timestamp),
-    //   severity: body.page.includes('master-admin') ? 'HIGH' : 'MEDIUM',
-    //   details: {
-    //     userEmail: user?.email,
-    //     userAgent: body.userAgent,
-    //     referrer: request.headers.get('referer')
-    //   },
-    //   ipAddress,
-    //   userAgent: body.userAgent
-    // });
+    // Log the unauthorized access attempt
+    await securityAuditLogger.logSecurityEvent({
+      type: 'UNAUTHORIZED_PAGE_ACCESS',
+      userId: user?.id || null,
+      endpoint: body.page,
+      timestamp: new Date(body.timestamp),
+      severity: body.page.includes('master-admin') ? 'HIGH' : 'MEDIUM',
+      details: {
+        userEmail: user?.email,
+        userAgent: body.userAgent,
+        referrer: request.headers.get('referer')
+      },
+      ipAddress,
+      userAgent: body.userAgent
+    });
     
-    // TODO: If user is authenticated, check their threat level
+    // If user is authenticated, check their threat level
     if (user?.id) {
-      // const threatLevel = await privilegeEscalationDetector.getUserThreatLevel(user.id);
+      const threatLevel = await privilegeEscalationDetector.getUserThreatLevel(user.id);
       
-      // TODO: If threat level is concerning, log additional warning
-      // if (threatLevel === 'HIGH' || threatLevel === 'CRITICAL') {
-      //   await securityAuditLogger.logCriticalEvent({
-      //     type: 'HIGH_RISK_USER_ACTIVITY',
-      //     userId: user.id,
-      //     endpoint: body.page,
-      //     threatLevel,
-      //     timestamp: new Date(),
-      //     details: {
-      //       message: 'User with high threat level attempted unauthorized access',
-      //       userEmail: user.email,
-      //       attemptedPage: body.page
-      //     }
-      //   });
-      // }
+      // If threat level is concerning, log additional warning
+      if (threatLevel === 'HIGH' || threatLevel === 'CRITICAL') {
+        await securityAuditLogger.logCriticalEvent({
+          type: 'HIGH_RISK_USER_ACTIVITY',
+          userId: user.id,
+          endpoint: body.page,
+          threatLevel,
+          timestamp: new Date(),
+          details: {
+            message: 'User with high threat level attempted unauthorized access',
+            userEmail: user.email,
+            attemptedPage: body.page
+          }
+        });
+      }
     }
     
     // Store in database for persistent logging (optional)

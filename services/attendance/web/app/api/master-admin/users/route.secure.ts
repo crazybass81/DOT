@@ -11,13 +11,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/src/lib/supabase/server';
-import { auditLogger, AuditAction, AuditResult } from '@/src/lib/audit-logger';
-import { enhancedAuthMiddleware } from '@/src/lib/security/EnhancedAuthMiddleware';
-import { roleHierarchyValidator } from '@/src/lib/security/RoleHierarchyValidator';
-import { privilegeEscalationDetector } from '@/src/lib/security/PrivilegeEscalationDetector';
-import { sessionBasedAuth } from '@/src/lib/security/SessionBasedAuth';
-import { securityAuditLogger } from '@/src/lib/security/SecurityAuditLogger';
+import { createClient } from '@/lib/supabase/server';
+import { auditLogger, AuditAction, AuditResult } from '@/lib/audit-logger';
+import { enhancedAuthMiddleware } from '@/lib/security/EnhancedAuthMiddleware';
+import { roleHierarchyValidator } from '@/lib/security/RoleHierarchyValidator';
+import { privilegeEscalationDetector } from '@/lib/security/PrivilegeEscalationDetector';
+import { sessionBasedAuth } from '@/lib/security/SessionBasedAuth';
+import { securityAuditLogger } from '@/lib/security/SecurityAuditLogger';
 
 interface SecureUserListResponse {
   success: boolean;
