@@ -8,6 +8,7 @@
 import React from 'react';
 import { AuthProvider } from '../../contexts/AuthContext';
 import IdentityManagement from '../../components/id-role-paper/IdentityManagement';
+import Navigation from '../../components/common/Navigation';
 
 const IdentityPage: React.FC = () => {
   return (
