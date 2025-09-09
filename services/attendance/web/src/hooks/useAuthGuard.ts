@@ -167,9 +167,9 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // Check admin requirement
-      if (requireAdmin && !isAdmin && user.employee) {
+      if (requireAdmin && !isAdmin) {
         if (showToastOnFail) {
-          toast.error('관리자 권한이 필요합니다.');
+          console.log('관리자 권한이 필요합니다.');
         }
         setState(prev => ({ 
           ...prev, 
@@ -179,10 +179,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
           isAdmin: false,
           user: {
             id: user.id,
-            name: user.employee?.name || '',
+            name: user.name || user.email.split('@')[0],
             email: user.email,
-            role: user.employee?.role || '',
-            approval_status: user.employee?.approval_status || 'pending'
+            role: user.role || 'EMPLOYEE',
+            approval_status: user.approvalStatus || 'approved'
           },
           error: '관리자 권한이 필요합니다.' 
         }));
@@ -193,22 +193,20 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // All checks passed
-      if (user.employee) {
-        setState({
-          isLoading: false,
-          isAuthenticated: true,
-          isApproved: isApproved,
-          isAdmin: isAdmin,
-          user: {
-            id: user.id,
-            name: user.employee?.name || '',
-            email: user.email,
-            role: user.employee?.role || '',
-            approval_status: user.employee?.approval_status || 'pending'
-          },
-          error: null
-        });
-      }
+      setState({
+        isLoading: false,
+        isAuthenticated: true,
+        isApproved: isApproved,
+        isAdmin: isAdmin,
+        user: {
+          id: user.id,
+          name: user.name || user.email.split('@')[0],
+          email: user.email,
+          role: user.role || 'EMPLOYEE',
+          approval_status: user.approvalStatus || 'approved'
+        },
+        error: null
+      });
 
     } catch (error: any) {
       console.error('Auth guard error:', error);
