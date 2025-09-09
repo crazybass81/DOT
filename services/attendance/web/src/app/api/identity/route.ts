@@ -234,6 +234,10 @@ export async function POST(request: NextRequest) {
  * Update identity information
  * PUT /api/identity/{id}
  */
+/**
+ * Update identity information
+ * PUT /api/identity?id={identityId}
+ */
 export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -247,117 +251,90 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity and check permissions
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
+    const currentIdentity = currentIdentities[0];
+
     // Check if updating own identity or has permission
     const updatingOwnIdentity = identityId === currentIdentity.id;
     if (!updatingOwnIdentity) {
-      const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-      if (!userContext) {
-        return NextResponse.json(
-          { error: 'Unable to determine user permissions' },
-          { status: 403 }
-        );
-      }
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'identity',
+        action: 'update'
+      });
 
-      const hasPermission = permissionService.hasMultiRolePermission(
-        userContext.availableRoles,
-        Resource.IDENTITY,
-        Action.UPDATE,
-        {
-          targetUserId: identityId,
-          currentUserId: currentIdentity.id
-        }
-      );
-
-      if (!hasPermission) {
+      if (!permissionResult.success || !permissionResult.data?.granted) {
         return NextResponse.json(
-          { error: 'Insufficient permissions to update this identity' },
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to update this identity'
+          },
           { status: 403 }
         );
       }
     }
 
-    // Get existing identity
-    const existingIdentity = await identityService.getIdentity(identityId);
-    if (!existingIdentity) {
-      return NextResponse.json(
-        { error: 'Identity not found' },
-        { status: 404 }
-      );
-    }
-
-    // Update identity using Supabase directly for updates
-    const updateData = {
+    // Update identity using Identity Service
+    const updateRequest = {
+      fullName: body.fullName,
       phone: body.phone,
-      full_name: body.fullName,
-      profile_data: body.profileData,
-      updated_at: new Date().toISOString()
+      birthDate: body.birthDate ? new Date(body.birthDate) : undefined,
+      profileData: body.profileData
     };
 
-    // Remove undefined values
-    Object.keys(updateData).forEach(key => 
-      updateData[key] === undefined && delete updateData[key]
-    );
-
-    const { data: updatedIdentity, error } = await supabase
-      .from('unified_identities')
-      .update(updateData)
-      .eq('id', identityId)
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return NextResponse.json({
-      identity: {
-        id: updatedIdentity.id,
-        idType: updatedIdentity.id_type,
-        email: updatedIdentity.email,
-        phone: updatedIdentity.phone,
-        fullName: updatedIdentity.full_name,
-        birthDate: updatedIdentity.birth_date ? new Date(updatedIdentity.birth_date) : undefined,
-        idNumber: updatedIdentity.id_number,
-        authUserId: updatedIdentity.auth_user_id,
-        linkedPersonalId: updatedIdentity.linked_personal_id,
-        isVerified: updatedIdentity.is_verified,
-        isActive: updatedIdentity.is_active,
-        profileData: updatedIdentity.profile_data || {},
-        createdAt: new Date(updatedIdentity.created_at),
-        updatedAt: new Date(updatedIdentity.updated_at)
-      }
-    });
-
-  } catch (error) {
-    console.error('Error updating identity:', error);
+    const result = await identityService.updateIdentity(identityId, updateRequest);
     
-    if (error instanceof Error) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: error.message },
+        { error: result.error },
         { status: 400 }
       );
     }
 
+    return NextResponse.json({
+      identity: result.data
+    });
+
+  } catch (error) {
+    console.error('Error updating identity:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
