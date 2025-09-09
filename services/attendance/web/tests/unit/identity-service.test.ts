@@ -1,16 +1,22 @@
 /**
  * Identity Service Unit Tests
- * 
- * Tests the core identity management functionality:
- * - Personal ID creation and management
- * - Corporate ID linking to Personal IDs
- * - Identity validation and verification
- * - Business context resolution
- * - Error handling and edge cases
+ * TDD implementation for ID-ROLE-PAPER Identity Management
  */
 
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { TestDataFactory, IdType, BusinessType } from '../setup/id-role-paper-test-setup';
+import { 
+  IdentityService,
+  CreateIdentityRequest,
+  UpdateIdentityRequest,
+  IdentityWithContext
+} from '../../src/lib/services/identity-service';
+import { 
+  IdType,
+  RoleType,
+  UnifiedIdentity,
+  BusinessRegistration,
+  Paper,
+  ComputedRole
+} from '../../src/types/id-role-paper';
 
 // Mock Supabase client
 const mockSupabaseClient = {
