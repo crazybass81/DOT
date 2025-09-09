@@ -48,20 +48,21 @@ export default function SuperAdminDashboard() {
         return;
       }
     };
-    checkAuth();
-
-    const user = userService.getCurrentUser();
-    if (!user || !userService.isSuperAdmin()) {
-      alert('서비스 관리자 권한이 필요합니다');
-      router.push('/');
-      return;
-    }
-
-    fetchDashboardData();
     
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
+    checkAuth().then(() => {
+      const user = userService.getCurrentUser();
+      if (!user || !userService.isSuperAdmin()) {
+        alert('서비스 관리자 권한이 필요합니다');
+        router.push('/');
+        return;
+      }
+
+      fetchDashboardData();
+      
+      // Refresh data every 30 seconds
+      const interval = setInterval(fetchDashboardData, 30000);
+      return () => clearInterval(interval);
+    });
   }, [router]);
 
   const fetchDashboardData = async () => {
