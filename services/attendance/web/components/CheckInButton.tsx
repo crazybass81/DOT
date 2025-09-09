@@ -61,11 +61,11 @@ export const CheckInButton: React.FC<CheckInButtonProps> = ({
       data-testid="check-in-button"
     >
       {isLoading ? (
-        'Checking In...'
+        '처리중...'
       ) : isCheckedIn ? (
-        'Checked In'
+        '퇴근하기'
       ) : (
-        'Check In'
+        '출근하기'
       )}
     </button>
   );
