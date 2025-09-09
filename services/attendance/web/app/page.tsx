@@ -54,11 +54,11 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const user = await supabaseAuth.signIn(id, password);
+      const user = await supabaseAuthService.signIn(id, password);
       
       if (user) {
         // employee 정보에서 position과 organization 확인
-        const { data: employee } = await supabaseAuth.supabase
+        const { data: employee } = await supabaseAuthService.supabase
           .from('employees')
           .select('position, organization_id')
           .eq('user_id', user.id)
