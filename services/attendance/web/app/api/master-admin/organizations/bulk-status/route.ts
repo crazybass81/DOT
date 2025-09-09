@@ -12,7 +12,7 @@ import {
   BulkOrganizationStatusChangeRequest,
   BulkOrganizationStatusChangeResponse,
   OrganizationStatusChangeResponse
-} from '@/types/organization.types';
+} from '@/src/types/organization.types';
 
 export async function POST(request: NextRequest) {
   try {

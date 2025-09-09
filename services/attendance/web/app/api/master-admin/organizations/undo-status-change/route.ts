@@ -10,7 +10,7 @@ import { notificationManager, NotificationType } from '@/src/lib/notification-ma
 import { 
   UndoStatusChangeRequest,
   UndoStatusChangeResponse
-} from '@/types/organization.types';
+} from '@/src/types/organization.types';
 
 export async function POST(request: NextRequest) {
   try {

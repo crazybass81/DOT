@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { identityService } from '@/services/identityService'
-import { CreateIdentityRequest, VALIDATION_PATTERNS, ERROR_CODES } from '@/types/unified.types'
+import { CreateIdentityRequest, VALIDATION_PATTERNS, ERROR_CODES } from '@/src/types/unified.types'
 
 export async function POST(request: NextRequest) {
   try {

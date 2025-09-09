@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { organizationService } from '@/services/organizationService'
-import { CreateOrganizationRequest, AssignRoleRequest } from '@/types/unified.types'
+import { CreateOrganizationRequest, AssignRoleRequest } from '@/src/types/unified.types'
 
 export async function POST(request: NextRequest) {
   try {
