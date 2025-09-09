@@ -464,9 +464,16 @@ export class IdentityService {
     }
   }
 
+  /**
+   * Get identity by ID (public method)
+   */
+  async getIdentity(identityId: string): Promise<UnifiedIdentity | null> {
+    return this._getIdentity(identityId);
+  }
+
   // Private helper methods
 
-  private async getIdentity(identityId: string): Promise<UnifiedIdentity | null> {
+  private async _getIdentity(identityId: string): Promise<UnifiedIdentity | null> {
     try {
       const supabase = await getSupabaseServerClient();
 
