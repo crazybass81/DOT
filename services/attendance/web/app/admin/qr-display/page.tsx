@@ -18,10 +18,11 @@ export default function QRDisplayPage() {
   // Check authentication and admin rights
   useEffect(() => {
     const checkAuth = () => {
+      // TODO: Implement proper auth check
       // if (!await unifiedAuthService.isAuthenticated()) {
-        router.push('/login');
-        return;
-      }
+      //   router.push('/login');
+      //   return;
+      // }
 
       const user = userService.getCurrentUser();
       if (!user || !userService.isAdmin()) {
