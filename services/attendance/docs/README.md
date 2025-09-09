@@ -26,7 +26,8 @@
 - [**Mobile Debug**](./guides/mobile_debug_login.md) - Mobile app debugging guide
 
 ### Architecture
-- [**Database Schema**](./architecture/database_schema_extension.md) - PostgreSQL schema design
+- [**ID-ROLE-PAPER System**](./Final-ID-ROLE-PAPER-Architecture.md) - Core system architecture with business rules
+- [**Database Schema**](./architecture/database_schema_extension.md) - PostgreSQL schema design with ID-ROLE-PAPER support
 - [**Mobile Stack**](./architecture/mobile_recommended_stack.md) - Flutter app architecture
 
 ### Testing & Performance
