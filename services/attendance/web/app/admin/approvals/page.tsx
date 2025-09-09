@@ -41,10 +41,11 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     // Check auth and admin rights
+    // TODO: Implement proper auth check
     // if (!await unifiedAuthService.isAuthenticated()) {
-      router.push('/login');
-      return;
-    }
+    //   router.push('/login');
+    //   return;
+    // }
 
     const user = userService.getCurrentUser();
     if (!user || (!userService.isAdmin() && !userService.isBusinessAdmin())) {
