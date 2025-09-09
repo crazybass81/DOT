@@ -27,6 +27,8 @@ export const LEGACY_TO_NEW_ROLE_MAPPING: Record<UserRole, RoleType> = {
   [UserRole.EMPLOYEE]: RoleType.WORKER,
 };
 
+// Legacy User interface - DEPRECATED: Use UnifiedIdentity from unified system
+/** @deprecated Use UnifiedIdentity from id-role-paper-unified.ts instead */
 export interface User {
   id: string;
   email: string;
@@ -35,6 +37,42 @@ export interface User {
   roles?: UserRole[];
   organizationId?: string;
   isVerified?: boolean;
+}
+
+// New ID-ROLE-PAPER compatible user interface
+export interface ModernUser {
+  // Identity
+  identityId: string;
+  idType: IdType;
+  
+  // Personal Information
+  email: string;
+  name: string;
+  
+  // Dynamic Role (computed from papers)
+  currentRole: RoleType;
+  availableRoles: RoleType[];
+  
+  // Papers that grant roles
+  papers: Array<{
+    paperId: string;
+    paperType: PaperType;
+    isActive: boolean;
+    validFrom: Date;
+    validUntil?: Date;
+    businessId?: string; // Context for business-specific papers
+  }>;
+  
+  // Business Context
+  businessAffiliations: Array<{
+    businessId: string;
+    role: RoleType;
+    papers: PaperType[];
+  }>;
+  
+  // Status
+  isVerified: boolean;
+  lastRoleUpdate: Date;
 }
 
 export interface UserPermissions {
