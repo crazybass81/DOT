@@ -166,8 +166,8 @@ const nextConfig = {
   // Compression
   compress: true,
 
-  // Performance optimizations
-  swcMinify: true,
+  // Performance optimizations (swcMinify is now default in Next.js 15)
+  // swcMinify: true, // Removed as it's default
   
   // Development configuration
   ...(process.env.NODE_ENV === 'development' && {
