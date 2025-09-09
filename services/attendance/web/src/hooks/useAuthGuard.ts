@@ -54,7 +54,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       // Check if user is authenticated
-      const isAuth = await supabaseAuthService.isAuthenticated();
+      const isAuth = await authService.isAuthenticated();
       
       if (requireAuth && !isAuth) {
         if (showToastOnFail) {
