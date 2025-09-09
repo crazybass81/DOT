@@ -52,7 +52,12 @@ export const CheckInButton: React.FC<CheckInButtonProps> = ({
       
     } catch (error) {
       console.error('Check-in failed:', error);
-      onError?.(error as Error);
+      // Convert geolocation error to Korean message
+      if (error && typeof error === 'object' && 'code' in error && error.code === 1) {
+        onError?.('위치 권한이 거부되었습니다');
+      } else {
+        onError?.(error as Error);
+      }
     } finally {
       setIsLoading(false);
     }
