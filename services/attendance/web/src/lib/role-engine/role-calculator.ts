@@ -531,7 +531,7 @@ export class RoleCalculator {
   /**
    * Analyze role potential for an identity
    */
-  static analyzeRolePotential(papers: PaperType[]): {
+  static analyzeRolePotential(papers: Paper[] | PaperType[]): {
     currentRoles: RoleType[];
     potentialRoles: RoleType[];
     nextSteps: Array<{ action: string; paperType: PaperType; role: RoleType }>;
@@ -542,13 +542,18 @@ export class RoleCalculator {
     const nextSteps: Array<{ action: string; paperType: PaperType; role: RoleType }> = [];
     const missingPapers: Record<RoleType, PaperType[]> = {} as Record<RoleType, PaperType[]>;
 
+    // Extract paper types from Paper objects or use PaperType array directly
+    const paperTypes = Array.isArray(papers) && papers.length > 0 && typeof papers[0] === 'object' && 'paperType' in papers[0]
+      ? (papers as Paper[]).map(p => p.paperType)
+      : papers as PaperType[];
+
     // Find current roles
     for (const rule of ROLE_CALCULATION_RULES) {
-      if (this.checkRuleMatch(papers, rule.papers)) {
+      if (this.checkRuleMatch(paperTypes, rule.papers)) {
         currentRoles.push(rule.resultRole);
       } else {
         // Find missing papers for potential roles
-        const missingForRole = rule.papers.filter(p => !papers.includes(p));
+        const missingForRole = rule.papers.filter(p => !paperTypes.includes(p));
         if (missingForRole.length > 0 && missingForRole.length <= 2) { // Only consider achievable roles
           potentialRoles.push(rule.resultRole);
           missingPapers[rule.resultRole] = missingForRole;
