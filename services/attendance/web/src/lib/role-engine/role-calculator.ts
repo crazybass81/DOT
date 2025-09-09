@@ -168,27 +168,33 @@ export class RoleCalculator {
 
     const paperTypes = papers.map(p => p.paperType);
     
-    // Sort rules by role hierarchy (highest first) to ensure only the highest role is assigned
-    const sortedRules = [...ROLE_CALCULATION_RULES].sort((a, b) => 
-      (ROLE_HIERARCHY[b.resultRole] || 0) - (ROLE_HIERARCHY[a.resultRole] || 0)
-    );
-    
-    // Check each role calculation rule, starting with highest priority
-    for (const rule of sortedRules) {
+    // Check each role calculation rule to assign all applicable roles
+    for (const rule of ROLE_CALCULATION_RULES) {
       if (this.checkRuleMatch(paperTypes, rule.papers)) {
-        // Validate dependencies if any
+        // For dependent roles, ensure prerequisites are also assigned
         if (rule.dependencies && rule.dependencies.length > 0) {
-          const hasPrerequisites = this.checkRoleDependencies(
-            rule.dependencies,
-            roles.map(r => r.role),
-            paperTypes
-          );
-          
-          if (!hasPrerequisites) {
-            result?.warnings?.push(
-              `Role ${rule.resultRole} requires prerequisite roles: ${rule.dependencies.join(', ')}`
-            );
-            continue;
+          // Add prerequisite roles first
+          for (const prereqRole of rule.dependencies) {
+            const prereqRule = ROLE_CALCULATION_RULES.find(r => r.resultRole === prereqRole);
+            if (prereqRule && this.checkRuleMatch(paperTypes, prereqRule.papers)) {
+              const prereqRoleAssignment = {
+                role: prereqRole,
+                sourcePapers: papers
+                  .filter(p => prereqRule.papers.includes(p.paperType))
+                  .map(p => p.id),
+                businessContext: business?.id,
+                metadata: {
+                  ruleName: prereqRule.description,
+                  businessName: business?.businessName,
+                  businessType: business?.businessType
+                }
+              };
+              
+              // Add if not already present
+              if (!roles.some(r => r.role === prereqRole && r.businessContext === business?.id)) {
+                roles.push(prereqRoleAssignment);
+              }
+            }
           }
         }
 
@@ -206,12 +212,9 @@ export class RoleCalculator {
           }
         };
 
-        roles.push(role);
-
-        // For business roles, only assign the highest priority role
-        // Exception: WORKER role can coexist with MANAGER/SUPERVISOR
-        if (rule.resultRole !== RoleType.WORKER) {
-          break;
+        // Add if not already present
+        if (!roles.some(r => r.role === rule.resultRole && r.businessContext === business?.id)) {
+          roles.push(role);
         }
       }
     }
