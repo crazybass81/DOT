@@ -182,76 +182,83 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Recalculate roles for an identity
- * POST /api/roles/recalculate
+ * Create computed role or trigger recalculation
+ * POST /api/roles
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { identityId } = body;
+    const { action, identityId } = body;
 
-    // Validate required fields
-    if (!identityId) {
-      return NextResponse.json(
-        { error: 'Identity ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
-      return NextResponse.json(
-        { error: 'User identity not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if recalculating for self or has permission
-    const recalculatingForSelf = identityId === currentIdentity.id;
-    if (!recalculatingForSelf) {
-      const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-      if (!userContext) {
+    if (action === 'recalculate') {
+      // Handle role recalculation
+      if (!identityId) {
         return NextResponse.json(
-          { error: 'Unable to determine user permissions' },
-          { status: 403 }
+          { error: 'Identity ID is required for recalculation' },
+          { status: 400 }
         );
       }
 
-      // Only high-level roles can recalculate roles for others
-      const canRecalculate = userContext.availableRoles.some(role => 
-        [RoleType.OWNER, RoleType.FRANCHISOR, RoleType.SUPERVISOR].includes(role)
-      );
-
-      if (!canRecalculate) {
+      // Get current user from authentication
+      const supabase = await getSupabaseServerClient();
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
         return NextResponse.json(
-          { error: 'Insufficient permissions to recalculate roles for this identity' },
-          { status: 403 }
+          { error: 'Authentication required' },
+          { status: 401 }
         );
       }
+
+      // Get current user's identity
+      const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
+      if (!currentIdentity) {
+        return NextResponse.json(
+          { error: 'User identity not found' },
+          { status: 404 }
+        );
+      }
+
+      // Check if recalculating for self or has permission
+      const recalculatingForSelf = identityId === currentIdentity.id;
+      if (!recalculatingForSelf) {
+        const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
+        if (!userContext) {
+          return NextResponse.json(
+            { error: 'Unable to determine user permissions' },
+            { status: 403 }
+          );
+        }
+
+        // Only high-level roles can recalculate roles for others
+        const canRecalculate = userContext.availableRoles.some(role => 
+          [RoleType.OWNER, RoleType.FRANCHISOR, RoleType.SUPERVISOR].includes(role)
+        );
+
+        if (!canRecalculate) {
+          return NextResponse.json(
+            { error: 'Insufficient permissions to recalculate roles for this identity' },
+            { status: 403 }
+          );
+        }
+      }
+
+      // Recalculate roles using identity service
+      const computedRoles = await identityService.recalculateRoles(identityId);
+
+      return NextResponse.json({
+        message: 'Roles successfully recalculated',
+        computedRoles
+      });
     }
 
-    // Recalculate roles using identity service
-    const computedRoles = await identityService.recalculateRoles(identityId);
-
-    return NextResponse.json({
-      message: 'Roles successfully recalculated',
-      computedRoles
-    });
+    return NextResponse.json(
+      { error: 'Invalid action. Use action: "recalculate" with identityId' },
+      { status: 400 }
+    );
 
   } catch (error) {
-    console.error('Error recalculating roles:', error);
+    console.error('Error processing role request:', error);
     
     if (error instanceof Error) {
       return NextResponse.json(
@@ -260,262 +267,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * Get role permissions for specific roles
- * GET /api/roles/permissions?roles=WORKER,MANAGER
- */
-export async function GET_PERMISSIONS(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const rolesParam = searchParams.get('roles');
-    const includeHierarchy = searchParams.get('includeHierarchy') === 'true';
-
-    if (!rolesParam) {
-      return NextResponse.json(
-        { error: 'Roles parameter is required' },
-        { status: 400 }
-      );
-    }
-
-    // Parse roles
-    const roles = rolesParam.split(',').filter(role => 
-      Object.values(RoleType).includes(role as RoleType)
-    ) as RoleType[];
-
-    if (roles.length === 0) {
-      return NextResponse.json(
-        { error: 'No valid roles provided' },
-        { status: 400 }
-      );
-    }
-
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Get permissions for roles
-    const rolePermissions = roles.map(role => ({
-      role,
-      permissions: permissionService.getRolePermissions(role)
-    }));
-
-    // Get multi-role permissions if multiple roles
-    const multiRolePermissions = roles.length > 1 ? 
-      permissionService.getMultiRolePermissions(roles) : [];
-
-    const response: any = {
-      rolePermissions,
-      multiRolePermissions: roles.length > 1 ? multiRolePermissions : undefined
-    };
-
-    // Include hierarchy information if requested
-    if (includeHierarchy) {
-      response.roleHierarchy = roles.map(role => ({
-        role,
-        explanation: permissionService.getPermissionExplanation(role, 'identity', 'read')
-      }));
-    }
-
-    return NextResponse.json(response);
-
-  } catch (error) {
-    console.error('Error getting role permissions:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * Check specific permission for user
- * POST /api/roles/check-permission
- */
-export async function POST_CHECK_PERMISSION(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { resource, action, context } = body;
-
-    if (!resource || !action) {
-      return NextResponse.json(
-        { error: 'Resource and action are required' },
-        { status: 400 }
-      );
-    }
-
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Get current user's identity and context
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
-      return NextResponse.json(
-        { error: 'User identity not found' },
-        { status: 404 }
-      );
-    }
-
-    const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-    if (!userContext) {
-      return NextResponse.json(
-        { error: 'Unable to determine user context' },
-        { status: 403 }
-      );
-    }
-
-    // Check permission
-    const hasPermission = permissionService.hasMultiRolePermission(
-      userContext.availableRoles,
-      resource,
-      action,
-      {
-        ...context,
-        currentUserId: currentIdentity.id
-      }
-    );
-
-    // Get explanation for first available role
-    const explanation = userContext.availableRoles.length > 0 ? 
-      permissionService.getPermissionExplanation(userContext.availableRoles[0], resource, action) :
-      { granted: false, reason: 'No roles available' };
-
-    return NextResponse.json({
-      hasPermission,
-      roles: userContext.availableRoles,
-      explanation,
-      context: {
-        identityId: currentIdentity.id,
-        primaryRole: userContext.primaryRole,
-        businessContextId: context?.businessContextId
-      }
-    });
-
-  } catch (error) {
-    console.error('Error checking permission:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * Get role statistics and insights
- * GET /api/roles/stats
- */
-export async function GET_STATS(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const businessContextId = searchParams.get('businessContext') || request.headers.get('x-business-registration-id');
-    const timeRange = searchParams.get('timeRange') || '30d';
-
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
-      return NextResponse.json(
-        { error: 'User identity not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check permissions - only management roles can see stats
-    const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-    const hasAccess = userContext?.availableRoles.some(role => 
-      [RoleType.OWNER, RoleType.FRANCHISOR, RoleType.SUPERVISOR, RoleType.MANAGER].includes(role)
-    );
-
-    if (!hasAccess) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions to view role statistics' },
-        { status: 403 }
-      );
-    }
-
-    // Calculate date range
-    const daysBack = parseInt(timeRange.replace('d', '')) || 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - daysBack);
-
-    // Build base query
-    let query = supabase
-      .from('computed_roles')
-      .select('role, business_context_id, computed_at, is_active')
-      .gte('computed_at', startDate.toISOString());
-
-    // Filter by business context if provided
-    if (businessContextId) {
-      query = query.eq('business_context_id', businessContextId);
-    }
-
-    const { data: rolesData, error } = await query;
-
-    if (error) {
-      throw error;
-    }
-
-    // Calculate statistics
-    const stats = {
-      totalRoles: rolesData?.length || 0,
-      activeRoles: rolesData?.filter(r => r.is_active).length || 0,
-      roleDistribution: {} as Record<string, number>,
-      businessContextDistribution: {} as Record<string, number>,
-      recentlyComputed: rolesData?.filter(r => {
-        const computedDate = new Date(r.computed_at);
-        const oneDayAgo = new Date();
-        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-        return computedDate > oneDayAgo;
-      }).length || 0
-    };
-
-    // Calculate role distribution
-    rolesData?.forEach(role => {
-      if (role.is_active) {
-        stats.roleDistribution[role.role] = (stats.roleDistribution[role.role] || 0) + 1;
-        
-        if (role.business_context_id) {
-          stats.businessContextDistribution[role.business_context_id] = 
-            (stats.businessContextDistribution[role.business_context_id] || 0) + 1;
-        }
-      }
-    });
-
-    return NextResponse.json({ stats });
-
-  } catch (error) {
-    console.error('Error getting role statistics:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
