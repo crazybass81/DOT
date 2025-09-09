@@ -143,27 +143,14 @@ const nextConfig = {
       };
     }
 
-    // Add custom aliases - More specific patterns first
+    // Add custom aliases
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@/lib': path.resolve(__dirname, 'src/lib'),
-      '@/src': path.resolve(__dirname, 'src'),
-      '@/components': path.resolve(__dirname, 'components'),
-      '@/hooks': path.resolve(__dirname, 'hooks'),
-      '@/types': path.resolve(__dirname, 'src/types'),
-      '@/services': path.resolve(__dirname, 'src/services'),
-      '@/utils': path.resolve(__dirname, 'src/utils'),
-      '@/contexts': path.resolve(__dirname, 'src/contexts'),
-      '@/middleware': path.resolve(__dirname, 'src/middleware'),
       '@': path.resolve(__dirname, '.'),
       '@components': path.resolve(__dirname, 'components'),
       '@lib': path.resolve(__dirname, 'src/lib'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
       '@types': path.resolve(__dirname, 'src/types'),
-      '@services': path.resolve(__dirname, 'src/services'),
-      '@utils': path.resolve(__dirname, 'src/utils'),
-      '@hooks': path.resolve(__dirname, 'hooks'),
-      '@middleware': path.resolve(__dirname, 'src/middleware'),
     };
 
     // Handle SVG imports

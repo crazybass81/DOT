@@ -1,6 +1,6 @@
 {
   "extends": [
-    "next",
+    "next/core-web-vitals",
     "@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
@@ -29,56 +29,7 @@
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-debugger": "error",
     "no-duplicate-imports": "error",
-    "no-unused-expressions": "error",
-    "@typescript-eslint/naming-convention": [
-      "error",
-      {
-        "selector": "interface",
-        "format": ["PascalCase"],
-        "custom": {
-          "regex": "^[A-Z]",
-          "match": true
-        }
-      },
-      {
-        "selector": "class",
-        "format": ["PascalCase"]
-      },
-      {
-        "selector": "typeAlias",
-        "format": ["PascalCase"]
-      },
-      {
-        "selector": "enum",
-        "format": ["PascalCase"]
-      },
-      {
-        "selector": "enumMember",
-        "format": ["UPPER_CASE"]
-      },
-      {
-        "selector": "variable",
-        "modifiers": ["const", "global"],
-        "types": ["boolean", "string", "number"],
-        "format": ["UPPER_CASE"]
-      },
-      {
-        "selector": "function",
-        "format": ["camelCase", "PascalCase"]
-      },
-      {
-        "selector": "method",
-        "format": ["camelCase"]
-      },
-      {
-        "selector": "property",
-        "format": ["camelCase"],
-        "filter": {
-          "regex": "^(Authorization|Content-Type|User-Agent|created_at|updated_at|user_id|organization_id)$",
-          "match": false
-        }
-      }
-    ]
+    "no-unused-expressions": "error"
   },
   "overrides": [
     {
