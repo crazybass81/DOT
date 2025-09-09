@@ -13,11 +13,20 @@ import {
   VerificationStatus 
 } from './id-role-paper-unified';
 
+// Legacy OrganizationType enum - DEPRECATED: Use BusinessType from unified system
+/** @deprecated Use BusinessType from id-role-paper-unified.ts instead */
 export enum OrganizationType {
   PERSONAL = 'PERSONAL',       // 개인사업자
   CORP = 'CORP',              // 법인
   FRANCHISE = 'FRANCHISE'      // 가맹점
 }
+
+// Legacy to new business type mapping
+export const LEGACY_ORG_TYPE_MAPPING: Record<OrganizationType, BusinessType> = {
+  [OrganizationType.PERSONAL]: BusinessType.INDIVIDUAL,
+  [OrganizationType.CORP]: BusinessType.CORPORATE,
+  [OrganizationType.FRANCHISE]: BusinessType.CORPORATE, // Franchises are corporate entities
+};
 
 export enum OrganizationStatus {
   ACTIVE = 'ACTIVE',          // 활성
