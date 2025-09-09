@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CheckInButton } from '@/components/CheckInButton';
-import { AttendanceService } from '@/lib/services/attendance';
+import { AttendanceService } from '../../../src/lib/services/attendance';
 
 // Mock the attendance service
-jest.mock('@/lib/services/attendance');
+jest.mock('../../../src/lib/services/attendance');
 
 // Mock navigator.geolocation
 const mockGeolocation = {
