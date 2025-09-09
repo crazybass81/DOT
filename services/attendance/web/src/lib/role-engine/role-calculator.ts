@@ -476,6 +476,15 @@ export class RoleCalculator {
   }
 
   /**
+   * Check if a role has a dependency on another role
+   */
+  static roleHasDependency(childRole: RoleType, parentRole: RoleType): boolean {
+    return ROLE_DEPENDENCIES.some(dep => 
+      dep.childRole === childRole && dep.parentRole === parentRole
+    );
+  }
+
+  /**
    * Analyze role potential for an identity
    */
   static analyzeRolePotential(papers: PaperType[]): {
