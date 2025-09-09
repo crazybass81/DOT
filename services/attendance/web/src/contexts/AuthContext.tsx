@@ -196,26 +196,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Load user identity context
-   */
-  const loadUserIdentity = async (user: User) => {
-    try {
-      const response = await fetch('/api/auth', {
-        headers: {
-          Authorization: `Bearer ${user.id}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        dispatch({ type: 'SET_IDENTITY', payload: data.identity });
-      }
-    } catch (error) {
-      console.error('Failed to load user identity:', error);
-    }
-  };
-
-  /**
    * Sign in method
    */
   const signIn = async (email: string, password: string) => {
@@ -223,26 +203,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_ERROR', payload: null });
 
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // The auth state change listener will handle updating the state
-        return { success: true };
-      } else {
-        const errorMessage = data.error || 'Login failed';
-        dispatch({ type: 'SET_ERROR', payload: errorMessage });
-        return { success: false, error: errorMessage };
-      }
-    } catch (error) {
-      const errorMessage = 'Network error occurred';
+      const user = await authService.signIn(email, password);
+      // The auth state change listener will handle updating the state
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Login failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       return { success: false, error: errorMessage };
     } finally {
@@ -257,10 +222,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      await fetch('/api/auth', { method: 'DELETE' });
-      await supabase.auth.signOut();
+      await authService.signOut();
       dispatch({ type: 'SIGN_OUT' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign out error:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Sign out failed' });
     } finally {
@@ -272,31 +236,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Refresh authentication
    */
   const refresh = async () => {
-    if (!state.session?.refresh_token) return;
-
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      const response = await fetch('/api/auth', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          refresh_token: state.session.refresh_token,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      const session = await authService.getSession();
+      if (session?.user) {
+        const user = await authService.getCurrentUser();
         dispatch({
           type: 'SET_USER',
-          payload: { user: data.user, session: data.session },
+          payload: { user, session },
         });
-        dispatch({ type: 'SET_IDENTITY', payload: data.identity });
+        if (user) {
+          dispatch({ type: 'SET_IDENTITY', payload: user.employee });
+        }
       }
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      console.error('Session refresh failed:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Session refresh failed' });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
