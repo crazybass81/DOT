@@ -95,9 +95,11 @@
 - ✅ Approval workflows
 
 ### Security Features
-- ✅ JWT authentication
-- ✅ Role-based access control
-- ✅ Row Level Security
+- ✅ JWT authentication with ID type verification
+- ✅ ID-ROLE-PAPER based access control (7 roles: SEEKER, WORKER, MANAGER, OWNER, FRANCHISEE, FRANCHISOR, SUPERVISOR)
+- ✅ Row Level Security with business registration isolation
+- ✅ Multi-tenant security with Personal/Corporate ID separation
+- ✅ Paper-based role assignment validation
 - ✅ Device fingerprinting
 - ✅ GPS spoofing prevention
 
