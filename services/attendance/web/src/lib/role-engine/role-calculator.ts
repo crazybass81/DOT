@@ -168,37 +168,16 @@ export class RoleCalculator {
 
     const paperTypes = papers.map(p => p.paperType);
     
-    // Check each role calculation rule to assign all applicable roles
-    for (const rule of ROLE_CALCULATION_RULES) {
-      if (this.checkRuleMatch(paperTypes, rule.papers)) {
-        // For dependent roles, ensure prerequisites are also assigned
-        if (rule.dependencies && rule.dependencies.length > 0) {
-          // Add prerequisite roles first
-          for (const prereqRole of rule.dependencies) {
-            const prereqRule = ROLE_CALCULATION_RULES.find(r => r.resultRole === prereqRole);
-            if (prereqRule && this.checkRuleMatch(paperTypes, prereqRule.papers)) {
-              const prereqRoleAssignment = {
-                role: prereqRole,
-                sourcePapers: papers
-                  .filter(p => prereqRule.papers.includes(p.paperType))
-                  .map(p => p.id),
-                businessContext: business?.id,
-                metadata: {
-                  ruleName: prereqRule.description,
-                  businessName: business?.businessName,
-                  businessType: business?.businessType
-                }
-              };
-              
-              // Add if not already present
-              if (!roles.some(r => r.role === prereqRole && r.businessContext === business?.id)) {
-                roles.push(prereqRoleAssignment);
-              }
-            }
-          }
-        }
+    // Sort rules by role hierarchy (highest first) to get the most specific role
+    const sortedRules = [...ROLE_CALCULATION_RULES].sort((a, b) => 
+      (ROLE_HIERARCHY[b.resultRole] || 0) - (ROLE_HIERARCHY[a.resultRole] || 0)
+    );
 
-        // Create role assignment
+    // Find all matching roles
+    const matchingRoles: typeof roles = [];
+    
+    for (const rule of sortedRules) {
+      if (this.checkRuleMatch(paperTypes, rule.papers)) {
         const role = {
           role: rule.resultRole,
           sourcePapers: papers
@@ -208,14 +187,53 @@ export class RoleCalculator {
           metadata: {
             ruleName: rule.description,
             businessName: business?.businessName,
-            businessType: business?.businessType
+            businessType: business?.businessType,
+            hierarchy: ROLE_HIERARCHY[rule.resultRole] || 0
           }
         };
+        matchingRoles.push(role);
+      }
+    }
 
-        // Add if not already present
-        if (!roles.some(r => r.role === rule.resultRole && r.businessContext === business?.id)) {
-          roles.push(role);
+    // Apply role hierarchy logic
+    if (matchingRoles.length > 0) {
+      // Group by role family
+      const businessOwnershipRoles = [RoleType.OWNER, RoleType.FRANCHISEE, RoleType.FRANCHISOR];
+      const employmentRoles = [RoleType.WORKER, RoleType.MANAGER, RoleType.SUPERVISOR];
+
+      const ownershipMatches = matchingRoles.filter(r => businessOwnershipRoles.includes(r.role));
+      const employmentMatches = matchingRoles.filter(r => employmentRoles.includes(r.role));
+
+      // For business ownership roles, only assign the highest one
+      if (ownershipMatches.length > 0) {
+        const highestOwnership = ownershipMatches.reduce((highest, current) => 
+          (current.metadata?.hierarchy || 0) > (highest.metadata?.hierarchy || 0) ? current : highest
+        );
+        roles.push(highestOwnership);
+      }
+
+      // For employment roles, assign all applicable (WORKER + MANAGER/SUPERVISOR)
+      if (employmentMatches.length > 0) {
+        // Always include WORKER if present
+        const workerRole = employmentMatches.find(r => r.role === RoleType.WORKER);
+        if (workerRole) {
+          roles.push(workerRole);
         }
+
+        // Add the highest management role
+        const managementRoles = employmentMatches.filter(r => r.role !== RoleType.WORKER);
+        if (managementRoles.length > 0) {
+          const highestManagement = managementRoles.reduce((highest, current) => 
+            (current.metadata?.hierarchy || 0) > (highest.metadata?.hierarchy || 0) ? current : highest
+          );
+          roles.push(highestManagement);
+        }
+      }
+
+      // Handle SEEKER role separately
+      const seekerRole = matchingRoles.find(r => r.role === RoleType.SEEKER);
+      if (seekerRole && roles.length === 0) {
+        roles.push(seekerRole);
       }
     }
 
