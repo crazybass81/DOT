@@ -450,3 +450,6 @@ export class MultiRoleAuthService {
 
 // 싱글톤 인스턴스 export
 export const multiRoleAuthService = new MultiRoleAuthService();
+
+// Default export for class
+export default MultiRoleAuthService;
