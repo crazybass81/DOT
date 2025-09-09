@@ -3,8 +3,8 @@
  * Tests the unified authentication system with real Supabase integration
  */
 
-import { authService } from '../../src/services/authService';
-import { userService } from '../../src/services/userService';
+import { authService } from '../../src/services/auth.service';
+import { userService } from '../../src/services/user.service';
 
 describe('Authentication Integration Tests', () => {
   // These tests verify the auth system structure and error handling

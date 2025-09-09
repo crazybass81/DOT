@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterEach } from '@jest/globals'
-import { unifiedIdentityService } from '../services/unifiedIdentityService'
+import { unifiedIdentityService } from '../services/unified-identity.service'
 import { IdType } from '../types/unified.types'
 
 describe('Unified Identity Service - Working Implementation', () => {

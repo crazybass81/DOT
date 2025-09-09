@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { authService, User } from '../services/authService';
+import { authService, User } from '../services/auth.service';
 import { UserRole } from '../types/user.types';
 
 /**

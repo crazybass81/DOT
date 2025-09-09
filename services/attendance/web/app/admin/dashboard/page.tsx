@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/src/services/authService';
+import { authService } from '@/src/services/auth.service';
 import AttendanceStats from '@/components/dashboard/AttendanceStats';
 import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
 import AttendanceChart from '@/components/dashboard/AttendanceChart';

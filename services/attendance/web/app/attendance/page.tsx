@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
 import { apiService } from '@/src/services/apiService';
 import { businessService } from '@/src/services/businessService';
 

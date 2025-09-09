@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
-import { userService } from '@/src/services/userService';
+import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
+import { userService } from '@/src/services/user.service';
 
 interface PendingUser {
   userId: string;

@@ -111,16 +111,16 @@ export class DatabaseAuditor {
     // For now, return manual mapping
     return {
       'unified_identities': [
-        'src/services/unifiedIdentityService.ts',
+        'src/services/unified-identity.service.ts',
         'src/services/supabaseAuthService.ts',
         'src/lib/registration/api.ts'
       ],
       'organizations_v3': [
-        'src/services/organizationService.ts',
+        'src/services/organization.service.ts',
         'src/services/roleManagementService.ts'
       ],
       'role_assignments': [
-        'src/services/organizationService.ts', 
+        'src/services/organization.service.ts', 
         'src/services/roleManagementService.ts'
       ],
       'attendance_records': [

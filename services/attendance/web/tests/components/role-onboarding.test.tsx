@@ -6,8 +6,8 @@ import RoleOnboardingFlow from '../../src/components/auth/RoleOnboardingFlow';
 import { SignupStepProvider } from '../../src/contexts/SignupStepContext';
 
 // Mock 외부 의존성
-jest.mock('../../src/services/multiRoleAuthService');
-jest.mock('../../src/services/businessVerificationService');
+jest.mock('../../src/services/multi-role-auth.service');
+jest.mock('../../src/services/business-verification.service');
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),

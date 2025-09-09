@@ -1,7 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { supabase, supabaseUrl, supabaseAnonKey } from '../supabase-config'
-import { unifiedIdentityService } from '../../services/unifiedIdentityService'
-import { organizationService } from '../../services/organizationService'
+import { unifiedIdentityService } from '../../services/unified-identity.service'
+import { organizationService } from '../../services/organization.service'
 import { supabaseAuthService } from '../../services/supabaseAuthService'
 
 export interface RegistrationData {

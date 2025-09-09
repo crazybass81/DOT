@@ -15,8 +15,8 @@ import {
   BulkRoleAssignmentRequest,
   BulkRoleAssignmentResponse
 } from '../types/unified.types'
-import { organizationService } from './organizationService'
-import { unifiedIdentityService } from './unifiedIdentityService'
+import { organizationService } from './organization.service'
+import { unifiedIdentityService } from './unified-identity.service'
 
 export class RoleManagementService {
   private supabase = supabase

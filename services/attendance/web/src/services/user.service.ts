@@ -3,7 +3,7 @@
  * Updated to work with unified auth service
  */
 
-import { authService, User } from './authService';
+import { authService, User } from './auth.service';
 import { UserRole } from '../types/user.types';
 
 class UserService {

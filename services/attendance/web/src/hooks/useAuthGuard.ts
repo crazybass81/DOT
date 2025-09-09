@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '../services/authService';
+import { authService } from '../services/auth.service';
 import { UserRole } from '../types/user.types';
 
 export interface AuthGuardState {

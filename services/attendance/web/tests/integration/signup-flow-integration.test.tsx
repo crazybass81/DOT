@@ -10,8 +10,8 @@ import DashboardRouter from '../../src/components/routing/DashboardRouter';
 import { SignupStepProvider } from '../../src/contexts/SignupStepContext';
 
 // Mock 의존성들
-jest.mock('../../src/services/multiRoleAuthService');
-jest.mock('../../src/services/businessVerificationService');
+jest.mock('../../src/services/multi-role-auth.service');
+jest.mock('../../src/services/business-verification.service');
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
