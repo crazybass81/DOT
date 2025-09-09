@@ -8,6 +8,7 @@
 import React from 'react';
 import { AuthProvider } from '../../contexts/AuthContext';
 import PermissionDashboard from '../../components/id-role-paper/PermissionDashboard';
+import Navigation from '../../components/common/Navigation';
 
 const PermissionsPage: React.FC = () => {
   return (
