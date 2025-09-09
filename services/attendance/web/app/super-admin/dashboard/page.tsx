@@ -42,27 +42,23 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     // Check super admin authentication
-    const checkAuth = async () => {
-      if (!(await unifiedAuthService.isAuthenticated())) {
-        router.push('/login');
-        return;
-      }
-    };
-    
-    checkAuth().then(() => {
-      const user = userService.getCurrentUser();
-      if (!user || !userService.isSuperAdmin()) {
-        alert('서비스 관리자 권한이 필요합니다');
-        router.push('/');
-        return;
-      }
+    if (!await unifiedAuthService.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
 
-      fetchDashboardData();
-      
-      // Refresh data every 30 seconds
-      const interval = setInterval(fetchDashboardData, 30000);
-      return () => clearInterval(interval);
-    });
+    const user = userService.getCurrentUser();
+    if (!user || !userService.isSuperAdmin()) {
+      alert('서비스 관리자 권한이 필요합니다');
+      router.push('/');
+      return;
+    }
+
+    fetchDashboardData();
+    
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
   }, [router]);
 
   const fetchDashboardData = async () => {
@@ -162,7 +158,7 @@ export default function SuperAdminDashboard() {
                 <option value="month">이번 달</option>
               </select>
               <button
-                onClick={async () => await unifiedAuthService.signOut()}
+                onClick={() => await unifiedAuthService.signOut()}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
               >
                 로그아웃

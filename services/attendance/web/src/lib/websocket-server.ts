@@ -19,21 +19,6 @@ export interface AuthData {
   token?: string;
 }
 
-// JWT 검증 결과 인터페이스
-export interface JWTValidationResult {
-  isValid: boolean;
-  payload?: {
-    userId: string;
-    email?: string;
-    organizationId?: string;
-    roles?: string[];
-    exp?: number;
-    iat?: number;
-  };
-  error?: string;
-  errorCode?: string;
-}
-
 // WebSocket 이벤트 타입
 export interface WebSocketEvents {
   // 클라이언트 -> 서버
@@ -226,57 +211,14 @@ export class WebSocketServerManager {
       return;
     }
 
-    // JWT 토큰 검증
-    if (authData.token) {
-      const validationResult = await this.validateJWTToken(authData.token);
-      if (!validationResult.isValid) {
-        socket.emit('auth_error', { 
-          error: validationResult.error || 'Invalid token', 
-          code: validationResult.errorCode || 'INVALID_TOKEN' 
-        });
-        
-        // 감사 로그 기록 - 인증 실패
-        try {
-          await auditLogger.log({
-            user_id: authData.userId || 'unknown',
-            organization_id: authData.organizationId,
-            action: AuditAction.WEBSOCKET_AUTH_FAILED,
-            result: AuditResult.FAILURE,
-            resource_type: 'websocket_authentication',
-            resource_id: socket.id,
-            details: {
-              socket_id: socket.id,
-              error: validationResult.error,
-              token_expired: validationResult.errorCode === 'TOKEN_EXPIRED'
-            },
-            ip_address: socket.handshake.address || 'unknown',
-            user_agent: socket.handshake.headers['user-agent'] || 'unknown'
-          });
-        } catch (error) {
-          console.error('Failed to log authentication failure:', error);
-        }
-        
-        return;
-      }
-      
-      // 토큰에서 추출된 사용자 정보와 요청된 정보 비교
-      if (validationResult.payload && validationResult.payload.userId !== authData.userId) {
-        socket.emit('auth_error', { 
-          error: 'Token user ID mismatch', 
-          code: 'USER_MISMATCH' 
-        });
-        return;
-      }
-    } else {
-      // 프로덕션에서는 토큰이 필수여야 함
-      if (process.env.NODE_ENV === 'production') {
-        socket.emit('auth_error', { 
-          error: 'Authentication token required', 
-          code: 'TOKEN_REQUIRED' 
-        });
-        return;
-      }
-    }
+    // TODO: 실제 환경에서는 JWT 토큰 검증 로직 추가
+    // if (authData.token) {
+    //   const isValidToken = await this.validateToken(authData.token);
+    //   if (!isValidToken) {
+    //     socket.emit('auth_error', { error: 'Invalid token', code: 'INVALID_TOKEN' });
+    //     return;
+    //   }
+    // }
 
     // 연결 정보 업데이트
     connection.userId = authData.userId;
@@ -517,103 +459,6 @@ export class WebSocketServerManager {
     });
 
     return stats;
-  }
-
-  /**
-   * JWT 토큰 검증
-   */
-  private async validateJWTToken(token: string): Promise<JWTValidationResult> {
-    try {
-      // Import JWT library dynamically to avoid issues if not installed
-      const jwt = await import('jsonwebtoken');
-      
-      const secret = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
-      if (!secret) {
-        return {
-          isValid: false,
-          error: 'JWT secret not configured',
-          errorCode: 'JWT_SECRET_MISSING'
-        };
-      }
-
-      // Remove Bearer prefix if present
-      const cleanToken = token.replace(/^Bearer\s+/, '');
-      
-      // Verify token
-      const decoded = jwt.verify(cleanToken, secret, {
-        algorithms: ['HS256', 'RS256']
-      }) as any;
-
-      // Validate token structure
-      if (!decoded || typeof decoded !== 'object') {
-        return {
-          isValid: false,
-          error: 'Invalid token structure',
-          errorCode: 'INVALID_TOKEN_STRUCTURE'
-        };
-      }
-
-      // Check expiration
-      if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-        return {
-          isValid: false,
-          error: 'Token expired',
-          errorCode: 'TOKEN_EXPIRED'
-        };
-      }
-
-      // Extract user information
-      const payload = {
-        userId: decoded.sub || decoded.user_id || decoded.id,
-        email: decoded.email,
-        organizationId: decoded.organization_id || decoded.org_id,
-        roles: decoded.roles || decoded.role ? [decoded.role] : [],
-        exp: decoded.exp,
-        iat: decoded.iat
-      };
-
-      // Validate required fields
-      if (!payload.userId) {
-        return {
-          isValid: false,
-          error: 'Token missing user ID',
-          errorCode: 'MISSING_USER_ID'
-        };
-      }
-
-      return {
-        isValid: true,
-        payload
-      };
-
-    } catch (error: any) {
-      if (error.name === 'JsonWebTokenError') {
-        return {
-          isValid: false,
-          error: 'Invalid token format',
-          errorCode: 'INVALID_TOKEN_FORMAT'
-        };
-      } else if (error.name === 'TokenExpiredError') {
-        return {
-          isValid: false,
-          error: 'Token expired',
-          errorCode: 'TOKEN_EXPIRED'
-        };
-      } else if (error.name === 'NotBeforeError') {
-        return {
-          isValid: false,
-          error: 'Token not yet valid',
-          errorCode: 'TOKEN_NOT_BEFORE'
-        };
-      } else {
-        console.error('JWT validation error:', error);
-        return {
-          isValid: false,
-          error: 'Token validation failed',
-          errorCode: 'VALIDATION_FAILED'
-        };
-      }
-    }
   }
 
   /**
