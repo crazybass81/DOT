@@ -1,4 +1,4 @@
-import { LocationVerification } from '../location-verification';
+import { LocationVerification } from '@/lib/services/location-verification';
 
 describe('LocationVerification', () => {
   let locationService: LocationVerification;
