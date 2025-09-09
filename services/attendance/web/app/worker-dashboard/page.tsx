@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseAuthService } from '@/src/services/supabaseAuthService'
+import { supabaseAuthService } from '@/src/services/supabase-auth.service'
 import { supabase } from '@/src/lib/supabase-config'
 import { Clock, Calendar, FileText, User, LogOut, AlertCircle } from 'lucide-react'
 

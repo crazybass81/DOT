@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { supabaseAuthService } from '@/services/supabase-auth.service';
 import { organizationService } from '@/services/organization.service';
 
 /**

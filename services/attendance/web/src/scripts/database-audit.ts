@@ -112,7 +112,7 @@ export class DatabaseAuditor {
     return {
       'unified_identities': [
         'src/services/unified-identity.service.ts',
-        'src/services/supabaseAuthService.ts',
+        'src/services/supabase-auth.service.ts',
         'src/lib/registration/api.ts'
       ],
       'organizations_v3': [

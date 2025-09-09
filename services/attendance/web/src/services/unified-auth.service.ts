@@ -6,7 +6,7 @@
  * paper-based permission management.
  */
 
-import { supabaseAuthService, User as SupabaseUser } from './supabaseAuthService';
+import { supabaseAuthService, User as SupabaseUser } from './supabase-auth.service';
 import { identityService } from './identity.service';
 import { permissionService, Resource, Action } from '../lib/permissions/role-permissions';
 import {

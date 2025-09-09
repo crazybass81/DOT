@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabaseAuthService } from '@/src/services/supabaseAuthService';
+import { supabaseAuthService } from '@/src/services/supabase-auth.service';
 import { Button, Input, Card } from '@/components/ui';
 
 interface FormData {

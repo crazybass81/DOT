@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseAuthService } from '@/src/services/supabaseAuthService';
+import { supabaseAuthService } from '@/src/services/supabase-auth.service';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { UserDataGrid } from '@/components/master-admin/UserDataGrid';
 import { UserSearchFilters } from '@/components/master-admin/UserSearchFilters';

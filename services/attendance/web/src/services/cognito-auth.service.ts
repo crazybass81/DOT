@@ -1,7 +1,7 @@
 // Compatibility wrapper for cognitoAuthService
 // Redirects all calls to unifiedAuthService (Supabase)
 
-import { unifiedAuthService } from './unifiedAuthService';
+import { unifiedAuthService } from './unified-auth.service';
 
 class CognitoAuthService {
   async signIn(email: string, password: string): Promise<any> {

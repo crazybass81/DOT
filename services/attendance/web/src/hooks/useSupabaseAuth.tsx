@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabaseAuthService, User, AuthState } from '@/services/supabaseAuthService';
+import { supabaseAuthService, User, AuthState } from '@/services/supabase-auth.service';
 
 // Auth Context
 interface AuthContextType extends AuthState {

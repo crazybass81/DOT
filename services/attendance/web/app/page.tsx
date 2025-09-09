@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn, Shield, Users, Clock, CheckCircle } from 'lucide-react';
-import { supabaseAuthService } from '../src/services/supabaseAuthService';
+import { supabaseAuthService } from '../src/services/supabase-auth.service';
 
 export default function Home() {
   const router = useRouter();

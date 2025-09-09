@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../lib/supabase-config';
 import { RoleType, MultiRoleUser } from '../types/multi-role';
 import { auditLogger, AuditAction, AuditResult } from '../lib/audit-logger';
-import { supabaseAuthService } from '../services/supabaseAuthService';
+import { supabaseAuthService } from '../services/supabase-auth.service';
 import { organizationService } from '../services/organization.service';
 import { roleManagementService } from '../services/role-management.service';
 

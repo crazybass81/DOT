@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { supabaseAuthService } from '../../services/supabaseAuthService';
+import { supabaseAuthService } from '../../services/supabase-auth.service';
 import { organizationService } from '../../services/organization.service';
 
 export interface AuthenticatedRequest extends NextRequest {

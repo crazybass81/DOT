@@ -6,11 +6,11 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UserManagementPage } from '@/app/master-admin/users/page';
 import { useUserManagement } from '@/hooks/useUserManagement';
-import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { supabaseAuthService } from '@/services/supabase-auth.service';
 
 // Mock dependencies
 jest.mock('@/hooks/useUserManagement');
-jest.mock('@/services/supabaseAuthService');
+jest.mock('@/services/supabase-auth.service');
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
