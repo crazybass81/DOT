@@ -1,28 +1,12 @@
 // UI Components - Basic exports for build compatibility
+import React from 'react';
 
-export const Button = ({ children, ...props }: any) => (
-  <button {...props}>{children}</button>
-);
-
-export const Input = ({ ...props }: any) => (
-  <input {...props} />
-);
-
-export const Card = ({ children, ...props }: any) => (
-  <div {...props}>{children}</div>
-);
-
-export const CardContent = ({ children, ...props }: any) => (
-  <div {...props}>{children}</div>
-);
-
-export const CardHeader = ({ children, ...props }: any) => (
-  <div {...props}>{children}</div>
-);
-
-export const CardTitle = ({ children, ...props }: any) => (
-  <h3 {...props}>{children}</h3>
-);
+export const Button = ({ children, ...props }: any) => React.createElement('button', props, children);
+export const Input = ({ ...props }: any) => React.createElement('input', props);
+export const Card = ({ children, ...props }: any) => React.createElement('div', props, children);
+export const CardContent = ({ children, ...props }: any) => React.createElement('div', props, children);
+export const CardHeader = ({ children, ...props }: any) => React.createElement('div', props, children);
+export const CardTitle = ({ children, ...props }: any) => React.createElement('h3', props, children);
 
 export default {
   Button,
