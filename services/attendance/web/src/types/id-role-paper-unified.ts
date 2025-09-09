@@ -483,5 +483,5 @@ export type UserRole = RoleType;                            // Legacy compatibil
 export type UnifiedRole = RoleType;                         // Unified system compatibility
 export type Organization = BusinessRegistration;            // Organization compatibility
 
-// Migration utilities export
-export * from './id-role-paper'; // Re-export existing types for transition period
+// Migration utilities export - commented out to prevent circular dependencies
+// export * from './id-role-paper'; // Re-export existing types for transition period
