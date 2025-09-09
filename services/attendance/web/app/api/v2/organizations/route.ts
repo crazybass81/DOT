@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create organization
-    const result = await organizationService.createOrganization(body)
+    // TODO: Create organization
+    // const result = await organizationService.createOrganization(body)
+    const result = { success: false, error: 'Service not implemented' };
 
     if (!result.success) {
       return NextResponse.json({
