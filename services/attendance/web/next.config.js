@@ -44,10 +44,10 @@ const nextConfig = {
     appUrl: process.env.NEXT_PUBLIC_APP_URL,
   },
 
-  // Server runtime configuration
+  // Server runtime configuration - REMOVED SERVICE KEY FOR SECURITY
   serverRuntimeConfig: {
-    // Server-side only
-    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    // Server-side only - Service keys should never be in runtime config
+    // Use process.env directly in API routes instead
   },
 
   // Security headers
