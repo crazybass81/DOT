@@ -583,9 +583,13 @@ export class IdentityService {
   }
 
   private async getRolePermissions(role: RoleType): Promise<any[]> {
-    // This will be implemented when permission system is created
-    // For now, return empty array
-    return [];
+    try {
+      const { permissionService } = await import('../lib/permissions/role-permissions');
+      return permissionService.getRolePermissions(role);
+    } catch (error) {
+      console.error('Error getting role permissions:', error);
+      return [];
+    }
   }
 
   // Database mapping methods
