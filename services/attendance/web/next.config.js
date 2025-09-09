@@ -146,8 +146,8 @@ const nextConfig = {
     // Add custom aliases
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(__dirname, 'src'),
-      '@components': path.resolve(__dirname, 'src/components'),
+      '@': path.resolve(__dirname, '.'),
+      '@components': path.resolve(__dirname, 'components'),
       '@lib': path.resolve(__dirname, 'src/lib'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
       '@types': path.resolve(__dirname, 'src/types'),
