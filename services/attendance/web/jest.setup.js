@@ -10,6 +10,11 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANO
 // Extend test timeout for real database operations
 jest.setTimeout(30000);
 
+// Add Node.js globals for test environment
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Next.js 환경 모킹
 global.Request = class MockRequest {
   constructor(url, options = {}) {
