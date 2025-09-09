@@ -6,6 +6,12 @@ export const Card = ({ children, className = "", ...props }: any) => (
   </div>
 );
 
+export const CardDescription = ({ children, className = "", ...props }: any) => (
+  <p className={`text-sm text-gray-600 ${className}`} {...props}>
+    {children}
+  </p>
+);
+
 export const CardContent = ({ children, className = "", ...props }: any) => (
   <div className={`p-6 ${className}`} {...props}>
     {children}
