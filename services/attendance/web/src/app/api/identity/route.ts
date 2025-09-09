@@ -346,6 +346,10 @@ export async function PUT(request: NextRequest) {
  * Deactivate identity
  * DELETE /api/identity/{id}
  */
+/**
+ * Deactivate identity
+ * DELETE /api/identity?id={identityId}
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -358,49 +362,73 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity and check permissions
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
-    // Get user context for permission check
-    const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-    if (!userContext) {
+    const currentIdentity = currentIdentities[0];
+
+    // Check permissions using Permission Service
+    const permissionService = createPermissionService(supabase);
+    const permissionResult = await permissionService.checkPermission({
+      identityId: currentIdentity.id,
+      resource: 'identity',
+      action: 'delete'
+    });
+
+    if (!permissionResult.success || !permissionResult.data?.granted) {
       return NextResponse.json(
-        { error: 'Unable to determine user permissions' },
+        { 
+          error: 'Access forbidden',
+          message: permissionResult.data?.reason || 'Insufficient permissions to deactivate identity'
+        },
         { status: 403 }
       );
     }
 
-    // Check permissions - only high-level roles can deactivate identities
-    const canDelete = userContext.availableRoles.some(role => 
-      [RoleType.OWNER, RoleType.FRANCHISOR, RoleType.SUPERVISOR].includes(role)
-    );
-
-    if (!canDelete) {
+    // Deactivate identity using Identity Service
+    const result = await identityService.deactivateIdentity(identityId);
+    
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Insufficient permissions to deactivate identity' },
-        { status: 403 }
+        { error: result.error },
+        { status: 400 }
       );
     }
-
-    // Deactivate identity
-    await identityService.deactivateIdentity(identityId);
 
     return NextResponse.json({
       message: 'Identity successfully deactivated'
@@ -408,14 +436,6 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('Error deactivating identity:', error);
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
