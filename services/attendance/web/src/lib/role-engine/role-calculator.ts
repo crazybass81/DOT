@@ -14,6 +14,7 @@ import {
   UnifiedIdentity,
   BusinessRegistration,
   Paper,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ComputedRole,
   RoleCalculationContext,
   RoleCalculationResult,
