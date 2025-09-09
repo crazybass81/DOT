@@ -101,6 +101,24 @@ const nextConfig = {
               'usb='
             ].join(', '),
           },
+          // Enhanced Cookie Security
+          {
+            key: 'Set-Cookie',
+            value: 'SameSite=Strict; Secure; HttpOnly',
+          },
+          // Additional Security Headers
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'off',
+          },
+          {
+            key: 'X-Download-Options',
+            value: 'noopen',
+          },
         ],
       },
     ];
