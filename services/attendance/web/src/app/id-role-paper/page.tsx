@@ -15,6 +15,7 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '../../../contexts/AuthContext';
 import { RoleType, IdentityWithContext } from '../../../types/id-role-paper';
+import Navigation from '../../../components/common/Navigation';
 
 // Lazy load components for better performance
 const IdentityManagement = dynamic(() => import('../../../components/id-role-paper/IdentityManagement'), {
