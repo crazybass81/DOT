@@ -1,7 +1,17 @@
 /**
- * 조직 관련 타입 정의
- * 마스터 어드민 대시보드용 조직 관리 시스템
+ * Organization Types - Updated for ID-ROLE-PAPER unified architecture
+ * Migration Phase 1: Integrating with BusinessRegistration system while maintaining legacy compatibility
+ * 
+ * 기존 조직 관리 → BusinessRegistration + 통합 신원 관리로 전환
  */
+
+import { 
+  BusinessRegistration, 
+  BusinessType, 
+  IdType, 
+  RoleType, 
+  VerificationStatus 
+} from './id-role-paper-unified';
 
 export enum OrganizationType {
   PERSONAL = 'PERSONAL',       // 개인사업자
