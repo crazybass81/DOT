@@ -22,7 +22,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Check authentication and admin rights
     const checkAuth = async () => {
-      // if (!await unifiedAuthService.isAuthenticated()) {
+      // TODO: Implement proper auth check
+    // if (!await unifiedAuthService.isAuthenticated()) {
         router.push('/login');
         return;
       }
