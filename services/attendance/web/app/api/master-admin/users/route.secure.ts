@@ -11,7 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/src/lib/supabase/server';
 import { auditLogger, AuditAction, AuditResult } from '@/lib/audit-logger';
 import { enhancedAuthMiddleware } from '@/lib/security/EnhancedAuthMiddleware';
 import { roleHierarchyValidator } from '@/lib/security/RoleHierarchyValidator';

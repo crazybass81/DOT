@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/src/lib/supabase/server';
 import { securityAuditLogger } from '@/lib/security/SecurityAuditLogger';
 import { privilegeEscalationDetector } from '@/lib/security/PrivilegeEscalationDetector';
 
