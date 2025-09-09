@@ -56,9 +56,10 @@
 
 ### Backend
 - **Platform**: Supabase (PostgreSQL, Auth, Realtime, Storage)
-- **API**: RESTful + GraphQL via PostgREST
+- **API**: RESTful + GraphQL via PostgREST with ID-ROLE-PAPER architecture
 - **Functions**: Supabase Edge Functions (Deno)
-- **Security**: Row Level Security (RLS)
+- **Security**: Row Level Security (RLS) with business registration-based isolation
+- **Architecture**: ID-ROLE-PAPER system with Personal/Corporate IDs and role-based access control
 
 ### Web Frontend
 - **Framework**: Next.js 15.5
