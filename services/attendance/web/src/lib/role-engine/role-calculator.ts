@@ -437,7 +437,7 @@ export class RoleCalculator {
   /**
    * Validate paper combination is valid for role assignment
    */
-  static validatePaperCombination(papers: PaperType[], expectedRoles?: RoleType[]): {
+  static validatePaperCombination(papers: Paper[] | PaperType[], expectedRoles?: RoleType[]): {
     isValid: boolean;
     issues: string[];
     suggestions: string[];
@@ -447,9 +447,14 @@ export class RoleCalculator {
     const suggestions: string[] = [];
     const possibleRoles: RoleType[] = [];
 
+    // Extract paper types from Paper objects or use PaperType array directly
+    const paperTypes = Array.isArray(papers) && papers.length > 0 && typeof papers[0] === 'object' && 'paperType' in papers[0]
+      ? (papers as Paper[]).map(p => p.paperType)
+      : papers as PaperType[];
+
     // Check each rule to see what roles these papers could grant
     for (const rule of ROLE_CALCULATION_RULES) {
-      if (this.checkRuleMatch(papers, rule.papers)) {
+      if (this.checkRuleMatch(paperTypes, rule.papers)) {
         possibleRoles.push(rule.resultRole);
       }
     }
