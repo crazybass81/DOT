@@ -368,6 +368,21 @@ export class RoleCalculator {
   }
 
   /**
+   * Get the highest priority role from an array of role types
+   */
+  static getHighestPriorityRole(roles: RoleType[]): RoleType {
+    if (roles.length === 0) {
+      return RoleType.SEEKER;
+    }
+
+    return roles.reduce((highest, current) => {
+      const highestLevel = ROLE_HIERARCHY[highest] || 0;
+      const currentLevel = ROLE_HIERARCHY[current] || 0;
+      return currentLevel > highestLevel ? current : highest;
+    });
+  }
+
+  /**
    * Check if an identity has a specific role in any business context
    */
   static hasRole(roles: ComputedRole[], targetRole: RoleType): boolean {
