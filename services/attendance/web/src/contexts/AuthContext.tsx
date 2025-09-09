@@ -116,7 +116,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
-  const supabase = createClientComponentClient();
 
   /**
    * Initialize auth state
@@ -127,25 +126,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = async () => {
       try {
         // Get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const session = await authService.getSession();
         
-        if (error) {
-          console.error('Auth initialization error:', error);
-          if (isMounted) {
-            dispatch({ type: 'SET_ERROR', payload: error.message });
-          }
-          return;
-        }
-
         if (isMounted) {
-          dispatch({
-            type: 'SET_USER',
-            payload: { user: session?.user || null, session },
-          });
-
-          // Load identity if user exists
           if (session?.user) {
-            await loadUserIdentity(session.user);
+            // Get user with identity context
+            const user = await authService.getCurrentUser();
+            dispatch({
+              type: 'SET_USER',
+              payload: { user, session },
+            });
+
+            if (user) {
+              dispatch({ type: 'SET_IDENTITY', payload: user.employee });
+            }
+          } else {
+            dispatch({
+              type: 'SET_USER',
+              payload: { user: null, session: null },
+            });
           }
         }
       } catch (error) {
@@ -163,28 +162,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    const unsubscribe = authService.onAuthStateChange(
+      async (event: AuthChangeEvent, session: Session | null) => {
         if (!isMounted) return;
 
-        dispatch({
-          type: 'SET_USER',
-          payload: { user: session?.user || null, session },
-        });
+        if (session?.user) {
+          const user = await authService.getCurrentUser();
+          dispatch({
+            type: 'SET_USER',
+            payload: { user, session },
+          });
 
-        if (event === 'SIGNED_IN' && session?.user) {
-          await loadUserIdentity(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          dispatch({ type: 'SET_IDENTITY', payload: null });
+          if (event === 'SIGNED_IN' && user) {
+            dispatch({ type: 'SET_IDENTITY', payload: user.employee });
+          }
+        } else {
+          dispatch({
+            type: 'SET_USER',
+            payload: { user: null, session: null },
+          });
+          
+          if (event === 'SIGNED_OUT') {
+            dispatch({ type: 'SET_IDENTITY', payload: null });
+          }
         }
       }
     );
 
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
+      unsubscribe();
     };
-  }, [supabase]);
+  }, []);
 
   /**
    * Load user identity context
