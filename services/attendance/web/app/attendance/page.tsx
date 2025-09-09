@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuthService } from "@/services/multiRoleAuthService";
-import { apiService } from '@/services/apiService';
-import { businessService } from '@/services/businessService';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { apiService } from '@/src/services/apiService';
+import { businessService } from '@/src/services/businessService';
 
 interface Location {
   lat: number;

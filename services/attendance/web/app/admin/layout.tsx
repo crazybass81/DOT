@@ -3,7 +3,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { supabaseAuthService } from '@/src/services/supabaseAuthService';
 
 interface AdminLayoutProps {
   children: ReactNode;

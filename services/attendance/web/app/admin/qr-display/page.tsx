@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { qrCodeService } from '@/services/qrCodeService';
-import { businessService } from '@/services/businessService';
-import { multiRoleAuthService } from "@/services/multiRoleAuthService";
-import { userService } from '@/services/userService';
+import { qrCodeService } from '@/src/services/qrCodeService';
+import { businessService } from '@/src/services/businessService';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { userService } from '@/src/services/userService';
 
 export default function QRDisplayPage() {
   const router = useRouter();

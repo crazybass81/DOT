@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseAuthService } from '@/services/supabaseAuthService'
-import { supabase } from '@/lib/supabase-config'
+import { supabaseAuthService } from '@/src/services/supabaseAuthService'
+import { supabase } from '@/src/lib/supabase-config'
 import { Clock, Calendar, FileText, User, LogOut, AlertCircle } from 'lucide-react'
 
 export default function WorkerDashboard() {

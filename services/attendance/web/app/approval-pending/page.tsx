@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase-config';
+import { supabase } from '@/src/lib/supabase-config';
 import { toast } from 'react-hot-toast';
 
 interface EmployeeStatus {

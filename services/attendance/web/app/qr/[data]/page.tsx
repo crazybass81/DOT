@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { qrCodeService } from '@/services/qrCodeService';
-import { qrAuthService } from '@/services/qrAuthService';
-import { apiService } from '@/services/apiService';
-import { businessService } from '@/services/businessService';
+import { qrCodeService } from '@/src/services/qrCodeService';
+import { qrAuthService } from '@/src/services/qrAuthService';
+import { apiService } from '@/src/services/apiService';
+import { businessService } from '@/src/services/businessService';
 import { useDeviceFingerprint } from '@/hooks/useDeviceFingerprint';
 
 interface Location {

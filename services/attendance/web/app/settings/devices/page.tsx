@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { generateDeviceFingerprint } from '@/lib/device-fingerprint'
+import { generateDeviceFingerprint } from '@/src/lib/device-fingerprint'
 
 interface DeviceToken {
   id: string

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { supabaseAuthService } from '@/src/services/supabaseAuthService';
 import { Card, Button, Tabs } from '@/components/ui';
 import { Building2, Users, BarChart3, Settings, LogOut, UserPlus, Clock, Calendar, TrendingUp } from 'lucide-react';
 

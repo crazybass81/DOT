@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GeolocationPosition } from '@/lib/services/location-verification';
+import { GeolocationPosition } from '@/src/lib/services/location-verification';
 
 export default function SetupPage() {
   const [currentLocation, setCurrentLocation] = useState<GeolocationPosition | null>(null);
