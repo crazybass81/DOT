@@ -18,42 +18,46 @@ import {
   ComputedRole
 } from '../../src/types/id-role-paper';
 
-// Mock Supabase client
+// Mock Supabase client with chainable methods
 const mockSupabaseClient = {
-  from: jest.fn(() => ({
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        single: jest.fn(),
-        maybeSingle: jest.fn()
-      })),
-      in: jest.fn(() => ({
-        order: jest.fn()
-      })),
-      ilike: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          limit: jest.fn()
-        }))
-      })),
-      limit: jest.fn(),
-      range: jest.fn(),
-      order: jest.fn()
-    })),
-    insert: jest.fn(() => ({
+  from: jest.fn(() => {
+    const selectChain = {
+      eq: jest.fn().mockReturnThis(),
+      in: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      single: jest.fn(),
+      limit: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      mockResolvedValue: jest.fn().mockReturnThis(),
+      mockResolvedValueOnce: jest.fn().mockReturnThis()
+    };
+
+    const insertChain = {
       select: jest.fn(() => ({
         single: jest.fn()
       }))
-    })),
-    update: jest.fn(() => ({
+    };
+
+    const updateChain = {
       eq: jest.fn(() => ({
         select: jest.fn(() => ({
           single: jest.fn()
         }))
       }))
-    })),
-    delete: jest.fn(() => ({
+    };
+
+    const deleteChain = {
       eq: jest.fn()
-    }))
-  })),
+    };
+
+    return {
+      select: jest.fn(() => selectChain),
+      insert: jest.fn(() => insertChain),
+      update: jest.fn(() => updateChain),
+      delete: jest.fn(() => deleteChain)
+    };
+  }),
   auth: {
     getUser: jest.fn()
   }
