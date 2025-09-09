@@ -1,5 +1,8 @@
 import React from 'react';
 
+export const DialogDescription = ({ children, ...props }: any) => 
+  React.createElement('p', props, children);
+
 export const Dialog = ({ children, open, ...props }: any) => {
   if (!open) return null;
   return (
