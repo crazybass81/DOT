@@ -75,6 +75,8 @@ export interface ModernUser {
   lastRoleUpdate: Date;
 }
 
+// Legacy UserPermissions interface - DEPRECATED: Use dynamic Permission system
+/** @deprecated Use Permission[] from id-role-paper-unified.ts for dynamic permissions */
 export interface UserPermissions {
   canManageUsers: boolean;
   canViewReports: boolean;
@@ -83,4 +85,40 @@ export interface UserPermissions {
   canCheckIn: boolean;
   canCheckOut: boolean;
   canViewOwnRecords: boolean;
+}
+
+// New dynamic permission system
+export interface UserPermissionContext {
+  identityId: string;
+  currentRole: RoleType;
+  businessContextId?: string;
+  
+  // Computed permissions based on papers and role
+  grantedPermissions: Array<{
+    resource: string;
+    actions: string[];
+    conditions?: Record<string, any>;
+    grantedBy: {
+      paperType: PaperType;
+      paperId: string;
+    };
+  }>;
+  
+  // Quick permission checks for common operations
+  can: {
+    manageUsers: boolean;
+    viewReports: boolean;
+    approveRequests: boolean;
+    manageSettings: boolean;
+    checkIn: boolean;
+    checkOut: boolean;
+    viewOwnRecords: boolean;
+    // Dynamic permissions
+    access: (resource: string, action: string, conditions?: Record<string, any>) => boolean;
+    hasRole: (role: RoleType, businessContext?: string) => boolean;
+  };
+  
+  // Permission calculation metadata
+  calculatedAt: Date;
+  expiresAt?: Date;
 }
