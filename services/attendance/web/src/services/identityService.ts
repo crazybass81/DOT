@@ -180,7 +180,7 @@ export class IdentityService {
       const supabase = await getSupabaseServerClient();
 
       // Validate identity exists and is active
-      const identity = await this.getIdentity(identityId);
+      const identity = await this._getIdentity(identityId);
       if (!identity || !identity.isActive) {
         throw new Error(`Invalid or inactive identity: ${identityId}`);
       }
@@ -236,7 +236,7 @@ export class IdentityService {
       const supabase = await getSupabaseServerClient();
 
       // Validate identity exists and is active
-      const identity = await this.getIdentity(identityId);
+      const identity = await this._getIdentity(identityId);
       if (!identity || !identity.isActive) {
         throw new Error(`Invalid or inactive identity: ${identityId}`);
       }
