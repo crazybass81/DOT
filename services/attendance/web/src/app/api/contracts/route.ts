@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { contractService, CreateContractData } from '../../../services/contractService';
+import { contractService, CreateContractData } from '../../../services/contract.service';
 import { withAuth } from '../../../lib/auth/auth-middleware';
 
 /**

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { qrCodeService } from '@/src/services/qrCodeService';
-import { businessService } from '@/src/services/businessService';
+import { qrCodeService } from '@/src/services/qr-code.service';
+import { businessService } from '@/src/services/business.service';
 import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
 import { userService } from '@/src/services/user.service';
 

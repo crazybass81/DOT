@@ -4,7 +4,7 @@ import { RoleType, MultiRoleUser } from '../types/multi-role';
 import { auditLogger, AuditAction, AuditResult } from '../lib/audit-logger';
 import { supabaseAuthService } from '../services/supabaseAuthService';
 import { organizationService } from '../services/organization.service';
-import { roleManagementService } from '../services/roleManagementService';
+import { roleManagementService } from '../services/role-management.service';
 
 // 권한 검증 설정 인터페이스
 export interface PermissionCheck {

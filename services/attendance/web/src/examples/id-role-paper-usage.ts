@@ -6,7 +6,7 @@
  */
 
 import { unifiedAuthService, CreateIdentityOptions } from '../services/unifiedAuthService';
-import { identityService } from '../services/identityService';
+import { identityService } from '../services/identity.service';
 import { permissionService, Resource, Action } from '../lib/permissions/role-permissions';
 import {
   IdType,

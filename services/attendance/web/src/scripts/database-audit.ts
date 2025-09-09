@@ -117,14 +117,14 @@ export class DatabaseAuditor {
       ],
       'organizations_v3': [
         'src/services/organization.service.ts',
-        'src/services/roleManagementService.ts'
+        'src/services/role-management.service.ts'
       ],
       'role_assignments': [
         'src/services/organization.service.ts', 
-        'src/services/roleManagementService.ts'
+        'src/services/role-management.service.ts'
       ],
       'attendance_records': [
-        'src/services/apiService.ts'
+        'src/services/api.service.ts'
       ],
       'employees': ['LEGACY - Not used in current code'],
       'organizations': ['LEGACY - Replaced by organizations_v3'],

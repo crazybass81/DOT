@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { contractService } from '../../../../services/contractService';
+import { contractService } from '../../../../services/contract.service';
 import { withAuth } from '../../../../lib/auth/auth-middleware';
 
 interface RouteParams {

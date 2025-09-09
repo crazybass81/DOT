@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals'
 import { createClient } from '@supabase/supabase-js'
-import { identityService } from '../services/identityService'
+import { identityService } from '../services/identity.service'
 import { organizationService } from '../services/organization.service'
 // Get environment variables or fallback to hardcoded values
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co'

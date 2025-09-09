@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase/client';
-import { identityService } from '@/services/identityService';
+import { identityService } from '@/services/identity.service';
 import { permissionService } from '@/lib/permissions/role-permissions';
 
 /**

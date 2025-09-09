@@ -19,7 +19,7 @@ import {
   validateFranchiseHierarchy,
   ERROR_CODES
 } from '../types/unified.types'
-import { identityService } from './identityService'
+import { identityService } from './identity.service'
 
 export class OrganizationService {
   private supabase = supabase

@@ -7,7 +7,7 @@
  */
 
 import { supabaseAuthService, User as SupabaseUser } from './supabaseAuthService';
-import { identityService } from './identityService';
+import { identityService } from './identity.service';
 import { permissionService, Resource, Action } from '../lib/permissions/role-permissions';
 import {
   UnifiedIdentity,
