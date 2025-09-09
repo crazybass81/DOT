@@ -17,7 +17,7 @@ export class BusinessVerificationService {
    * 사업자등록번호 검증
    * @param registrationNumber 사업자등록번호 (하이픈 포함/미포함 모두 지원)
    */
-  async verifyBusinessRegistration(registrationNumber: string): Promise<BusinessVerificationResult> {
+  static async verifyBusinessRegistration(registrationNumber: string): Promise<BusinessVerificationResult> {
     // 기본적인 포맷 검증
     const cleanNumber = registrationNumber.replace(/[-]/g, '');
     
