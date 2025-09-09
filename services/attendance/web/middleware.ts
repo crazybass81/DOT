@@ -153,16 +153,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For protected routes, we'll let the client-side components handle
-  // the detailed authentication and approval checks using the auth service
-  // This middleware just ensures we have some form of session
+  // Enhanced authentication check for protected routes
+  const hasValidAuth = await checkAuthentication(request);
   
-  const authCookies = request.cookies.getAll().filter(cookie => 
-    cookie.name.startsWith('sb-') && cookie.name.includes('auth-token')
-  );
-  
-  if (authCookies.length === 0) {
-    // No authentication cookies found, redirect to login
+  if (!hasValidAuth) {
+    // No valid authentication found, redirect to login
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
