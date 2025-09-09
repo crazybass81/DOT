@@ -7,10 +7,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServerClient } from '@/lib/supabase/client';
-import { identityService } from '@/services/identityService';
-import { permissionService, Resource, Action } from '@/lib/permissions/role-permissions';
-import { IdType, RoleType } from '@/src/types/id-role-paper';
+import { createClient } from '@supabase/supabase-js';
+import { 
+  createIdentityService,
+  CreateIdentityRequest,
+  UpdateIdentityRequest,
+  VerifyIdentityRequest
+} from '../../../lib/services/identity-service';
+import { createPermissionService } from '../../../lib/services/permission-service';
+import { IdType, RoleType } from '../../../types/id-role-paper';
 
 /**
  * Get identity information with full context
