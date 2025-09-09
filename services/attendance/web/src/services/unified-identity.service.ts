@@ -365,4 +365,8 @@ export class UnifiedIdentityService {
 }
 
 // Export singleton instance
+// Export both class and instance for flexibility
 export const unifiedIdentityService = new UnifiedIdentityService()
+
+// Default export for class
+export default UnifiedIdentityService
