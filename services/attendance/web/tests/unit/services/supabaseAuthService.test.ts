@@ -2,7 +2,7 @@ import { authService, AuthService } from '../../../src/services/authService';
 import { supabase } from '../../../src/services/authService';
 
 // Mock Supabase
-jest.mock('../../lib/supabase-config', () => ({
+jest.mock('../../../src/services/authService', () => ({
   supabase: {
     auth: {
       signUp: jest.fn(),
