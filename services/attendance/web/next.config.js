@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // App Router configuration
+  // App Router configuration (appDir is now stable in Next.js 15)
   experimental: {
-    appDir: true,
+    // Remove deprecated appDir option
   },
 
   // TypeScript configuration
