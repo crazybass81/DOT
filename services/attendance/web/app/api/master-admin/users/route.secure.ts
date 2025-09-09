@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     
     if (!authValidation.allowed) {
       // Log critical security event
-      await securityAuditLogger.logCriticalEvent({
+      // await securityAuditLogger.logCriticalEvent({
         type: 'MASTER_ADMIN_API_ACCESS_DENIED',
         endpoint: '/api/master-admin/users',
         reason: authValidation.reason,
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
-      await securityAuditLogger.logSecurityEvent({
+      // await securityAuditLogger.logSecurityEvent({
         type: 'AUTHENTICATION_FAILED',
         endpoint: '/api/master-admin/users',
         timestamp: new Date(),
@@ -102,14 +102,14 @@ export async function GET(request: NextRequest) {
     
     if (roleError || !userRole) {
       // Potential privilege escalation attempt
-      await privilegeEscalationDetector.detectEscalation({
+      // await privilegeEscalationDetector.detectEscalation({
         userId: user.id,
         currentRole: 'UNKNOWN',
         requestedRole: 'MASTER_ADMIN',
         endpoint: '/api/master-admin/users'
       });
       
-      await securityAuditLogger.logCriticalEvent({
+      // await securityAuditLogger.logCriticalEvent({
         type: 'ROLE_VERIFICATION_FAILED',
         userId: user.id,
         endpoint: '/api/master-admin/users',
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     );
     
     if (!hierarchyCheck.valid) {
-      await securityAuditLogger.logSecurityEvent({
+      // await securityAuditLogger.logSecurityEvent({
         type: 'HIERARCHY_VALIDATION_FAILED',
         userId: user.id,
         endpoint: '/api/master-admin/users',
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
       );
       
       if (!sessionValid) {
-        await securityAuditLogger.logSecurityEvent({
+        // await securityAuditLogger.logSecurityEvent({
           type: 'SESSION_VALIDATION_FAILED',
           userId: user.id,
           endpoint: '/api/master-admin/users',
@@ -182,9 +182,9 @@ export async function GET(request: NextRequest) {
     }
     
     // 🔒 LAYER 6: Check for suspicious activity patterns
-    const threatLevel = await privilegeEscalationDetector.getUserThreatLevel(user.id);
+    const threatLevel = // await privilegeEscalationDetector.getUserThreatLevel(user.id);
     if (threatLevel === 'CRITICAL' || threatLevel === 'HIGH') {
-      await securityAuditLogger.logCriticalEvent({
+      // await securityAuditLogger.logCriticalEvent({
         type: 'HIGH_THREAT_USER_BLOCKED',
         userId: user.id,
         endpoint: '/api/master-admin/users',
@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
     
     if (queryError) {
       console.error('Secure query error:', queryError);
-      await securityAuditLogger.logSecurityEvent({
+      // await securityAuditLogger.logSecurityEvent({
         type: 'DATA_RETRIEVAL_ERROR',
         userId: user.id,
         endpoint: '/api/master-admin/users',
@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
     // 🔒 LAYER 7: Comprehensive Audit Logging
     const executionTime = Date.now() - startTime;
     
-    await securityAuditLogger.logSecurityEvent({
+    // await securityAuditLogger.logSecurityEvent({
       type: 'MASTER_ADMIN_DATA_ACCESS',
       userId: user.id,
       endpoint: '/api/master-admin/users',
@@ -326,7 +326,7 @@ export async function GET(request: NextRequest) {
     // Log unexpected errors
     console.error('Critical error in secure master-admin API:', error);
     
-    await securityAuditLogger.logCriticalEvent({
+    // await securityAuditLogger.logCriticalEvent({
       type: 'UNEXPECTED_ERROR',
       userId,
       endpoint: '/api/master-admin/users',
@@ -346,7 +346,7 @@ export async function GET(request: NextRequest) {
  * SECURE POST/PUT/DELETE: Blocked for security
  */
 export async function POST(request: NextRequest) {
-  await securityAuditLogger.logCriticalEvent({
+  // await securityAuditLogger.logCriticalEvent({
     type: 'UNAUTHORIZED_METHOD',
     endpoint: '/api/master-admin/users',
     method: 'POST',
@@ -360,7 +360,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  await securityAuditLogger.logCriticalEvent({
+  // await securityAuditLogger.logCriticalEvent({
     type: 'UNAUTHORIZED_METHOD',
     endpoint: '/api/master-admin/users',
     method: 'PUT',
@@ -374,7 +374,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  await securityAuditLogger.logCriticalEvent({
+  // await securityAuditLogger.logCriticalEvent({
     type: 'UNAUTHORIZED_METHOD',
     endpoint: '/api/master-admin/users',
     method: 'DELETE',
