@@ -122,3 +122,108 @@ export interface UserPermissionContext {
   calculatedAt: Date;
   expiresAt?: Date;
 }
+
+// ========== UTILITY FUNCTIONS ==========
+
+/**
+ * Convert legacy User to ModernUser
+ * 기존 User 인터페이스를 새로운 ModernUser로 변환
+ */
+export const convertLegacyUserToModern = (legacyUser: User): Partial<ModernUser> => {
+  const newRole = LEGACY_TO_NEW_ROLE_MAPPING[legacyUser.role];
+  
+  return {
+    identityId: legacyUser.id,
+    idType: IdType.PERSONAL, // Default to PERSONAL, should be determined by business logic
+    email: legacyUser.email,
+    name: legacyUser.name,
+    currentRole: newRole,
+    availableRoles: [newRole],
+    papers: [], // To be populated based on role
+    businessAffiliations: legacyUser.organizationId ? [{
+      businessId: legacyUser.organizationId,
+      role: newRole,
+      papers: [] // To be determined based on role
+    }] : [],
+    isVerified: legacyUser.isVerified ?? false,
+    lastRoleUpdate: new Date()
+  };
+};
+
+/**
+ * Convert legacy UserPermissions to UserPermissionContext
+ * 기존 권한 시스템을 새로운 동적 권한 시스템으로 변환
+ */
+export const convertLegacyPermissionsToContext = (
+  permissions: UserPermissions,
+  identityId: string,
+  role: RoleType
+): Partial<UserPermissionContext> => {
+  return {
+    identityId,
+    currentRole: role,
+    grantedPermissions: [], // To be calculated by permission service
+    can: {
+      manageUsers: permissions.canManageUsers,
+      viewReports: permissions.canViewReports,
+      approveRequests: permissions.canApproveRequests,
+      manageSettings: permissions.canManageSettings,
+      checkIn: permissions.canCheckIn,
+      checkOut: permissions.canCheckOut,
+      viewOwnRecords: permissions.canViewOwnRecords,
+      access: () => false, // Placeholder - to be implemented by permission service
+      hasRole: () => false  // Placeholder - to be implemented by permission service
+    },
+    calculatedAt: new Date()
+  };
+};
+
+/**
+ * Check if user has specific legacy role
+ * 기존 역할 시스템과의 호환성을 위한 유틸리티
+ */
+export const hasLegacyRole = (user: ModernUser, legacyRole: UserRole): boolean => {
+  const mappedRole = LEGACY_TO_NEW_ROLE_MAPPING[legacyRole];
+  return user.availableRoles.includes(mappedRole);
+};
+
+/**
+ * Get display name for user role
+ * 사용자 역할의 표시명 반환
+ */
+export const getUserRoleDisplayName = (role: RoleType): string => {
+  const roleDisplayNames: Record<RoleType, string> = {
+    [RoleType.SEEKER]: '구직자',
+    [RoleType.WORKER]: '워커',
+    [RoleType.MANAGER]: '매니저', 
+    [RoleType.SUPERVISOR]: '수퍼바이저',
+    [RoleType.OWNER]: '사업자관리자',
+    [RoleType.FRANCHISEE]: '가맹점주',
+    [RoleType.FRANCHISOR]: '가맹본부관리자'
+  };
+  return roleDisplayNames[role] || role;
+};
+
+// ========== LEGACY COMPATIBILITY ==========
+
+/**
+ * Legacy role hierarchy for backward compatibility
+ * 기존 시스템과의 호환성을 위한 역할 계층
+ */
+export const LEGACY_ROLE_HIERARCHY: Record<UserRole, number> = {
+  [UserRole.WORKER]: 1,
+  [UserRole.EMPLOYEE]: 1,
+  [UserRole.MANAGER]: 2,
+  [UserRole.ADMIN]: 3,
+  [UserRole.BUSINESS_ADMIN]: 3,
+  [UserRole.MASTER_ADMIN]: 4,
+  [UserRole.SUPER_ADMIN]: 4,
+};
+
+/**
+ * Check if user has higher or equal legacy role
+ * 기존 역할 계층에서의 권한 비교
+ */
+export const hasHigherOrEqualLegacyRole = (userRole: UserRole, requiredRole: UserRole): boolean => {
+  return LEGACY_ROLE_HIERARCHY[userRole] >= LEGACY_ROLE_HIERARCHY[requiredRole];
+};
