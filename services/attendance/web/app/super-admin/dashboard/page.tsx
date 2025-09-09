@@ -49,6 +49,8 @@ export default function SuperAdminDashboard() {
       //   return;
       // }
     };
+    
+    checkAuth();
 
     const user = userService.getCurrentUser();
     if (!user || !userService.isSuperAdmin()) {
