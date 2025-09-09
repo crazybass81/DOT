@@ -82,7 +82,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // Get current user
-      const user = await supabaseAuthService.getCurrentUser();
+      const user = await authService.getCurrentUser();
       
       if (!user || !user.employee) {
         if (showToastOnFail) {
