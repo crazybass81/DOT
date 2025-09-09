@@ -2,7 +2,7 @@
 
 ## 개요
 
-이 문서는 DOT 출석 서비스의 ID-Role-Paper 기반 API 시스템에 대한 상세한 참조 가이드를 제공합니다.
+이 문서는 DOT 출석 서비스의 확정된 ID-ROLE-PAPER 기반 API 시스템에 대한 상세한 참조 가이드를 제공합니다.
 
 ## 인증 및 권한
 
@@ -10,15 +10,17 @@
 ```http
 Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
-X-Organization-ID: <ORGANIZATION_ID> (선택적)
+X-Business-Registration-ID: <BUSINESS_ID> (선택적)
 ```
 
-### 권한 레벨
-- **Level 1 (WORKER)**: 자신의 데이터만 조회/수정
-- **Level 2 (ADMIN)**: 팀/부서 데이터 관리
-- **Level 3 (MANAGER)**: 조직 전체 데이터 관리  
-- **Level 4 (FRANCHISE)**: 모든 조직 데이터 관리
-- **Master Admin**: 시스템 전체 관리
+### ROLE 기반 권한 레벨
+- **SEEKER**: 구직 관련 기능만 접근
+- **WORKER**: 자신의 출근 데이터 조회/수정
+- **MANAGER**: 팀 관리 기능 (Worker 권한 포함)
+- **OWNER**: 사업장 전체 관리
+- **FRANCHISEE**: 가맹점 운영 관리
+- **FRANCHISOR**: 가맹본부 및 전체 네트워크 관리
+- **SUPERVISOR**: 가맹점 감독 및 지원
 
 ## 통합 신원 관리 API
 
