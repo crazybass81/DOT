@@ -22,10 +22,12 @@ X-ID-Type: Personal | Corporate
 
 ## Rate Limiting
 
-API requests are rate-limited based on user tier:
-- **Anonymous**: 10 requests per 15 minutes
-- **Authenticated**: 100 requests per 15 minutes  
-- **Premium**: 1000 requests per 15 minutes
+API requests are rate-limited based on user role:
+- **SEEKER**: 10 requests per 15 minutes
+- **WORKER**: 100 requests per 15 minutes  
+- **MANAGER/OWNER**: 500 requests per 15 minutes
+- **FRANCHISEE/FRANCHISOR**: 1000 requests per 15 minutes
+- **SUPERVISOR**: 2000 requests per 15 minutes
 
 Rate limit headers are included in responses:
 ```http
