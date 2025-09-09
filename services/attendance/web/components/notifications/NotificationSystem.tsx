@@ -1,5 +1,13 @@
 import React from 'react';
 
+export const useNotifications = () => {
+  return {
+    notifications: [],
+    markAsRead: () => {},
+    clearAll: () => {}
+  };
+};
+
 export default function NotificationSystem() {
   return (
     <div className="bg-white rounded-lg shadow p-4">
