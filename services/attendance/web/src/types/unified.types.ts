@@ -1,7 +1,21 @@
 /**
- * Unified Types for Identity and Organization Management
- * Common types used across the unified identity system
+ * Unified Types - DEPRECATED: Use id-role-paper-unified.ts instead
+ * Migration Phase 1: All types here are deprecated and will be removed
+ * 
+ * 기존 Unified Types → ID-ROLE-PAPER 통합 타입 시스템으로 전환
+ * @deprecated Use id-role-paper-unified.ts for all new development
  */
+
+import { 
+  IdType, 
+  RoleType, 
+  BusinessType,
+  UnifiedIdentity,
+  BusinessRegistration,
+  Paper,
+  ComputedRole,
+  VerificationStatus
+} from './id-role-paper-unified';
 
 // =====================================================
 // Core Identity Types
