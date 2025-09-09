@@ -7,7 +7,12 @@ export interface BusinessVerificationResult {
   error?: string;
 }
 
-export const businessVerificationService = {
+export class BusinessVerificationService {
+  /**
+   * 사업자등록번호 검증 서비스
+   * 파일명: business-verification.service.ts (kebab-case)
+   * 클래스명: BusinessVerificationService (PascalCase)
+   */
   /**
    * 사업자등록번호 검증
    * @param registrationNumber 사업자등록번호 (하이픈 포함/미포함 모두 지원)
