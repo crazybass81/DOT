@@ -276,15 +276,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Check if user has specific role
    */
   const hasRole = (role: UserRole | string): boolean => {
-    if (!state.identity?.roles) return false;
-    return state.identity.roles.some((r: any) => r.role === role);
+    if (!state.user?.roles) {
+      // Fallback to single role check
+      return state.user?.role?.toLowerCase() === role.toString().toLowerCase();
+    }
+    return state.user.roles.some((r: string) => r.toLowerCase() === role.toString().toLowerCase());
   };
 
   /**
    * Check if user has specific permission
    */
   const hasPermission = (permission: string): boolean => {
-    if (!state.identity) return false;
+    if (!state.user) return false;
     
     // Super admin has all permissions
     if (hasRole(UserRole.SUPER_ADMIN)) return true;
@@ -317,16 +320,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Get user's primary role
    */
   const getUserRole = (): UserRole | null => {
-    if (!state.identity?.roles || state.identity.roles.length === 0) {
+    if (!state.user?.role) {
       return null;
     }
     
-    // Return the highest priority role
-    const roles = state.identity.roles.map((r: any) => r.role);
+    const role = state.user.role.toUpperCase();
     
-    if (roles.includes(UserRole.SUPER_ADMIN)) return UserRole.SUPER_ADMIN;
-    if (roles.includes(UserRole.BUSINESS_ADMIN)) return UserRole.BUSINESS_ADMIN;
-    if (roles.includes(UserRole.EMPLOYEE)) return UserRole.EMPLOYEE;
+    if (role === UserRole.SUPER_ADMIN) return UserRole.SUPER_ADMIN;
+    if (role === UserRole.BUSINESS_ADMIN) return UserRole.BUSINESS_ADMIN;
+    if (role === UserRole.EMPLOYEE) return UserRole.EMPLOYEE;
     
     return null;
   };
