@@ -133,6 +133,13 @@ export const CreateOrganizationRequestSchema = z.object({
   description: z.string().max(500).optional()
 })
 
+export const CreateOrganizationResponseSchema = z.object({
+  success: z.boolean(),
+  organization: OrganizationSchema.optional(),
+  code: z.string().optional(),
+  error: z.string().optional()
+})
+
 export const UpdateOrganizationRequestSchema = z.object({
   name: OrganizationNameSchema.optional(),
   displayName: z.string().max(100).optional(),
