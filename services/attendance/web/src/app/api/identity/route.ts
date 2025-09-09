@@ -16,12 +16,15 @@ import { IdType, RoleType } from '@/src/types/id-role-paper';
  * Get identity information with full context
  * GET /api/identity?id={identityId}&include={papers,roles,businesses}
  */
+/**
+ * Get identity information with full context
+ * GET /api/identity?id={identityId}&include={papers,roles,businesses}
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const identityId = searchParams.get('id');
     const include = searchParams.get('include')?.split(',') || [];
-    const businessContextId = request.headers.get('x-business-registration-id');
 
     // Validate request
     if (!identityId) {
@@ -31,95 +34,114 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity using our Identity Service
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
+    const currentIdentity = currentIdentities[0];
+
     // Check if requesting own identity or has permission
     const requestingOwnIdentity = identityId === currentIdentity.id;
     if (!requestingOwnIdentity) {
-      // Get user's roles to check permissions
-      const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-      if (!userContext) {
-        return NextResponse.json(
-          { error: 'Unable to determine user permissions' },
-          { status: 403 }
-        );
-      }
+      // Use Permission Service to check access
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'identity',
+        action: 'read'
+      });
 
-      // Check if user has permission to view other identities
-      const hasPermission = permissionService.hasMultiRolePermission(
-        userContext.availableRoles,
-        Resource.IDENTITY,
-        Action.READ,
-        {
-          businessContextId,
-          targetUserId: identityId,
-          currentUserId: currentIdentity.id
-        }
-      );
-
-      if (!hasPermission) {
+      if (!permissionResult.success || !permissionResult.data?.granted) {
         return NextResponse.json(
-          { error: 'Insufficient permissions to access this identity' },
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions'
+          },
           { status: 403 }
         );
       }
     }
 
-    // Get identity with context based on include parameters
-    let identityData;
-    if (include.length > 0) {
-      identityData = await identityService.getIdentityWithContext(identityId);
+    // Get identity based on include parameters
+    let response: any;
+    if (include.includes('context') || include.length > 1) {
+      const contextResult = await identityService.getIdentityWithContext(identityId);
+      if (!contextResult.success || !contextResult.data) {
+        return NextResponse.json(
+          { error: contextResult.error || 'Identity not found' },
+          { status: 404 }
+        );
+      }
+
+      const identityData = contextResult.data;
+      response = {
+        identity: identityData.identity
+      };
+
+      if (include.includes('papers') || include.includes('context')) {
+        response.papers = identityData.papers;
+      }
+
+      if (include.includes('roles') || include.includes('context')) {
+        response.computedRoles = identityData.computedRoles;
+        response.primaryRole = identityData.primaryRole;
+        response.availableRoles = identityData.availableRoles;
+      }
+
+      if (include.includes('businesses') || include.includes('context')) {
+        response.businessRegistrations = identityData.businessRegistrations;
+      }
+
+      if (include.includes('permissions') || include.includes('context')) {
+        response.permissions = identityData.permissions;
+      }
     } else {
-      const identity = await identityService.getIdentity(identityId);
-      identityData = { identity };
-    }
+      // Get basic identity information
+      const identityResult = await identityService.getIdentityById(identityId);
+      if (!identityResult.success || !identityResult.data) {
+        return NextResponse.json(
+          { error: identityResult.error || 'Identity not found' },
+          { status: 404 }
+        );
+      }
 
-    if (!identityData?.identity) {
-      return NextResponse.json(
-        { error: 'Identity not found' },
-        { status: 404 }
-      );
-    }
-
-    // Filter response based on include parameters
-    const response: any = {
-      identity: identityData.identity
-    };
-
-    if (include.includes('papers')) {
-      response.papers = identityData.papers || [];
-    }
-
-    if (include.includes('roles')) {
-      response.computedRoles = identityData.computedRoles || [];
-      response.primaryRole = identityData.primaryRole;
-      response.availableRoles = identityData.availableRoles || [];
-    }
-
-    if (include.includes('businesses')) {
-      response.businessRegistrations = identityData.businessRegistrations || [];
-    }
-
-    if (include.includes('permissions')) {
-      response.permissions = identityData.permissions || [];
+      response = {
+        identity: identityResult.data
+      };
     }
 
     return NextResponse.json(response);
