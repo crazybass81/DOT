@@ -163,6 +163,9 @@ const nextConfig = {
   // Build output configuration
   output: 'standalone',
   
+  // Add outputFileTracingRoot to silence workspace warning
+  outputFileTracingRoot: path.join(__dirname, '../../../'),
+  
   // Compression
   compress: true,
 
