@@ -22,7 +22,7 @@
     "test:security": "jest --testPathPatterns=tests/integration/security",
     "test:performance": "jest --testPathPatterns=tests/integration/performance",
     "setup:test-user": "node scripts/setup-test-user.js",
-    "test:auth": "jest --testPathPattern=tests/integration/auth",
+    "test:auth": "jest --testPathPatterns=tests/integration/auth",
     "deploy": "npm run build && npm run test && echo 'Ready for deployment'",
     "clean": "rm -rf .next node_modules dist"
   },
