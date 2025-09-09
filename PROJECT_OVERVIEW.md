@@ -30,16 +30,9 @@ DOT/
 ## 🎯 프로젝트 목표
 
 외식업 디지털 전환을 위한 통합 비즈니스 플랫폼
-- **근태관리**: GPS 기반 출퇴근, ID-ROLE-PAPER 보안 시스템, 실시간 모니터링
-- **마케팅 자동화**: 유튜브 크리에이터 매칭, AI 기반 캠페인 관리
-- **스케줄 관리**: 직원 일정, 시프트 최적화 (개발 중)
-
-## 🔐 보안 특징
-
-- **ID-ROLE-PAPER System**: 7단계 역할 계층 구조로 세분화된 권한 관리
-- **Row Level Security (RLS)**: 데이터베이스 수준의 다중 테넌트 격리
-- **JWT 기반 인증**: WebSocket 실시간 통신 보안 강화
-- **감사 로깅**: 모든 중요 작업에 대한 추적 가능한 로그
+- **근태관리**: GPS 기반 출퇴근, 부정 방지, 실시간 모니터링
+- **마케팅 자동화**: 크리에이터 매칭, 캠페인 관리
+- **스케줄 관리**: 직원 일정, 시프트 최적화
 
 ## 🏗️ 기술 스택
 
@@ -55,11 +48,10 @@ DOT/
 - Neo Brutal Theme
 
 ### Backend  
-- **Supabase** - Primary backend for attendance service (PostgreSQL, Auth, Realtime)
-- **AWS Lambda** - Serverless functions for marketing service
-- **DynamoDB** - NoSQL database for marketing data
-- **API Gateway** - REST API management
-- **Cognito** - Authentication for marketing service
+- AWS Lambda (서버리스)
+- DynamoDB (NoSQL)
+- API Gateway
+- Cognito (인증)
 
 ### Infrastructure
 - AWS CDK

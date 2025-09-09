@@ -12,17 +12,17 @@
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
     "test": "jest",
-    "test:unit": "jest --testPathPatterns=tests/unit",
-    "test:integration": "jest --testPathPatterns=tests/integration",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:rls": "jest --testPathPatterns=tests/integration/rls",
-    "test:master-admin": "jest --testPathPatterns=tests/integration/master-admin",
-    "test:workflow": "jest --testPathPatterns=tests/integration/workflow",
-    "test:security": "jest --testPathPatterns=tests/integration/security",
-    "test:performance": "jest --testPathPatterns=tests/integration/performance",
+    "test:rls": "jest --testPathPattern=tests/integration/rls",
+    "test:master-admin": "jest --testPathPattern=tests/integration/master-admin",
+    "test:workflow": "jest --testPathPattern=tests/integration/workflow",
+    "test:security": "jest --testPathPattern=tests/integration/security",
+    "test:performance": "jest --testPathPattern=tests/integration/performance",
     "setup:test-user": "node scripts/setup-test-user.js",
-    "test:auth": "jest --testPathPatterns=tests/integration/auth",
+    "test:auth": "jest --testPathPattern=tests/integration/auth",
     "deploy": "npm run build && npm run test && echo 'Ready for deployment'",
     "clean": "rm -rf .next node_modules dist"
   },
@@ -79,6 +79,35 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup/jest.setup.js"],
+    "moduleNameMapping": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@components/(.*)$": "<rootDir>/src/components/$1",
+      "^@lib/(.*)$": "<rootDir>/src/lib/$1",
+      "^@contexts/(.*)$": "<rootDir>/src/contexts/$1",
+      "^@types/(.*)$": "<rootDir>/src/types/$1"
+    },
+    "testMatch": [
+      "<rootDir>/tests/unit/**/*.test.{js,jsx,ts,tsx}",
+      "<rootDir>/tests/integration/**/*.test.{js,jsx,ts,tsx}"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/*.stories.{js,jsx,ts,tsx}",
+      "!src/**/index.{js,jsx,ts,tsx}"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   },
   "keywords": [
     "attendance",

@@ -44,143 +44,6 @@ function getClientIp(request: NextRequest): string {
          'unknown';
 }
 
-/**
- * Enhanced authentication check with multiple validation methods
- */
-async function checkAuthentication(request: NextRequest): Promise<boolean> {
-  // Method 1: Check Supabase auth cookies
-  const authCookies = request.cookies.getAll().filter(cookie => {
-    // Look for various Supabase cookie patterns
-    return (
-      (cookie.name.startsWith('sb-') && cookie.name.includes('auth-token')) ||
-      (cookie.name.startsWith('supabase-auth-token')) ||
-      (cookie.name.includes('access-token')) ||
-      (cookie.name.includes('session'))
-    );
-  });
-
-  if (authCookies.length > 0) {
-    // Validate cookie content
-    for (const cookie of authCookies) {
-      if (await validateAuthCookie(cookie.value)) {
-        return true;
-      }
-    }
-  }
-
-  // Method 2: Check Authorization header
-  const authHeader = request.headers.get('authorization');
-  if (authHeader) {
-    if (authHeader.startsWith('Bearer ') && authHeader.length > 20) {
-      return await validateBearerToken(authHeader);
-    }
-  }
-
-  // Method 3: Check session storage or custom auth headers
-  const sessionId = request.headers.get('x-session-id') || 
-                    request.headers.get('x-auth-session');
-  if (sessionId && sessionId.length > 10) {
-    return await validateSessionId(sessionId);
-  }
-
-  return false;
-}
-
-/**
- * Validate authentication cookie content
- */
-async function validateAuthCookie(cookieValue: string): Promise<boolean> {
-  try {
-    if (!cookieValue || cookieValue.length < 10) {
-      return false;
-    }
-
-    // Check if cookie value looks like a JWT token or session ID
-    if (cookieValue.includes('.') && cookieValue.split('.').length === 3) {
-      // Looks like JWT - basic validation
-      return await validateJWTStructure(cookieValue);
-    }
-
-    // Check if it's a valid session format
-    if (cookieValue.length >= 32 && /^[a-zA-Z0-9-_]+$/.test(cookieValue)) {
-      return true; // Valid session format
-    }
-
-    return false;
-  } catch (error) {
-    console.error('Cookie validation error:', error);
-    return false;
-  }
-}
-
-/**
- * Validate Bearer token
- */
-async function validateBearerToken(authHeader: string): Promise<boolean> {
-  try {
-    const token = authHeader.substring(7); // Remove 'Bearer '
-    return await validateJWTStructure(token);
-  } catch (error) {
-    console.error('Bearer token validation error:', error);
-    return false;
-  }
-}
-
-/**
- * Validate session ID
- */
-async function validateSessionId(sessionId: string): Promise<boolean> {
-  try {
-    // Basic session ID format validation
-    return sessionId.length >= 16 && 
-           sessionId.length <= 256 && 
-           /^[a-zA-Z0-9-_]+$/.test(sessionId);
-  } catch (error) {
-    console.error('Session ID validation error:', error);
-    return false;
-  }
-}
-
-/**
- * Basic JWT structure validation (without signature verification)
- */
-async function validateJWTStructure(token: string): Promise<boolean> {
-  try {
-    if (!token || typeof token !== 'string') {
-      return false;
-    }
-
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return false;
-    }
-
-    // Try to decode header and payload
-    const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-
-    // Check for required JWT fields
-    if (!header.typ || !header.alg) {
-      return false;
-    }
-
-    // Check if token is not expired (basic check)
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return false;
-    }
-
-    // Check for user identification
-    if (!payload.sub && !payload.user_id && !payload.id) {
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    // If JWT parsing fails, it's not a valid JWT
-    return false;
-  }
-}
-
 function detectSQLInjection(value: string): boolean {
   if (!value) return false;
   
@@ -290,11 +153,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Enhanced authentication check for protected routes
-  const hasValidAuth = await checkAuthentication(request);
+  // For protected routes, we'll let the client-side components handle
+  // the detailed authentication and approval checks using the auth service
+  // This middleware just ensures we have some form of session
   
-  if (!hasValidAuth) {
-    // No valid authentication found, redirect to login
+  const authCookies = request.cookies.getAll().filter(cookie => 
+    cookie.name.startsWith('sb-') && cookie.name.includes('auth-token')
+  );
+  
+  if (authCookies.length === 0) {
+    // No authentication cookies found, redirect to login
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

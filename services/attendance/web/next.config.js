@@ -101,24 +101,6 @@ const nextConfig = {
               'usb='
             ].join(', '),
           },
-          // Enhanced Cookie Security
-          {
-            key: 'Set-Cookie',
-            value: 'SameSite=Strict; Secure; HttpOnly',
-          },
-          // Additional Security Headers
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'off',
-          },
-          {
-            key: 'X-Download-Options',
-            value: 'noopen',
-          },
         ],
       },
     ];
@@ -161,18 +143,14 @@ const nextConfig = {
       };
     }
 
-    // Add custom aliases - Fixed path resolution for src directory structure
+    // Add custom aliases
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(__dirname, 'src'),
-      '@components': path.resolve(__dirname, 'src/components'),
+      '@': path.resolve(__dirname, '.'),
+      '@components': path.resolve(__dirname, 'components'),
       '@lib': path.resolve(__dirname, 'src/lib'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
       '@types': path.resolve(__dirname, 'src/types'),
-      '@services': path.resolve(__dirname, 'src/services'),
-      '@utils': path.resolve(__dirname, 'src/utils'),
-      '@hooks': path.resolve(__dirname, 'src/hooks'),
-      '@middleware': path.resolve(__dirname, 'src/middleware'),
     };
 
     // Handle SVG imports
