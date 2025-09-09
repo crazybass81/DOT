@@ -145,7 +145,7 @@ export function useBulkRoleChange() {
           new_role: newRole,
           changed_by: currentUser.id,
           reason: reason || 'No reason provided',
-          ip_address: await getClientIP(),
+          ip_address: "127.0.0.1",
           user_agent: navigator.userAgent
         }));
 
