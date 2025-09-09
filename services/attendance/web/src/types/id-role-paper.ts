@@ -68,7 +68,6 @@ export enum VerificationStatus {
 // UnifiedIdentity is now defined in id-role-paper-unified.ts
 // Import from unified file instead of defining here
 import type { UnifiedIdentity } from './id-role-paper-unified';
-}
 
 /**
  * Business Registration - Core business entity
