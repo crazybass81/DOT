@@ -1,545 +1,621 @@
 /**
  * Role Calculation Engine Unit Tests
- * 
- * Tests the core logic for calculating roles based on papers and role hierarchy:
- * - FRANCHISOR > FRANCHISEE > OWNER > MANAGER > SUPERVISOR > WORKER > SEEKER
- * - Role dependencies (MANAGER requires WORKER, etc.)
- * - Paper validation and role inheritance
- * - Edge cases and error handling
+ * TDD implementation for ID-ROLE-PAPER system role calculation
  */
 
-import { describe, test, expect, beforeEach } from '@jest/globals';
-import { TestDataFactory, RoleType, PaperType } from '../setup/id-role-paper-test-setup';
-
-// Mock the role calculation service
-class RoleCalculationEngine {
-  private static readonly ROLE_HIERARCHY: Record<RoleType, number> = {
-    'SEEKER': 0,
-    'WORKER': 1,
-    'SUPERVISOR': 2,
-    'MANAGER': 3,
-    'OWNER': 4,
-    'FRANCHISEE': 5,
-    'FRANCHISOR': 6
-  };
-
-  private static readonly ROLE_DEPENDENCIES: Record<RoleType, RoleType[]> = {
-    'SEEKER': [],
-    'WORKER': [],
-    'SUPERVISOR': ['WORKER'],
-    'MANAGER': ['WORKER'],
-    'OWNER': [],
-    'FRANCHISEE': [],
-    'FRANCHISOR': []
-  };
-
-  private static readonly ROLE_INHERITANCE: Record<RoleType, RoleType[]> = {
-    'SEEKER': [],
-    'WORKER': [],
-    'SUPERVISOR': [],
-    'MANAGER': ['WORKER'],
-    'OWNER': ['MANAGER', 'WORKER'],
-    'FRANCHISEE': ['MANAGER', 'WORKER'],
-    'FRANCHISOR': ['FRANCHISEE', 'MANAGER', 'WORKER']
-  };
-
-  static calculateRoles(papers: any[]): {
-    calculatedRoles: RoleType[];
-    highestRole: RoleType;
-    validationErrors: string[];
-  } {
-    const validationErrors: string[] = [];
-    const activePapers = papers.filter(p => p.status === 'ACTIVE' && this.isPaperEffective(p));
-    
-    if (activePapers.length === 0) {
-      return {
-        calculatedRoles: ['SEEKER'],
-        highestRole: 'SEEKER',
-        validationErrors
-      };
-    }
-
-    // Extract roles from papers
-    const grantedRoles = new Set<RoleType>();
-    for (const paper of activePapers) {
-      grantedRoles.add(paper.role_granted);
-    }
-
-    // Validate role dependencies
-    for (const role of grantedRoles) {
-      const dependencies = this.ROLE_DEPENDENCIES[role];
-      for (const dep of dependencies) {
-        if (!grantedRoles.has(dep)) {
-          validationErrors.push(`Role ${role} requires ${dep} but ${dep} was not granted`);
-        }
-      }
-    }
-
-    // If validation failed, return SEEKER
-    if (validationErrors.length > 0) {
-      return {
-        calculatedRoles: ['SEEKER'],
-        highestRole: 'SEEKER',
-        validationErrors
-      };
-    }
-
-    // Calculate all roles including inheritance
-    const allRoles = new Set<RoleType>();
-    for (const role of grantedRoles) {
-      allRoles.add(role);
-      const inheritedRoles = this.ROLE_INHERITANCE[role];
-      for (const inherited of inheritedRoles) {
-        allRoles.add(inherited);
-      }
-    }
-
-    // Find highest role
-    let highestRole: RoleType = 'SEEKER';
-    let highestLevel = -1;
-    for (const role of allRoles) {
-      const level = this.ROLE_HIERARCHY[role];
-      if (level > highestLevel) {
-        highestLevel = level;
-        highestRole = role;
-      }
-    }
-
-    return {
-      calculatedRoles: Array.from(allRoles).sort((a, b) => 
-        this.ROLE_HIERARCHY[b] - this.ROLE_HIERARCHY[a]
-      ),
-      highestRole,
-      validationErrors
-    };
-  }
-
-  private static isPaperEffective(paper: any): boolean {
-    const now = new Date();
-    const effectiveFrom = new Date(paper.effective_from);
-    const effectiveUntil = paper.effective_until ? new Date(paper.effective_until) : null;
-
-    return effectiveFrom <= now && (!effectiveUntil || effectiveUntil >= now);
-  }
-
-  static validatePaperType(paperType: PaperType, roleGranted: RoleType): string[] {
-    const errors: string[] = [];
-
-    // Define valid paper-role combinations
-    const validCombinations: Record<PaperType, RoleType[]> = {
-      'BUSINESS_REGISTRATION': ['OWNER'],
-      'EMPLOYMENT_CONTRACT': ['WORKER'],
-      'PARTNERSHIP_AGREEMENT': ['OWNER'],
-      'FRANCHISE_AGREEMENT': ['FRANCHISEE', 'FRANCHISOR'],
-      'MANAGEMENT_APPOINTMENT': ['MANAGER', 'SUPERVISOR'],
-      'OWNERSHIP_CERTIFICATE': ['OWNER']
-    };
-
-    const validRoles = validCombinations[paperType];
-    if (!validRoles.includes(roleGranted)) {
-      errors.push(`Paper type ${paperType} cannot grant role ${roleGranted}. Valid roles: ${validRoles.join(', ')}`);
-    }
-
-    return errors;
-  }
-}
+import { 
+  RoleCalculator,
+  RoleCalculatorService 
+} from '../../src/lib/role-engine/role-calculator';
+import {
+  RoleType,
+  PaperType,
+  IdType,
+  BusinessType,
+  UnifiedIdentity,
+  Paper,
+  BusinessRegistration,
+  RoleCalculationContext,
+  RoleCalculationResult,
+  ROLE_HIERARCHY,
+  ROLE_DEPENDENCIES
+} from '../../src/types/id-role-paper';
 
 describe('Role Calculation Engine', () => {
+  let mockIdentity: UnifiedIdentity;
+  let mockBusinessRegistration: BusinessRegistration;
+
   beforeEach(() => {
-    // Reset any state if needed
+    mockIdentity = {
+      id: 'identity-1',
+      idType: IdType.PERSONAL,
+      email: 'test@example.com',
+      fullName: 'Test User',
+      authUserId: 'auth-1',
+      isVerified: true,
+      isActive: true,
+      profileData: {},
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    mockBusinessRegistration = {
+      id: 'business-1',
+      registrationNumber: 'BRN-123456',
+      businessName: 'Test Business',
+      businessType: BusinessType.INDIVIDUAL,
+      ownerIdentityId: 'identity-1',
+      registrationData: {},
+      verificationStatus: 'verified',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
   });
 
-  describe('Basic Role Calculation', () => {
-    test('should return SEEKER for no papers', () => {
-      const result = RoleCalculationEngine.calculateRoles([]);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-      expect(result.validationErrors).toEqual([]);
+  describe('Basic Role Assignment', () => {
+    test('should assign SEEKER role when no papers are held', () => {
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [],
+        businessRegistrations: []
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.SEEKER);
+      expect(result.calculatedRoles[0].sourcePapers).toEqual([]);
+      expect(result.errors).toHaveLength(0);
     });
 
-    test('should calculate WORKER role correctly', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE'
-        })
-      ];
+    test('should assign OWNER role for Business Registration paper', () => {
+      const businessPaper: Paper = {
+        id: 'paper-1',
+        paperType: PaperType.BUSINESS_REGISTRATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toEqual(['WORKER']);
-      expect(result.highestRole).toBe('WORKER');
-      expect(result.validationErrors).toEqual([]);
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [businessPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.OWNER);
+      expect(result.calculatedRoles[0].sourcePapers).toContain('paper-1');
+      expect(result.calculatedRoles[0].businessContext).toBe('business-1');
     });
 
-    test('should calculate MANAGER role with inheritance', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'MANAGER',
-          status: 'ACTIVE'
-        })
-      ];
+    test('should assign WORKER role for Employment Contract paper', () => {
+      const employmentPaper: Paper = {
+        id: 'paper-2',
+        paperType: PaperType.EMPLOYMENT_CONTRACT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toContain('MANAGER');
-      expect(result.calculatedRoles).toContain('WORKER');
-      expect(result.highestRole).toBe('MANAGER');
-      expect(result.validationErrors).toEqual([]);
-    });
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [employmentPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
 
-    test('should calculate OWNER role with full inheritance', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'BUSINESS_REGISTRATION',
-          role_granted: 'OWNER',
-          status: 'ACTIVE'
-        })
-      ];
+      const result = RoleCalculator.calculateRoles(context);
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toContain('OWNER');
-      expect(result.calculatedRoles).toContain('MANAGER');
-      expect(result.calculatedRoles).toContain('WORKER');
-      expect(result.highestRole).toBe('OWNER');
-      expect(result.validationErrors).toEqual([]);
-    });
-
-    test('should calculate FRANCHISEE role correctly', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'FRANCHISE_AGREEMENT',
-          role_granted: 'FRANCHISEE',
-          status: 'ACTIVE'
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toContain('FRANCHISEE');
-      expect(result.calculatedRoles).toContain('MANAGER');
-      expect(result.calculatedRoles).toContain('WORKER');
-      expect(result.highestRole).toBe('FRANCHISEE');
-      expect(result.validationErrors).toEqual([]);
-    });
-
-    test('should calculate FRANCHISOR as highest role', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'FRANCHISE_AGREEMENT',
-          role_granted: 'FRANCHISOR',
-          status: 'ACTIVE'
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toContain('FRANCHISOR');
-      expect(result.calculatedRoles).toContain('FRANCHISEE');
-      expect(result.calculatedRoles).toContain('MANAGER');
-      expect(result.calculatedRoles).toContain('WORKER');
-      expect(result.highestRole).toBe('FRANCHISOR');
-      expect(result.validationErrors).toEqual([]);
-    });
-
-    test('should calculate SUPERVISOR role correctly', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'SUPERVISOR',
-          status: 'ACTIVE'
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toContain('SUPERVISOR');
-      expect(result.calculatedRoles).toContain('WORKER');
-      expect(result.highestRole).toBe('SUPERVISOR');
-      expect(result.validationErrors).toEqual([]);
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.WORKER);
+      expect(result.calculatedRoles[0].sourcePapers).toContain('paper-2');
+      expect(result.calculatedRoles[0].businessContext).toBe('business-1');
     });
   });
 
-  describe('Role Dependencies Validation', () => {
-    test('should fail when MANAGER is granted without WORKER', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'MANAGER',
-          status: 'ACTIVE'
-        })
-      ];
+  describe('Complex Role Assignment with Dependencies', () => {
+    test('should assign both WORKER and MANAGER roles for Employment + Authority Delegation', () => {
+      const employmentPaper: Paper = {
+        id: 'paper-employment',
+        paperType: PaperType.EMPLOYMENT_CONTRACT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
+      const authorityPaper: Paper = {
+        id: 'paper-authority',
+        paperType: PaperType.AUTHORITY_DELEGATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [employmentPaper, authorityPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      const assignedRoles = result.calculatedRoles.map(r => r.role);
+      expect(assignedRoles).toContain(RoleType.WORKER);
+      expect(assignedRoles).toContain(RoleType.MANAGER);
       
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-      expect(result.validationErrors).toContain('Role MANAGER requires WORKER but WORKER was not granted');
+      // Check that WORKER role is assigned as prerequisite
+      const workerRole = result.calculatedRoles.find(r => r.role === RoleType.WORKER);
+      const managerRole = result.calculatedRoles.find(r => r.role === RoleType.MANAGER);
+      
+      expect(workerRole).toBeDefined();
+      expect(managerRole).toBeDefined();
+      expect(managerRole?.metadata?.is_dependency).toBeUndefined(); // Manager is primary, not dependency
     });
 
-    test('should fail when SUPERVISOR is granted without WORKER', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'SUPERVISOR',
-          status: 'ACTIVE'
-        })
-      ];
+    test('should assign both WORKER and SUPERVISOR roles for Employment + Supervisor Authority', () => {
+      const employmentPaper: Paper = {
+        id: 'paper-employment',
+        paperType: PaperType.EMPLOYMENT_CONTRACT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-      expect(result.validationErrors).toContain('Role SUPERVISOR requires WORKER but WORKER was not granted');
-    });
+      const supervisorPaper: Paper = {
+        id: 'paper-supervisor',
+        paperType: PaperType.SUPERVISOR_AUTHORITY_DELEGATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-    test('should succeed when dependencies are met', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'SUPERVISOR',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'MANAGER',
-          status: 'ACTIVE'
-        })
-      ];
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [employmentPaper, supervisorPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.validationErrors).toEqual([]);
-      expect(result.highestRole).toBe('MANAGER');
+      const result = RoleCalculator.calculateRoles(context);
+
+      const assignedRoles = result.calculatedRoles.map(r => r.role);
+      expect(assignedRoles).toContain(RoleType.WORKER);
+      expect(assignedRoles).toContain(RoleType.SUPERVISOR);
     });
   });
 
-  describe('Paper Status and Time Validation', () => {
-    test('should ignore inactive papers', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'REVOKED'
-        })
-      ];
+  describe('Franchise Roles', () => {
+    test('should assign FRANCHISEE role for Business Registration + Franchise Agreement', () => {
+      const businessPaper: Paper = {
+        id: 'paper-business',
+        paperType: PaperType.BUSINESS_REGISTRATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
+      const franchisePaper: Paper = {
+        id: 'paper-franchise',
+        paperType: PaperType.FRANCHISE_AGREEMENT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [businessPaper, franchisePaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.FRANCHISEE);
+      expect(result.calculatedRoles[0].sourcePapers).toContain('paper-business');
+      expect(result.calculatedRoles[0].sourcePapers).toContain('paper-franchise');
     });
 
-    test('should ignore expired papers', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'EXPIRED'
-        })
-      ];
+    test('should assign FRANCHISOR role for Business Registration + Franchise HQ Registration', () => {
+      const businessPaper: Paper = {
+        id: 'paper-business',
+        paperType: PaperType.BUSINESS_REGISTRATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-    });
+      const franchiseHqPaper: Paper = {
+        id: 'paper-franchise-hq',
+        paperType: PaperType.FRANCHISE_HQ_REGISTRATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-    test('should ignore future-effective papers', () => {
-      const futureDate = new Date();
-      futureDate.setFullYear(futureDate.getFullYear() + 1);
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [businessPaper, franchiseHqPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
 
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE',
-          effective_from: futureDate.toISOString()
-        })
-      ];
+      const result = RoleCalculator.calculateRoles(context);
 
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-    });
-
-    test('should ignore papers that have expired by effective_until date', () => {
-      const pastDate = new Date();
-      pastDate.setFullYear(pastDate.getFullYear() - 1);
-
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE',
-          effective_until: pastDate.toISOString()
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-    });
-  });
-
-  describe('Paper Type and Role Validation', () => {
-    test('should validate BUSINESS_REGISTRATION can only grant OWNER', () => {
-      const errors = RoleCalculationEngine.validatePaperType('BUSINESS_REGISTRATION', 'OWNER');
-      expect(errors).toEqual([]);
-
-      const invalidErrors = RoleCalculationEngine.validatePaperType('BUSINESS_REGISTRATION', 'WORKER');
-      expect(invalidErrors).toContain('Paper type BUSINESS_REGISTRATION cannot grant role WORKER. Valid roles: OWNER');
-    });
-
-    test('should validate EMPLOYMENT_CONTRACT can only grant WORKER', () => {
-      const errors = RoleCalculationEngine.validatePaperType('EMPLOYMENT_CONTRACT', 'WORKER');
-      expect(errors).toEqual([]);
-
-      const invalidErrors = RoleCalculationEngine.validatePaperType('EMPLOYMENT_CONTRACT', 'MANAGER');
-      expect(invalidErrors).toContain('Paper type EMPLOYMENT_CONTRACT cannot grant role MANAGER. Valid roles: WORKER');
-    });
-
-    test('should validate MANAGEMENT_APPOINTMENT can grant MANAGER or SUPERVISOR', () => {
-      const managerErrors = RoleCalculationEngine.validatePaperType('MANAGEMENT_APPOINTMENT', 'MANAGER');
-      expect(managerErrors).toEqual([]);
-
-      const supervisorErrors = RoleCalculationEngine.validatePaperType('MANAGEMENT_APPOINTMENT', 'SUPERVISOR');
-      expect(supervisorErrors).toEqual([]);
-
-      const invalidErrors = RoleCalculationEngine.validatePaperType('MANAGEMENT_APPOINTMENT', 'WORKER');
-      expect(invalidErrors).toContain('Paper type MANAGEMENT_APPOINTMENT cannot grant role WORKER. Valid roles: MANAGER, SUPERVISOR');
-    });
-
-    test('should validate FRANCHISE_AGREEMENT can grant FRANCHISEE or FRANCHISOR', () => {
-      const franchiseeErrors = RoleCalculationEngine.validatePaperType('FRANCHISE_AGREEMENT', 'FRANCHISEE');
-      expect(franchiseeErrors).toEqual([]);
-
-      const franchisorErrors = RoleCalculationEngine.validatePaperType('FRANCHISE_AGREEMENT', 'FRANCHISOR');
-      expect(franchisorErrors).toEqual([]);
-
-      const invalidErrors = RoleCalculationEngine.validatePaperType('FRANCHISE_AGREEMENT', 'WORKER');
-      expect(invalidErrors).toContain('Paper type FRANCHISE_AGREEMENT cannot grant role WORKER. Valid roles: FRANCHISEE, FRANCHISOR');
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.FRANCHISOR);
     });
   });
 
-  describe('Complex Role Scenarios', () => {
-    test('should handle multiple roles with proper hierarchy', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'BUSINESS_REGISTRATION',
-          role_granted: 'OWNER',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE'
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      // OWNER should take precedence and include inheritance
-      expect(result.highestRole).toBe('OWNER');
-      expect(result.calculatedRoles).toContain('OWNER');
-      expect(result.calculatedRoles).toContain('MANAGER');
-      expect(result.calculatedRoles).toContain('WORKER');
+  describe('Role Hierarchy and Priority', () => {
+    test('should return highest priority role correctly', () => {
+      const roles = [RoleType.WORKER, RoleType.MANAGER, RoleType.SEEKER];
+      const highestRole = RoleCalculator.getHighestPriorityRole(roles);
+      expect(highestRole).toBe(RoleType.MANAGER);
     });
 
-    test('should handle conflicting high-level roles', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'BUSINESS_REGISTRATION',
-          role_granted: 'OWNER',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'FRANCHISE_AGREEMENT',
-          role_granted: 'FRANCHISEE',
-          status: 'ACTIVE'
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      // FRANCHISEE should take precedence (higher in hierarchy)
-      expect(result.highestRole).toBe('FRANCHISEE');
-      expect(result.calculatedRoles).toContain('FRANCHISEE');
-      expect(result.calculatedRoles).toContain('OWNER');
-      expect(result.calculatedRoles).toContain('MANAGER');
-      expect(result.calculatedRoles).toContain('WORKER');
+    test('should return SEEKER for empty role list', () => {
+      const highestRole = RoleCalculator.getHighestPriorityRole([]);
+      expect(highestRole).toBe(RoleType.SEEKER);
     });
 
-    test('should sort roles by hierarchy level', () => {
-      const papers = [
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          role_granted: 'WORKER',
-          status: 'ACTIVE'
-        }),
-        TestDataFactory.createPaper('pid1', 'bid1', {
-          paper_type: 'MANAGEMENT_APPOINTMENT',
-          role_granted: 'SUPERVISOR',
-          status: 'ACTIVE'
-        })
-      ];
-
-      const result = RoleCalculationEngine.calculateRoles(papers);
-      
-      // Should be sorted by hierarchy level (highest first)
-      expect(result.calculatedRoles[0]).toBe('SUPERVISOR');
-      expect(result.calculatedRoles[1]).toBe('WORKER');
+    test('should respect role hierarchy levels', () => {
+      expect(ROLE_HIERARCHY[RoleType.FRANCHISOR]).toBeGreaterThan(ROLE_HIERARCHY[RoleType.FRANCHISEE]);
+      expect(ROLE_HIERARCHY[RoleType.FRANCHISEE]).toBeGreaterThan(ROLE_HIERARCHY[RoleType.OWNER]);
+      expect(ROLE_HIERARCHY[RoleType.OWNER]).toBeGreaterThan(ROLE_HIERARCHY[RoleType.SUPERVISOR]);
+      expect(ROLE_HIERARCHY[RoleType.SUPERVISOR]).toBeGreaterThan(ROLE_HIERARCHY[RoleType.MANAGER]);
+      expect(ROLE_HIERARCHY[RoleType.MANAGER]).toBeGreaterThan(ROLE_HIERARCHY[RoleType.WORKER]);
+      expect(ROLE_HIERARCHY[RoleType.WORKER]).toBeGreaterThan(ROLE_HIERARCHY[RoleType.SEEKER]);
     });
   });
 
-  describe('Edge Cases', () => {
-    test('should handle empty paper array', () => {
-      const result = RoleCalculationEngine.calculateRoles([]);
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
-      expect(result.validationErrors).toEqual([]);
+  describe('Role Dependencies', () => {
+    test('should identify role dependencies correctly', () => {
+      expect(RoleCalculator.roleHasDependency(RoleType.MANAGER, RoleType.WORKER)).toBe(true);
+      expect(RoleCalculator.roleHasDependency(RoleType.SUPERVISOR, RoleType.WORKER)).toBe(true);
+      expect(RoleCalculator.roleHasDependency(RoleType.OWNER, RoleType.WORKER)).toBe(false);
     });
 
-    test('should handle null/undefined papers gracefully', () => {
-      const result = RoleCalculationEngine.calculateRoles([null, undefined].filter(Boolean));
-      
-      expect(result.calculatedRoles).toEqual(['SEEKER']);
-      expect(result.highestRole).toBe('SEEKER');
+    test('should get dependent roles correctly', () => {
+      const dependentRoles = RoleCalculator.getDependentRoles(RoleType.WORKER);
+      expect(dependentRoles).toContain(RoleType.MANAGER);
+      expect(dependentRoles).toContain(RoleType.SUPERVISOR);
     });
 
-    test('should handle papers with missing required fields', () => {
-      const papers = [
+    test('should get prerequisite roles correctly', () => {
+      const prerequisites = RoleCalculator.getPrerequisiteRoles(RoleType.MANAGER);
+      expect(prerequisites).toContain(RoleType.WORKER);
+    });
+
+    test('should validate role dependencies in calculation result', () => {
+      const authorityPaper: Paper = {
+        id: 'paper-authority',
+        paperType: PaperType.AUTHORITY_DELEGATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Manager paper without Employment Contract should trigger warning
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [authorityPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      // Should not assign MANAGER role without WORKER prerequisite
+      const assignedRoles = result.calculatedRoles.map(r => r.role);
+      expect(assignedRoles).not.toContain(RoleType.MANAGER);
+    });
+  });
+
+  describe('Multi-Business Context', () => {
+    test('should handle roles across multiple businesses', () => {
+      const business2: BusinessRegistration = {
+        id: 'business-2',
+        registrationNumber: 'BRN-789012',
+        businessName: 'Second Business',
+        businessType: BusinessType.INDIVIDUAL,
+        ownerIdentityId: 'identity-1',
+        registrationData: {},
+        verificationStatus: 'verified',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const businessPaper1: Paper = {
+        id: 'paper-business-1',
+        paperType: PaperType.BUSINESS_REGISTRATION,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const employmentPaper2: Paper = {
+        id: 'paper-employment-2',
+        paperType: PaperType.EMPLOYMENT_CONTRACT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-2',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [businessPaper1, employmentPaper2],
+        businessRegistrations: [mockBusinessRegistration, business2]
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      // Should have both OWNER (business-1) and WORKER (business-2) roles
+      expect(result.calculatedRoles).toHaveLength(2);
+      
+      const ownerRole = result.calculatedRoles.find(r => r.role === RoleType.OWNER);
+      const workerRole = result.calculatedRoles.find(r => r.role === RoleType.WORKER);
+      
+      expect(ownerRole?.businessContext).toBe('business-1');
+      expect(workerRole?.businessContext).toBe('business-2');
+    });
+  });
+
+  describe('Paper Validation', () => {
+    test('should validate paper combinations correctly', () => {
+      const validPapers: Paper[] = [
         {
-          // Missing role_granted
-          paper_type: 'EMPLOYMENT_CONTRACT',
-          status: 'ACTIVE',
-          effective_from: '2024-01-01'
+          id: 'paper-1',
+          paperType: PaperType.EMPLOYMENT_CONTRACT,
+          ownerIdentityId: 'identity-1',
+          relatedBusinessId: 'business-1',
+          paperData: {},
+          isActive: true,
+          validFrom: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ];
 
-      expect(() => RoleCalculationEngine.calculateRoles(papers)).not.toThrow();
+      const validation = RoleCalculator.validatePaperCombination(validPapers, [RoleType.WORKER]);
+      expect(validation.isValid).toBe(true);
+      expect(validation.issues).toHaveLength(0);
+    });
+
+    test('should identify missing papers for role', () => {
+      const incompletePapers: Paper[] = [
+        {
+          id: 'paper-1',
+          paperType: PaperType.EMPLOYMENT_CONTRACT,
+          ownerIdentityId: 'identity-1',
+          relatedBusinessId: 'business-1',
+          paperData: {},
+          isActive: true,
+          validFrom: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+
+      const validation = RoleCalculator.validatePaperCombination(incompletePapers, [RoleType.MANAGER]);
+      expect(validation.isValid).toBe(false);
+      expect(validation.issues.length).toBeGreaterThan(0);
+      expect(validation.suggestions.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Role Analysis and Recommendations', () => {
+    test('should analyze role potential correctly', () => {
+      const employmentPaper: Paper = {
+        id: 'paper-employment',
+        paperType: PaperType.EMPLOYMENT_CONTRACT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const analysis = RoleCalculator.analyzeRolePotential([employmentPaper]);
+      
+      expect(analysis.currentRoles).toContain(RoleType.WORKER);
+      expect(analysis.potentialRoles).toContain(RoleType.MANAGER);
+      expect(analysis.nextSteps.length).toBeGreaterThan(0);
+      
+      const managerStep = analysis.nextSteps.find(step => step.targetRole === RoleType.MANAGER);
+      expect(managerStep?.requiredPapers).toContain(PaperType.AUTHORITY_DELEGATION);
+    });
+
+    test('should generate role transition plan', () => {
+      const currentPapers: Paper[] = [
+        {
+          id: 'paper-employment',
+          paperType: PaperType.EMPLOYMENT_CONTRACT,
+          ownerIdentityId: 'identity-1',
+          relatedBusinessId: 'business-1',
+          paperData: {},
+          isActive: true,
+          validFrom: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+
+      const transitionPlan = RoleCalculator.generateRoleTransitionPlan(currentPapers, RoleType.MANAGER);
+      
+      expect(transitionPlan.isAchievable).toBe(true);
+      expect(transitionPlan.requiredActions.length).toBeGreaterThan(0);
+      
+      const authorityAction = transitionPlan.requiredActions.find(
+        action => action.paperType === PaperType.AUTHORITY_DELEGATION
+      );
+      expect(authorityAction).toBeDefined();
+    });
+  });
+
+  describe('Corporate ID Specific Rules', () => {
+    test('should handle Corporate ID role calculation', () => {
+      const corporateIdentity: UnifiedIdentity = {
+        ...mockIdentity,
+        id: 'corporate-identity-1',
+        idType: IdType.CORPORATE,
+        linkedPersonalId: 'identity-1'
+      };
+
+      const businessPaper: Paper = {
+        id: 'paper-business',
+        paperType: PaperType.BUSINESS_REGISTRATION,
+        ownerIdentityId: 'identity-1', // Owned by linked Personal ID
+        relatedBusinessId: 'business-1',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const context: RoleCalculationContext = {
+        identity: corporateIdentity,
+        papers: [businessPaper],
+        businessRegistrations: [mockBusinessRegistration]
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+
+      // Corporate ID should still get SEEKER if it doesn't own papers directly
+      expect(result.calculatedRoles[0].role).toBe(RoleType.SEEKER);
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle invalid paper data gracefully', () => {
+      const invalidPaper: Paper = {
+        id: 'paper-invalid',
+        paperType: PaperType.EMPLOYMENT_CONTRACT,
+        ownerIdentityId: 'identity-1',
+        relatedBusinessId: 'non-existent-business',
+        paperData: {},
+        isActive: true,
+        validFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [invalidPaper],
+        businessRegistrations: [] // No business registrations
+      };
+
+      expect(() => RoleCalculator.calculateRoles(context)).not.toThrow();
+    });
+
+    test('should handle empty context gracefully', () => {
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [],
+        businessRegistrations: []
+      };
+
+      const result = RoleCalculator.calculateRoles(context);
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.SEEKER);
+    });
+  });
+
+  describe('RoleCalculatorService', () => {
+    test('should provide singleton instance', () => {
+      const service1 = RoleCalculatorService.getInstance();
+      const service2 = RoleCalculatorService.getInstance();
+      expect(service1).toBe(service2);
+    });
+
+    test('should calculate roles with validation', async () => {
+      const service = RoleCalculatorService.getInstance();
+      const context: RoleCalculationContext = {
+        identity: mockIdentity,
+        papers: [],
+        businessRegistrations: []
+      };
+
+      const result = await service.calculateRolesWithValidation(context);
+      expect(result.calculatedRoles).toHaveLength(1);
+      expect(result.calculatedRoles[0].role).toBe(RoleType.SEEKER);
+    });
+
+    test('should provide role hierarchy information', () => {
+      const service = RoleCalculatorService.getInstance();
+      const hierarchy = service.getRoleHierarchy();
+      expect(hierarchy[RoleType.FRANCHISOR]).toBeGreaterThan(hierarchy[RoleType.SEEKER]);
+    });
+
+    test('should provide role calculation rules', () => {
+      const service = RoleCalculatorService.getInstance();
+      const rules = service.getRoleCalculationRules();
+      expect(rules.length).toBeGreaterThan(0);
+      expect(rules.some(rule => rule.resultRole === RoleType.SEEKER)).toBe(true);
+    });
+
+    test('should provide role dependencies', () => {
+      const service = RoleCalculatorService.getInstance();
+      const dependencies = service.getRoleDependencies();
+      expect(dependencies.length).toBeGreaterThan(0);
+      expect(dependencies.some(dep => dep.childRole === RoleType.MANAGER)).toBe(true);
     });
   });
 });
