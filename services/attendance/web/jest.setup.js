@@ -78,6 +78,19 @@ global.Headers = class MockHeaders extends Map {
   forEach(callback) {
     super.forEach((value, key) => callback(value, key, this));
   }
+  
+  append(key, value) {
+    const existing = this.get(key);
+    if (existing) {
+      this.set(key, existing + ', ' + value);
+    } else {
+      this.set(key, value);
+    }
+  }
+  
+  delete(key) {
+    return super.delete(key.toLowerCase());
+  }
 };
 
 // Conditionally mock Supabase - skip for real connection tests
