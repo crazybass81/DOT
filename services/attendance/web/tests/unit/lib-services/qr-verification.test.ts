@@ -1,4 +1,4 @@
-import { QRVerification } from '@/lib/services/qr-verification';
+import { QRVerification } from '../../../src/lib/services/qr-verification';
 
 describe('QRVerification', () => {
   let qrService: QRVerification;
