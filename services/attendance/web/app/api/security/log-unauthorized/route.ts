@@ -28,21 +28,21 @@ export async function POST(request: NextRequest) {
                      request.headers.get('x-real-ip') || 
                      'unknown';
     
-    // Log the unauthorized access attempt
+    // TODO: Log the unauthorized access attempt
     // await securityAuditLogger.logSecurityEvent({
-      type: 'UNAUTHORIZED_PAGE_ACCESS',
-      userId: user?.id || null,
-      endpoint: body.page,
-      timestamp: new Date(body.timestamp),
-      severity: body.page.includes('master-admin') ? 'HIGH' : 'MEDIUM',
-      details: {
-        userEmail: user?.email,
-        userAgent: body.userAgent,
-        referrer: request.headers.get('referer')
-      },
-      ipAddress,
-      userAgent: body.userAgent
-    });
+    //   type: 'UNAUTHORIZED_PAGE_ACCESS',
+    //   userId: user?.id || null,
+    //   endpoint: body.page,
+    //   timestamp: new Date(body.timestamp),
+    //   severity: body.page.includes('master-admin') ? 'HIGH' : 'MEDIUM',
+    //   details: {
+    //     userEmail: user?.email,
+    //     userAgent: body.userAgent,
+    //     referrer: request.headers.get('referer')
+    //   },
+    //   ipAddress,
+    //   userAgent: body.userAgent
+    // });
     
     // If user is authenticated, check their threat level
     if (user?.id) {
