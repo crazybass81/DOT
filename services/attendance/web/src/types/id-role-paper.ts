@@ -65,21 +65,9 @@ export enum VerificationStatus {
  * Unified Identity - Core identity management
  * Supports both Personal and Corporate ID types based on confirmed architecture
  */
-export interface UnifiedIdentity {
-  id: string;
-  idType: IdType;
-  email: string;
-  phone?: string;
-  fullName: string;
-  birthDate?: Date;
-  idNumber?: string;                    // Personal: SSN, Corporate: Business Registration Number
-  authUserId: string;                   // Links to Supabase auth.users
-  linkedPersonalId?: string;            // For Corporate IDs: links to Personal ID owner
-  isVerified: boolean;
-  isActive: boolean;
-  profileData: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
+// UnifiedIdentity is now defined in id-role-paper-unified.ts
+// Import from unified file instead of defining here
+import type { UnifiedIdentity } from './id-role-paper-unified';
 }
 
 /**
