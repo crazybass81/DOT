@@ -419,12 +419,14 @@ export class RoleCalculator {
   /**
    * Validate paper combination is valid for role assignment
    */
-  static validatePaperCombination(papers: PaperType[]): {
+  static validatePaperCombination(papers: PaperType[], expectedRoles?: RoleType[]): {
     isValid: boolean;
-    errors: string[];
+    issues: string[];
+    suggestions: string[];
     possibleRoles: RoleType[];
   } {
-    const errors: string[] = [];
+    const issues: string[] = [];
+    const suggestions: string[] = [];
     const possibleRoles: RoleType[] = [];
 
     // Check each rule to see what roles these papers could grant
@@ -434,25 +436,44 @@ export class RoleCalculator {
       }
     }
 
+    // If expected roles are provided, check if papers can achieve them
+    if (expectedRoles && expectedRoles.length > 0) {
+      for (const expectedRole of expectedRoles) {
+        if (!possibleRoles.includes(expectedRole)) {
+          const rule = ROLE_CALCULATION_RULES.find(r => r.resultRole === expectedRole);
+          if (rule) {
+            const missingPapers = rule.papers.filter(p => !papers.includes(p));
+            if (missingPapers.length > 0) {
+              issues.push(`Missing papers for ${expectedRole}: ${missingPapers.join(', ')}`);
+              suggestions.push(`Add ${missingPapers.join(', ')} to achieve ${expectedRole} role`);
+            }
+          }
+        }
+      }
+    }
+
     // Validate paper combinations are logical
     if (papers.includes(PaperType.EMPLOYMENT_CONTRACT) && 
         papers.includes(PaperType.BUSINESS_REGISTRATION)) {
-      errors.push('Cannot have both Employment Contract and Business Registration for same identity');
+      issues.push('Cannot have both Employment Contract and Business Registration for same identity');
     }
 
     if (papers.includes(PaperType.AUTHORITY_DELEGATION) && 
         !papers.includes(PaperType.EMPLOYMENT_CONTRACT)) {
-      errors.push('Authority Delegation requires Employment Contract');
+      issues.push('Authority Delegation requires Employment Contract');
+      suggestions.push('Add Employment Contract to use Authority Delegation');
     }
 
     if (papers.includes(PaperType.SUPERVISOR_AUTHORITY_DELEGATION) && 
         !papers.includes(PaperType.EMPLOYMENT_CONTRACT)) {
-      errors.push('Supervisor Authority Delegation requires Employment Contract');
+      issues.push('Supervisor Authority Delegation requires Employment Contract');
+      suggestions.push('Add Employment Contract to use Supervisor Authority Delegation');
     }
 
     return {
-      isValid: errors.length === 0,
-      errors,
+      isValid: issues.length === 0,
+      issues,
+      suggestions,
       possibleRoles
     };
   }
