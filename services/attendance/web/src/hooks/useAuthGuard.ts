@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '../services/auth.service';
-import { UserRole } from '../types/user.types';
+import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { toast } from 'react-hot-toast';
 
 export interface AuthGuardState {
   isLoading: boolean;
@@ -54,11 +54,11 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       // Check if user is authenticated
-      const isAuth = await authService.isAuthenticated();
+      const isAuth = await supabaseAuthService.isAuthenticated();
       
       if (requireAuth && !isAuth) {
         if (showToastOnFail) {
-          console.log('로그인이 필요합니다.');
+          toast.error('로그인이 필요합니다.');
         }
         setState(prev => ({ 
           ...prev, 
@@ -82,11 +82,11 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // Get current user
-      const user = await authService.getCurrentUser();
+      const user = await supabaseAuthService.getCurrentUser();
       
-      if (!user) {
+      if (!user || !user.employee) {
         if (showToastOnFail) {
-          console.log('사용자 정보를 찾을 수 없습니다.');
+          toast.error('사용자 정보를 찾을 수 없습니다.');
         }
         setState(prev => ({ 
           ...prev, 
@@ -100,16 +100,14 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
         return;
       }
 
-      const isApproved = user.isVerified || (user.employee?.is_active !== false);
-      const isAdmin = await authService.isMasterAdmin() ||
-                      await authService.hasRole('admin') ||
-                      await authService.hasRole('master_admin');
+      const isApproved = user.employee.approval_status === 'APPROVED' && user.employee.is_active;
+      const isAdmin = user.employee.is_master_admin || 
+                     user.employee.role === 'ADMIN' || 
+                     user.employee.role === 'MASTER_ADMIN';
 
       // Check approval requirement
-      if (requireApproval && !isApproved) {
-        const approvalStatus = user.approvalStatus || 'pending';
-        
-        if (approvalStatus === 'PENDING') {
+      if (requireApproval && !isApproved && user.employee) {
+        if (user.employee.approval_status === 'PENDING') {
           setState(prev => ({ 
             ...prev, 
             isLoading: false, 
@@ -117,16 +115,16 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.name || user.email.split('@')[0],
+              name: user.employee?.name || '',
               email: user.email,
-              role: user.role || 'EMPLOYEE',
-              approval_status: approvalStatus
+              role: user.employee?.role || '',
+              approval_status: user.employee?.approval_status || 'pending'
             },
             error: '승인 대기 중입니다.' 
           }));
           router.push('/approval-pending');
           return;
-        } else if (approvalStatus === 'REJECTED') {
+        } else if (user.employee.approval_status === 'REJECTED') {
           setState(prev => ({ 
             ...prev, 
             isLoading: false, 
@@ -134,18 +132,18 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.name || user.email.split('@')[0],
+              name: user.employee?.name || '',
               email: user.email,
-              role: user.role || 'EMPLOYEE',
-              approval_status: approvalStatus
+              role: user.employee?.role || '',
+              approval_status: user.employee?.approval_status || 'pending'
             },
             error: '등록이 거절되었습니다.' 
           }));
           router.push('/approval-pending');
           return;
-        } else if (!isApproved) {
+        } else if (!user.employee.is_active) {
           if (showToastOnFail) {
-            console.log('계정이 비활성화되었습니다.');
+            toast.error('계정이 비활성화되었습니다.');
           }
           setState(prev => ({ 
             ...prev, 
@@ -154,10 +152,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
             isApproved: false,
             user: {
               id: user.id,
-              name: user.name || user.email.split('@')[0],
+              name: user.employee?.name || '',
               email: user.email,
-              role: user.role || 'EMPLOYEE',
-              approval_status: approvalStatus
+              role: user.employee?.role || '',
+              approval_status: user.employee?.approval_status || 'pending'
             },
             error: '계정이 비활성화되었습니다.' 
           }));
@@ -167,9 +165,9 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // Check admin requirement
-      if (requireAdmin && !isAdmin) {
+      if (requireAdmin && !isAdmin && user.employee) {
         if (showToastOnFail) {
-          console.log('관리자 권한이 필요합니다.');
+          toast.error('관리자 권한이 필요합니다.');
         }
         setState(prev => ({ 
           ...prev, 
@@ -179,10 +177,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
           isAdmin: false,
           user: {
             id: user.id,
-            name: user.name || user.email.split('@')[0],
+            name: user.employee?.name || '',
             email: user.email,
-            role: user.role || 'EMPLOYEE',
-            approval_status: user.approvalStatus || 'approved'
+            role: user.employee?.role || '',
+            approval_status: user.employee?.approval_status || 'pending'
           },
           error: '관리자 권한이 필요합니다.' 
         }));
@@ -193,27 +191,29 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       }
 
       // All checks passed
-      setState({
-        isLoading: false,
-        isAuthenticated: true,
-        isApproved: isApproved,
-        isAdmin: isAdmin,
-        user: {
-          id: user.id,
-          name: user.name || user.email.split('@')[0],
-          email: user.email,
-          role: user.role || 'EMPLOYEE',
-          approval_status: user.approvalStatus || 'approved'
-        },
-        error: null
-      });
+      if (user.employee) {
+        setState({
+          isLoading: false,
+          isAuthenticated: true,
+          isApproved: isApproved,
+          isAdmin: isAdmin,
+          user: {
+            id: user.id,
+            name: user.employee?.name || '',
+            email: user.email,
+            role: user.employee?.role || '',
+            approval_status: user.employee?.approval_status || 'pending'
+          },
+          error: null
+        });
+      }
 
     } catch (error: any) {
       console.error('Auth guard error:', error);
       const errorMessage = error.message || '인증 확인 중 오류가 발생했습니다.';
       
       if (showToastOnFail) {
-        console.log(errorMessage);
+        toast.error(errorMessage);
       }
       
       setState(prev => ({ 

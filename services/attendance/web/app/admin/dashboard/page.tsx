@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/src/services/auth.service';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { userService } from '@/src/services/userService';
 import AttendanceStats from '@/components/dashboard/AttendanceStats';
 import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
 import AttendanceChart from '@/components/dashboard/AttendanceChart';
@@ -21,31 +22,21 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Check authentication and admin rights
     const checkAuth = async () => {
-      if (!(await authService.isAuthenticated())) {
+      // if (!await unifiedAuthService.isAuthenticated()) {
         router.push('/login');
         return;
       }
 
-      const user = await authService.getCurrentUser();
-      if (!user) {
-        alert('인증이 필요합니다');
-        router.push('/login');
-        return;
-      }
-
-      // Check for admin privileges
-      const isAdmin = await authService.hasRole('admin') || 
-                      await authService.hasRole('master_admin') ||
-                      await authService.isMasterAdmin();
-      
-      if (!isAdmin) {
+      const user = userService.getCurrentUser();
+      if (!user || !userService.isAdmin()) {
         alert('관리자 권한이 필요합니다');
         router.push('/attendance');
         return;
       }
 
       setUserName(user.name || user.email);
-      setOrganizationId(user.organizationId || 'default-org');
+      // TODO: Get actual organization ID from user
+      setOrganizationId((user as any).organizationId || 'default-org');
       setLoading(false);
     };
 
@@ -71,7 +62,7 @@ export default function AdminDashboard() {
   }, []);
 
   const handleLogout = async () => {
-    await authService.signOut();
+    await unifiedAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {

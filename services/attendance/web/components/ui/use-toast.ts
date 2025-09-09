@@ -7,7 +7,3 @@ export const useToast = () => {
 
   return { toast };
 };
-
-export const toast = (options: any) => {
-  console.log('Toast:', options);
-};

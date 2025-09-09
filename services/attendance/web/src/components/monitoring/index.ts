@@ -4,7 +4,6 @@
  */
 
 export { ApiMetricsDashboard } from './ApiMetricsDashboard';
-export { RealtimeMonitoringDashboard } from './RealtimeMonitoringDashboard';
 
 // 추가적인 모니터링 컴포넌트들은 여기에 export
 // export { RealtimeChart } from './RealtimeChart';

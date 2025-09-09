@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { qrCodeService } from '@/src/services/qr-code.service';
-import { businessService } from '@/src/services/business.service';
-import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
-import { userService } from '@/src/services/user.service';
+import { qrCodeService } from '@/src/services/qrCodeService';
+import { businessService } from '@/src/services/businessService';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { userService } from '@/src/services/userService';
 
 export default function QRDisplayPage() {
   const router = useRouter();
@@ -17,8 +17,8 @@ export default function QRDisplayPage() {
 
   // Check authentication and admin rights
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!(await unifiedAuthService.isAuthenticated())) {
+    const checkAuth = () => {
+      // if (!await unifiedAuthService.isAuthenticated()) {
         router.push('/login');
         return;
       }

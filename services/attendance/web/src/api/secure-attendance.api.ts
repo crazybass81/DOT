@@ -5,7 +5,7 @@ import {
   withAuth, 
   validateRequestData, 
   validateOrganizationAccess,
-  validateRoleAccess,
+  validateEmployeeAccess,
   AuthenticatedRequest 
 } from '../lib/auth/auth-middleware';
 

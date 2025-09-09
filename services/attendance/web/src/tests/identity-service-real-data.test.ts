@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterEach } from '@jest/globals'
-import { identityService } from '../services/identity.service'
+import { identityService } from '../services/identityService'
 import { CreateIdentityRequest, IdType } from '../types/unified.types'
 import { createClient } from '@supabase/supabase-js'
 

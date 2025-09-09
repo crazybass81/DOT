@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
-import { userService } from '@/src/services/user.service';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { userService } from '@/src/services/userService';
 
 interface PendingUser {
   userId: string;
@@ -41,13 +41,10 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     // Check auth and admin rights
-    const checkAuth = async () => {
-      if (!(await unifiedAuthService.isAuthenticated())) {
-        router.push('/login');
-        return;
-      }
-    };
-    checkAuth();
+    // if (!await unifiedAuthService.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
 
     const user = userService.getCurrentUser();
     if (!user || (!userService.isAdmin() && !userService.isBusinessAdmin())) {

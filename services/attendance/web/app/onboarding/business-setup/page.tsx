@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/src/lib/supabase-config'
-import { supabaseAuthService } from '@/src/services/supabase-auth.service'
+import { supabaseAuthService } from '@/src/services/supabaseAuthService'
 
 export default function BusinessSetupPage() {
   const router = useRouter()

@@ -1,4 +1,4 @@
-import * as QRCode from 'qrcode';
+import QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface QRCodeConfig {

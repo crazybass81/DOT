@@ -9,7 +9,7 @@ import { useUserDetail } from '@/hooks/useUserDetail';
 
 // Mock dependencies
 jest.mock('@/hooks/useUserDetail');
-jest.mock('@/services/supabase-auth.service');
+jest.mock('@/services/supabaseAuthService');
 
 const mockUseUserDetail = useUserDetail as jest.MockedFunction<typeof useUserDetail>;
 

@@ -4,9 +4,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterEach } from '@jest/globals'
-import { roleManagementService } from '../services/role-management.service'
-import { organizationService } from '../services/organization.service'
-import { unifiedIdentityService } from '../services/unified-identity.service'
+import { roleManagementService } from '../services/roleManagementService'
+import { organizationService } from '../services/organizationService'
+import { unifiedIdentityService } from '../services/unifiedIdentityService'
 import { IdType, UnifiedRole } from '../types/unified.types'
 
 describe('Role Management Service - Real Data Tests', () => {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuth } from "@/src/services/multi-role-auth.service";
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
 
 interface Employee {
   id: string;

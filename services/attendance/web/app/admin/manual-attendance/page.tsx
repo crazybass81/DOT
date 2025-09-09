@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
-import { userService } from '@/src/services/user.service';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { userService } from '@/src/services/userService';
 
 interface Employee {
   id: string;
@@ -27,13 +27,10 @@ export default function ManualAttendancePage() {
 
   useEffect(() => {
     // Check admin authentication
-    const checkAuth = async () => {
-      if (!(await unifiedAuthService.isAuthenticated())) {
-        router.push('/login');
-        return;
-      }
-    };
-    checkAuth();
+    // if (!await unifiedAuthService.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
 
     const user = userService.getCurrentUser();
     if (!user || !userService.isAdmin()) {

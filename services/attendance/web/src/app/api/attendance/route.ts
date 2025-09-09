@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { supabaseAuthService } from '@/services/supabase-auth.service';
-import { organizationService } from '@/services/organization.service';
+import { supabaseAuthService } from '@/services/supabaseAuthService';
+import { organizationService } from '@/services/organizationService';
 
 /**
  * 출근 기록 조회 API

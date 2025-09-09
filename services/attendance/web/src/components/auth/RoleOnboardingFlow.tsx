@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { businessVerificationService } from '../../services/business-verification.service';
+import { businessVerificationService } from '../../services/businessVerificationService';
 
 interface RoleOnboardingFlowProps {
   userType: 'worker' | 'personal-business' | 'corporation' | 'franchise';

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuthService } from "@/src/services/multi-role-auth.service";
-import { userService } from '@/src/services/user.service';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { userService } from '@/src/services/userService';
 
 interface BusinessStats {
   businessId: string;
@@ -42,13 +42,10 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     // Check super admin authentication
-    const checkAuth = async () => {
-      if (!(await unifiedAuthService.isAuthenticated())) {
-        router.push('/login');
-        return;
-      }
-    };
-    checkAuth();
+    if (!await unifiedAuthService.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
 
     const user = userService.getCurrentUser();
     if (!user || !userService.isSuperAdmin()) {
@@ -161,7 +158,7 @@ export default function SuperAdminDashboard() {
                 <option value="month">이번 달</option>
               </select>
               <button
-                onClick={async () => await unifiedAuthService.signOut()}
+                onClick={() => await unifiedAuthService.signOut()}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
               >
                 로그아웃

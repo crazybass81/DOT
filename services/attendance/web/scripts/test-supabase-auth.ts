@@ -7,8 +7,8 @@
  * including user registration, login, employee account linking, and approval workflow.
  */
 
-import { supabaseAuthService } from '../src/services/supabase-auth.service';
-import { unifiedAuthService } from '../src/services/unified-auth.service';
+import { supabaseAuthService } from '../src/services/supabaseAuthService';
+import { unifiedAuthService } from '../src/services/unifiedAuthService';
 // Migration service not yet implemented
 
 async function testSupabaseAuth() {

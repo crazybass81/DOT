@@ -1,8 +1,8 @@
-import { authService, AuthService } from '../../../src/services/auth.service';
-import { supabase } from '../../../src/services/auth.service';
+import { supabaseAuthService, SupabaseAuthService } from '../supabaseAuthService';
+import { supabase } from '../../lib/supabase-config';
 
 // Mock Supabase
-jest.mock('../../../src/services/auth.service', () => ({
+jest.mock('../../lib/supabase-config', () => ({
   supabase: {
     auth: {
       signUp: jest.fn(),
@@ -32,9 +32,12 @@ jest.mock('../../../src/services/auth.service', () => ({
 
 const mockSupabase = supabase as jest.Mocked<typeof supabase>;
 
-describe('AuthService', () => {
+describe('SupabaseAuthService', () => {
+  let authService: SupabaseAuthService;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    authService = new SupabaseAuthService();
   });
 
   describe('signUp', () => {

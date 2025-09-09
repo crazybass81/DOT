@@ -27,9 +27,6 @@ import {
   isCorporateId
 } from '../../types/id-role-paper';
 
-// Ensure ComputedRole is marked as used to avoid TypeScript unused import warning
-type RoleArray = ComputedRole[];
-
 /**
  * Core Role Calculation Engine
  * Implements business rules for dynamic role assignment based on papers

@@ -11,8 +11,8 @@ import { SignupStepProvider, useSignupStep } from '@/contexts/SignupStepContext'
 import { RoleType } from '@/types/multi-role';
 
 // Mock 외부 의존성
-jest.mock('@/services/multi-role-auth.service');
-jest.mock('@/services/business-verification.service');
+jest.mock('@/services/multiRoleAuthService');
+jest.mock('@/services/businessVerificationService');
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),

@@ -5,8 +5,8 @@
  * role calculation, and permission checking.
  */
 
-import { unifiedAuthService, CreateIdentityOptions } from '../services/unified-auth.service';
-import { identityService } from '../services/identity.service';
+import { unifiedAuthService, CreateIdentityOptions } from '../services/unifiedAuthService';
+import { identityService } from '../services/identityService';
 import { permissionService, Resource, Action } from '../lib/permissions/role-permissions';
 import {
   IdType,

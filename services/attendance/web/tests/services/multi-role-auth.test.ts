@@ -4,7 +4,7 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
 // 테스트할 확장 인증 서비스 import (아직 구현 안됨)
-import { MultiRoleAuthService } from '@/services/multi-role-auth.service';
+import { MultiRoleAuthService } from '@/services/multiRoleAuthService';
 import { RoleType, ContractStatus } from '@/types/multi-role';
 
 // Mock 데이터

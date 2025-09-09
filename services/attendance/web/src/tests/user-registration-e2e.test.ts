@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals'
 import { supabase } from '../lib/supabase-config'
-import { multiRoleAuthService } from '../services/multi-role-auth.service'
+import { multiRoleAuthService } from '../services/multiRoleAuthService'
 
 describe('User Registration End-to-End (Real Data)', () => {
   

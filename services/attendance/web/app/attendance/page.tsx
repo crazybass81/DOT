@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { multiRoleAuth } from "@/src/services/multi-role-auth.service";
-import { apiService } from '@/src/services/api.service';
-import { businessService } from '@/src/services/business.service';
+import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
+import { apiService } from '@/src/services/apiService';
+import { businessService } from '@/src/services/businessService';
 
 interface Location {
   lat: number;
@@ -190,7 +190,7 @@ export default function AttendancePage() {
   // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuthenticated = await unifiedAuth.isAuthenticated();
+      const isAuthenticated = await unifiedAuthService.isAuthenticated();
       if (!isAuthenticated) {
         router.push('/login');
       }
@@ -267,7 +267,7 @@ export default function AttendancePage() {
 
   const handleLogout = async () => {
     console.log('[DEBUG] handleLogout called');
-    await unifiedAuth.signOut();
+    await unifiedAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {

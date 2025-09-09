@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterEach } from '@jest/globals'
-import { supabaseAuthService } from '../services/supabase-auth.service'
+import { supabaseAuthService } from '../services/supabaseAuthService'
 import { createClient } from '@supabase/supabase-js'
 
 // Test client for data operations

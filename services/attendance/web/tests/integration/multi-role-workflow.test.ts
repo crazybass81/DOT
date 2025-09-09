@@ -2,7 +2,7 @@
 // TDD: 전체 시스템 통합 검증
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
-import { MultiRoleAuthService } from '@/services/multi-role-auth.service';
+import { MultiRoleAuthService } from '@/services/multiRoleAuthService';
 import { RoleType, ContractStatus } from '@/types/multi-role';
 
 /**
