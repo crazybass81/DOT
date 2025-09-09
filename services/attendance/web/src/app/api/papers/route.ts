@@ -1,166 +1,148 @@
 /**
- * Papers Management API
+ * Paper Management API Endpoints
+ * Integrated with ID-ROLE-PAPER Paper Service
  * 
- * Handles paper creation, retrieval, and management for the ID-ROLE-PAPER system.
- * Papers are documents that grant roles when owned by identities.
+ * Provides CRUD operations for all 6 paper types with business context validation
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServerClient } from '@/lib/supabase/client';
-import { identityService } from '@/services/identityService';
-import { permissionService, Resource, Action } from '@/lib/permissions/role-permissions';
-import { PaperType, RoleType } from '@/src/types/id-role-paper';
+import { createClient } from '@supabase/supabase-js';
+import { 
+  createPaperService,
+  CreatePaperRequest,
+  UpdatePaperRequest,
+  PaperSearchRequest,
+  ValidatePaperRequest
+} from '../../../lib/services/paper-service';
+import { createPermissionService } from '../../../lib/services/permission-service';
+import { createIdentityService } from '../../../lib/services/identity-service';
+import { 
+  PaperType, 
+  VerificationStatus 
+} from '../../../types/id-role-paper';
 
 /**
  * Get papers with filtering
- * GET /api/papers?identityId={id}&paperType={type}&businessId={businessId}
+ * GET /api/papers?owner={id}&business={id}&type={type}&active={boolean}&valid={boolean}
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const identityId = searchParams.get('identityId');
-    const paperType = searchParams.get('paperType') as PaperType;
-    const businessId = searchParams.get('businessId');
-    const isActive = searchParams.get('isActive');
-    const businessContextId = request.headers.get('x-business-registration-id');
+    const ownerId = searchParams.get('owner');
+    const businessId = searchParams.get('business');
+    const paperType = searchParams.get('type') as PaperType;
+    const isActive = searchParams.get('active');
+    const validOnly = searchParams.get('valid');
+    const limit = searchParams.get('limit');
+    const offset = searchParams.get('offset');
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
-    // Build query
-    let query = supabase
-      .from('papers')
-      .select(`
-        id,
-        paper_type,
-        owner_identity_id,
-        related_business_id,
-        paper_data,
-        is_active,
-        valid_from,
-        valid_until,
-        created_at,
-        updated_at,
-        unified_identities:owner_identity_id (
-          id,
-          full_name,
-          email,
-          id_type
-        ),
-        business_registrations:related_business_id (
-          id,
-          business_name,
-          registration_number
-        )
-      `);
+    const currentIdentity = currentIdentities[0];
 
-    // If not requesting specific identity's papers, check permissions
-    if (identityId) {
-      const requestingOwnPapers = identityId === currentIdentity.id;
-      if (!requestingOwnPapers) {
-        const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-        if (!userContext) {
+    // Use Paper Service to search papers
+    const paperService = createPaperService(supabase);
+    
+    // Build search request
+    const searchRequest: PaperSearchRequest = {
+      limit: limit ? parseInt(limit) : 10,
+      offset: offset ? parseInt(offset) : 0
+    };
+
+    // Check permissions and apply filters
+    if (ownerId) {
+      // Check if user can access this owner's papers
+      if (ownerId !== currentIdentity.id) {
+        const permissionService = createPermissionService(supabase);
+        const permissionResult = await permissionService.checkPermission({
+          identityId: currentIdentity.id,
+          resource: 'papers',
+          action: 'read',
+          businessContext: businessId || undefined
+        });
+
+        if (!permissionResult.success || !permissionResult.data?.granted) {
           return NextResponse.json(
-            { error: 'Unable to determine user permissions' },
-            { status: 403 }
-          );
-        }
-
-        const hasPermission = permissionService.hasMultiRolePermission(
-          userContext.availableRoles,
-          Resource.PAPER,
-          Action.READ,
-          {
-            businessContextId,
-            targetUserId: identityId,
-            currentUserId: currentIdentity.id
-          }
-        );
-
-        if (!hasPermission) {
-          return NextResponse.json(
-            { error: 'Insufficient permissions to access papers' },
+            { 
+              error: 'Access forbidden',
+              message: permissionResult.data?.reason || 'Insufficient permissions'
+            },
             { status: 403 }
           );
         }
       }
-      query = query.eq('owner_identity_id', identityId);
+      searchRequest.ownerIdentityId = ownerId;
     } else {
-      // If no specific identity, only show user's own papers unless they have management permissions
-      const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-      const hasManagementRole = userContext?.availableRoles.some(role => 
-        [RoleType.OWNER, RoleType.FRANCHISOR, RoleType.SUPERVISOR, RoleType.MANAGER].includes(role)
-      );
-
-      if (!hasManagementRole) {
-        query = query.eq('owner_identity_id', currentIdentity.id);
-      }
-    }
-
-    // Apply filters
-    if (paperType && Object.values(PaperType).includes(paperType)) {
-      query = query.eq('paper_type', paperType);
+      // Default to current user's papers
+      searchRequest.ownerIdentityId = currentIdentity.id;
     }
 
     if (businessId) {
-      query = query.eq('related_business_id', businessId);
+      searchRequest.relatedBusinessId = businessId;
     }
 
-    if (isActive !== null && isActive !== undefined) {
-      query = query.eq('is_active', isActive === 'true');
+    if (paperType && Object.values(PaperType).includes(paperType)) {
+      searchRequest.paperType = paperType;
     }
 
-    // Execute query
-    query = query.order('created_at', { ascending: false });
-    const { data: papersData, error } = await query;
-
-    if (error) {
-      throw error;
+    if (isActive !== null) {
+      searchRequest.isActive = isActive === 'true';
     }
 
-    // Transform data to match our interface
-    const papers = papersData?.map(paper => ({
-      id: paper.id,
-      paperType: paper.paper_type as PaperType,
-      ownerIdentityId: paper.owner_identity_id,
-      relatedBusinessId: paper.related_business_id,
-      paperData: paper.paper_data || {},
-      isActive: paper.is_active,
-      validFrom: new Date(paper.valid_from),
-      validUntil: paper.valid_until ? new Date(paper.valid_until) : undefined,
-      createdAt: new Date(paper.created_at),
-      updatedAt: new Date(paper.updated_at),
-      ownerIdentity: paper.unified_identities ? {
-        id: paper.unified_identities.id,
-        fullName: paper.unified_identities.full_name,
-        email: paper.unified_identities.email,
-        idType: paper.unified_identities.id_type
-      } : undefined,
-      relatedBusiness: paper.business_registrations ? {
-        id: paper.business_registrations.id,
-        businessName: paper.business_registrations.business_name,
-        registrationNumber: paper.business_registrations.registration_number
-      } : undefined
-    })) || [];
+    if (validOnly === 'true') {
+      searchRequest.validOnly = true;
+    }
 
-    return NextResponse.json({ papers });
+    // Get papers using Paper Service
+    const result = await paperService.searchPapers(searchRequest);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      papers: result.data || [],
+      total: result.data?.length || 0
+    });
 
   } catch (error) {
     console.error('Error getting papers:', error);
@@ -178,120 +160,97 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      identityId,
-      paperType,
-      relatedBusinessId,
-      paperData,
-      validFrom,
-      validUntil
-    } = body;
 
-    // Validate required fields
-    if (!identityId || !paperType) {
-      return NextResponse.json(
-        { error: 'Identity ID and paper type are required' },
-        { status: 400 }
-      );
-    }
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    // Validate paper type
-    if (!Object.values(PaperType).includes(paperType)) {
-      return NextResponse.json(
-        { error: 'Invalid paper type' },
-        { status: 400 }
-      );
-    }
-
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
-    // Check if creating paper for self or has permission
-    const creatingForSelf = identityId === currentIdentity.id;
-    if (!creatingForSelf) {
-      const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-      if (!userContext) {
-        return NextResponse.json(
-          { error: 'Unable to determine user permissions' },
-          { status: 403 }
-        );
-      }
+    const currentIdentity = currentIdentities[0];
 
-      const hasPermission = permissionService.hasMultiRolePermission(
-        userContext.availableRoles,
-        Resource.PAPER,
-        Action.CREATE,
-        {
-          businessContextId: relatedBusinessId,
-          targetUserId: identityId,
-          currentUserId: currentIdentity.id
-        }
-      );
+    // Check if creating paper for someone else
+    const ownerIdentityId = body.ownerIdentityId || currentIdentity.id;
+    if (ownerIdentityId !== currentIdentity.id) {
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'create',
+        businessContext: body.relatedBusinessId
+      });
 
-      if (!hasPermission) {
+      if (!permissionResult.success || !permissionResult.data?.granted) {
         return NextResponse.json(
-          { error: 'Insufficient permissions to create paper for this identity' },
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to create papers for others'
+          },
           { status: 403 }
         );
       }
     }
 
-    // Validate business-related papers
-    const businessRequiredPapers = [
-      PaperType.EMPLOYMENT_CONTRACT,
-      PaperType.AUTHORITY_DELEGATION,
-      PaperType.SUPERVISOR_AUTHORITY_DELEGATION,
-      PaperType.FRANCHISE_AGREEMENT
-    ];
+    // Create paper using Paper Service
+    const paperService = createPaperService(supabase);
+    
+    const createRequest: CreatePaperRequest = {
+      paperType: body.paperType,
+      ownerIdentityId,
+      relatedBusinessId: body.relatedBusinessId,
+      paperData: body.paperData || {},
+      validFrom: body.validFrom ? new Date(body.validFrom) : undefined,
+      validUntil: body.validUntil ? new Date(body.validUntil) : undefined
+    };
 
-    if (businessRequiredPapers.includes(paperType) && !relatedBusinessId) {
+    const result = await paperService.createPaper(createRequest);
+
+    if (!result.success) {
       return NextResponse.json(
-        { error: `${paperType} requires a related business ID` },
+        { error: result.error },
         { status: 400 }
       );
     }
 
-    // Create paper using identity service
-    const paper = await identityService.createPaper(identityId, {
-      paperType,
-      relatedBusinessId,
-      paperData: paperData || {},
-      validFrom: validFrom ? new Date(validFrom) : undefined,
-      validUntil: validUntil ? new Date(validUntil) : undefined
-    });
-
     return NextResponse.json(
-      { paper },
+      { paper: result.data },
       { status: 201 }
     );
 
   } catch (error) {
     console.error('Error creating paper:', error);
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -301,7 +260,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * Update paper
- * PUT /api/papers/{id}
+ * PUT /api/papers?id={paperId}
  */
 export async function PUT(request: NextRequest) {
   try {
@@ -316,123 +275,104 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
-    // Get existing paper
-    const { data: paperData, error: paperError } = await supabase
-      .from('papers')
-      .select('*')
-      .eq('id', paperId)
-      .single();
+    const currentIdentity = currentIdentities[0];
 
-    if (paperError || !paperData) {
+    // Get existing paper to check ownership
+    const paperService = createPaperService(supabase);
+    const existingResult = await paperService.getPaperById(paperId);
+
+    if (!existingResult.success || !existingResult.data) {
       return NextResponse.json(
-        { error: 'Paper not found' },
+        { error: existingResult.error || 'Paper not found' },
         { status: 404 }
       );
     }
 
-    // Check permissions
-    const isOwner = paperData.owner_identity_id === currentIdentity.id;
+    const existingPaper = existingResult.data;
+
+    // Check if user owns paper or has permission to update
+    const isOwner = existingPaper.ownerIdentityId === currentIdentity.id;
     if (!isOwner) {
-      const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-      if (!userContext) {
-        return NextResponse.json(
-          { error: 'Unable to determine user permissions' },
-          { status: 403 }
-        );
-      }
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'update',
+        businessContext: existingPaper.relatedBusinessId
+      });
 
-      const hasPermission = permissionService.hasMultiRolePermission(
-        userContext.availableRoles,
-        Resource.PAPER,
-        Action.UPDATE,
-        {
-          businessContextId: paperData.related_business_id,
-          targetUserId: paperData.owner_identity_id,
-          currentUserId: currentIdentity.id
-        }
-      );
-
-      if (!hasPermission) {
+      if (!permissionResult.success || !permissionResult.data?.granted) {
         return NextResponse.json(
-          { error: 'Insufficient permissions to update this paper' },
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to update this paper'
+          },
           { status: 403 }
         );
       }
     }
 
-    // Update paper
-    const updateData = {
-      paper_data: body.paperData,
-      valid_until: body.validUntil ? new Date(body.validUntil).toISOString() : undefined,
-      is_active: body.isActive,
-      updated_at: new Date().toISOString()
+    // Update paper using Paper Service
+    const updateRequest: UpdatePaperRequest = {
+      paperData: body.paperData,
+      validFrom: body.validFrom ? new Date(body.validFrom) : undefined,
+      validUntil: body.validUntil ? new Date(body.validUntil) : undefined,
+      isActive: body.isActive
     };
 
-    // Remove undefined values
-    Object.keys(updateData).forEach(key => 
-      updateData[key] === undefined && delete updateData[key]
-    );
+    const result = await paperService.updatePaper(paperId, updateRequest);
 
-    const { data: updatedPaper, error } = await supabase
-      .from('papers')
-      .update(updateData)
-      .eq('id', paperId)
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    // Recalculate roles after paper update
-    await identityService.recalculateRoles(paperData.owner_identity_id);
-
-    // Transform response
-    const paper = {
-      id: updatedPaper.id,
-      paperType: updatedPaper.paper_type as PaperType,
-      ownerIdentityId: updatedPaper.owner_identity_id,
-      relatedBusinessId: updatedPaper.related_business_id,
-      paperData: updatedPaper.paper_data || {},
-      isActive: updatedPaper.is_active,
-      validFrom: new Date(updatedPaper.valid_from),
-      validUntil: updatedPaper.valid_until ? new Date(updatedPaper.valid_until) : undefined,
-      createdAt: new Date(updatedPaper.created_at),
-      updatedAt: new Date(updatedPaper.updated_at)
-    };
-
-    return NextResponse.json({ paper });
-
-  } catch (error) {
-    console.error('Error updating paper:', error);
-    
-    if (error instanceof Error) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: error.message },
+        { error: result.error },
         { status: 400 }
       );
     }
 
+    return NextResponse.json({
+      paper: result.data
+    });
+
+  } catch (error) {
+    console.error('Error updating paper:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -442,7 +382,7 @@ export async function PUT(request: NextRequest) {
 
 /**
  * Deactivate paper
- * DELETE /api/papers/{id}
+ * DELETE /api/papers?id={paperId}
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -456,91 +396,943 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
-    // Get existing paper
-    const { data: paperData, error: paperError } = await supabase
-      .from('papers')
-      .select('*')
-      .eq('id', paperId)
-      .single();
+    const currentIdentity = currentIdentities[0];
 
-    if (paperError || !paperData) {
+    // Get existing paper to check ownership
+    const paperService = createPaperService(supabase);
+    const existingResult = await paperService.getPaperById(paperId);
+
+    if (!existingResult.success || !existingResult.data) {
       return NextResponse.json(
-        { error: 'Paper not found' },
+        { error: existingResult.error || 'Paper not found' },
         { status: 404 }
       );
     }
 
-    // Check permissions - only high-level roles can delete papers
-    const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-    if (!userContext) {
+    const existingPaper = existingResult.data;
+
+    // Check if user owns paper or has permission to delete
+    const isOwner = existingPaper.ownerIdentityId === currentIdentity.id;
+    if (!isOwner) {
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'delete',
+        businessContext: existingPaper.relatedBusinessId
+      });
+
+      if (!permissionResult.success || !permissionResult.data?.granted) {
+        return NextResponse.json(
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to delete this paper'
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Deactivate paper using Paper Service
+    const result = await paperService.deactivatePaper(paperId);
+
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Unable to determine user permissions' },
-        { status: 403 }
+        { error: result.error },
+        { status: 400 }
       );
     }
-
-    const isOwner = paperData.owner_identity_id === currentIdentity.id;
-    const hasManagementRole = userContext.availableRoles.some(role => 
-      [RoleType.OWNER, RoleType.FRANCHISOR, RoleType.SUPERVISOR].includes(role)
-    );
-
-    if (!isOwner && !hasManagementRole) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions to delete this paper' },
-        { status: 403 }
-      );
-    }
-
-    // Deactivate paper instead of hard delete
-    const { error } = await supabase
-      .from('papers')
-      .update({
-        is_active: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', paperId);
-
-    if (error) {
-      throw error;
-    }
-
-    // Recalculate roles after paper deactivation
-    await identityService.recalculateRoles(paperData.owner_identity_id);
 
     return NextResponse.json({
       message: 'Paper successfully deactivated'
     });
 
   } catch (error) {
-    console.error('Error deactivating paper:', error);
-    
-    if (error instanceof Error) {
+    console.error('Error deleting paper:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Validate paper or extend validity
+ * PATCH /api/papers?id={paperId}&action={validate|extend}
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const paperId = searchParams.get('id');
+    const action = searchParams.get('action');
+    const body = await request.json();
+
+    if (!paperId) {
       return NextResponse.json(
-        { error: error.message },
+        { error: 'Paper ID is required' },
         { status: 400 }
       );
     }
 
+    if (!['validate', 'extend'].includes(action || '')) {
+      return NextResponse.json(
+        { error: 'Invalid action. Must be "validate" or "extend"' },
+        { status: 400 }
+      );
+    }
+
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
+      return NextResponse.json(
+        { error: 'User identity not found' },
+        { status: 404 }
+      );
+    }
+
+    const currentIdentity = currentIdentities[0];
+    const paperService = createPaperService(supabase);
+
+    if (action === 'validate') {
+      // Validate paper
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'validate'
+      });
+
+      if (!permissionResult.success || !permissionResult.data?.granted) {
+        return NextResponse.json(
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to validate papers'
+          },
+          { status: 403 }
+        );
+      }
+
+      const validateRequest: ValidatePaperRequest = {
+        verificationStatus: body.verificationStatus || VerificationStatus.VERIFIED,
+        verificationData: {
+          validatedBy: currentIdentity.id,
+          validatedAt: new Date().toISOString(),
+          reason: body.reason
+        }
+      };
+
+      const result = await paperService.validatePaper(paperId, validateRequest);
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        message: 'Paper successfully validated',
+        paper: result.data
+      });
+
+    } else if (action === 'extend') {
+      // Extend paper validity
+      if (!body.newValidUntil) {
+        return NextResponse.json(
+          { error: 'New valid until date is required for extension' },
+          { status: 400 }
+        );
+      }
+
+      // Get existing paper to check ownership
+      const existingResult = await paperService.getPaperById(paperId);
+      if (!existingResult.success || !existingResult.data) {
+        return NextResponse.json(
+          { error: existingResult.error || 'Paper not found' },
+          { status: 404 }
+        );
+      }
+
+      const existingPaper = existingResult.data;
+      const isOwner = existingPaper.ownerIdentityId === currentIdentity.id;
+
+      if (!isOwner) {
+        const permissionService = createPermissionService(supabase);
+        const permissionResult = await permissionService.checkPermission({
+          identityId: currentIdentity.id,
+          resource: 'papers',
+          action: 'update',
+          businessContext: existingPaper.relatedBusinessId
+        });
+
+        if (!permissionResult.success || !permissionResult.data?.granted) {
+          return NextResponse.json(
+            { 
+              error: 'Access forbidden',
+              message: 'Only paper owner or authorized users can extend validity'
+            },
+            { status: 403 }
+          );
+        }
+      }
+
+      const result = await paperService.extendPaperValidity(
+        paperId, 
+        new Date(body.newValidUntil)
+      );
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        message: 'Paper validity successfully extended',
+        paper: result.data
+      });
+    }
+
+  } catch (error) {
+    console.error('Error processing paper action:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}/**
+ * Paper Management API Endpoints
+ * Integrated with ID-ROLE-PAPER Paper Service
+ * 
+ * Provides CRUD operations for all 6 paper types with business context validation
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { 
+  createPaperService,
+  CreatePaperRequest,
+  UpdatePaperRequest,
+  PaperSearchRequest,
+  ValidatePaperRequest
+} from '../../../lib/services/paper-service';
+import { createPermissionService } from '../../../lib/services/permission-service';
+import { createIdentityService } from '../../../lib/services/identity-service';
+import { 
+  PaperType, 
+  VerificationStatus 
+} from '../../../types/id-role-paper';
+
+/**
+ * Get papers with filtering
+ * GET /api/papers?owner={id}&business={id}&type={type}&active={boolean}&valid={boolean}
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const ownerId = searchParams.get('owner');
+    const businessId = searchParams.get('business');
+    const paperType = searchParams.get('type') as PaperType;
+    const isActive = searchParams.get('active');
+    const validOnly = searchParams.get('valid');
+    const limit = searchParams.get('limit');
+    const offset = searchParams.get('offset');
+
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
+      return NextResponse.json(
+        { error: 'User identity not found' },
+        { status: 404 }
+      );
+    }
+
+    const currentIdentity = currentIdentities[0];
+
+    // Use Paper Service to search papers
+    const paperService = createPaperService(supabase);
+    
+    // Build search request
+    const searchRequest: PaperSearchRequest = {
+      limit: limit ? parseInt(limit) : 10,
+      offset: offset ? parseInt(offset) : 0
+    };
+
+    // Check permissions and apply filters
+    if (ownerId) {
+      // Check if user can access this owner's papers
+      if (ownerId !== currentIdentity.id) {
+        const permissionService = createPermissionService(supabase);
+        const permissionResult = await permissionService.checkPermission({
+          identityId: currentIdentity.id,
+          resource: 'papers',
+          action: 'read',
+          businessContext: businessId || undefined
+        });
+
+        if (!permissionResult.success || !permissionResult.data?.granted) {
+          return NextResponse.json(
+            { 
+              error: 'Access forbidden',
+              message: permissionResult.data?.reason || 'Insufficient permissions'
+            },
+            { status: 403 }
+          );
+        }
+      }
+      searchRequest.ownerIdentityId = ownerId;
+    } else {
+      // Default to current user's papers
+      searchRequest.ownerIdentityId = currentIdentity.id;
+    }
+
+    if (businessId) {
+      searchRequest.relatedBusinessId = businessId;
+    }
+
+    if (paperType && Object.values(PaperType).includes(paperType)) {
+      searchRequest.paperType = paperType;
+    }
+
+    if (isActive !== null) {
+      searchRequest.isActive = isActive === 'true';
+    }
+
+    if (validOnly === 'true') {
+      searchRequest.validOnly = true;
+    }
+
+    // Get papers using Paper Service
+    const result = await paperService.searchPapers(searchRequest);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      papers: result.data || [],
+      total: result.data?.length || 0
+    });
+
+  } catch (error) {
+    console.error('Error getting papers:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Create new paper
+ * POST /api/papers
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
+      return NextResponse.json(
+        { error: 'User identity not found' },
+        { status: 404 }
+      );
+    }
+
+    const currentIdentity = currentIdentities[0];
+
+    // Check if creating paper for someone else
+    const ownerIdentityId = body.ownerIdentityId || currentIdentity.id;
+    if (ownerIdentityId !== currentIdentity.id) {
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'create',
+        businessContext: body.relatedBusinessId
+      });
+
+      if (!permissionResult.success || !permissionResult.data?.granted) {
+        return NextResponse.json(
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to create papers for others'
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Create paper using Paper Service
+    const paperService = createPaperService(supabase);
+    
+    const createRequest: CreatePaperRequest = {
+      paperType: body.paperType,
+      ownerIdentityId,
+      relatedBusinessId: body.relatedBusinessId,
+      paperData: body.paperData || {},
+      validFrom: body.validFrom ? new Date(body.validFrom) : undefined,
+      validUntil: body.validUntil ? new Date(body.validUntil) : undefined
+    };
+
+    const result = await paperService.createPaper(createRequest);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { paper: result.data },
+      { status: 201 }
+    );
+
+  } catch (error) {
+    console.error('Error creating paper:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Update paper
+ * PUT /api/papers?id={paperId}
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const paperId = searchParams.get('id');
+    const body = await request.json();
+
+    if (!paperId) {
+      return NextResponse.json(
+        { error: 'Paper ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
+      return NextResponse.json(
+        { error: 'User identity not found' },
+        { status: 404 }
+      );
+    }
+
+    const currentIdentity = currentIdentities[0];
+
+    // Get existing paper to check ownership
+    const paperService = createPaperService(supabase);
+    const existingResult = await paperService.getPaperById(paperId);
+
+    if (!existingResult.success || !existingResult.data) {
+      return NextResponse.json(
+        { error: existingResult.error || 'Paper not found' },
+        { status: 404 }
+      );
+    }
+
+    const existingPaper = existingResult.data;
+
+    // Check if user owns paper or has permission to update
+    const isOwner = existingPaper.ownerIdentityId === currentIdentity.id;
+    if (!isOwner) {
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'update',
+        businessContext: existingPaper.relatedBusinessId
+      });
+
+      if (!permissionResult.success || !permissionResult.data?.granted) {
+        return NextResponse.json(
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to update this paper'
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Update paper using Paper Service
+    const updateRequest: UpdatePaperRequest = {
+      paperData: body.paperData,
+      validFrom: body.validFrom ? new Date(body.validFrom) : undefined,
+      validUntil: body.validUntil ? new Date(body.validUntil) : undefined,
+      isActive: body.isActive
+    };
+
+    const result = await paperService.updatePaper(paperId, updateRequest);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      paper: result.data
+    });
+
+  } catch (error) {
+    console.error('Error updating paper:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Deactivate paper
+ * DELETE /api/papers?id={paperId}
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const paperId = searchParams.get('id');
+
+    if (!paperId) {
+      return NextResponse.json(
+        { error: 'Paper ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
+      return NextResponse.json(
+        { error: 'User identity not found' },
+        { status: 404 }
+      );
+    }
+
+    const currentIdentity = currentIdentities[0];
+
+    // Get existing paper to check ownership
+    const paperService = createPaperService(supabase);
+    const existingResult = await paperService.getPaperById(paperId);
+
+    if (!existingResult.success || !existingResult.data) {
+      return NextResponse.json(
+        { error: existingResult.error || 'Paper not found' },
+        { status: 404 }
+      );
+    }
+
+    const existingPaper = existingResult.data;
+
+    // Check if user owns paper or has permission to delete
+    const isOwner = existingPaper.ownerIdentityId === currentIdentity.id;
+    if (!isOwner) {
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'delete',
+        businessContext: existingPaper.relatedBusinessId
+      });
+
+      if (!permissionResult.success || !permissionResult.data?.granted) {
+        return NextResponse.json(
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to delete this paper'
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Deactivate paper using Paper Service
+    const result = await paperService.deactivatePaper(paperId);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      message: 'Paper successfully deactivated'
+    });
+
+  } catch (error) {
+    console.error('Error deleting paper:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Validate paper or extend validity
+ * PATCH /api/papers?id={paperId}&action={validate|extend}
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const paperId = searchParams.get('id');
+    const action = searchParams.get('action');
+    const body = await request.json();
+
+    if (!paperId) {
+      return NextResponse.json(
+        { error: 'Paper ID is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!['validate', 'extend'].includes(action || '')) {
+      return NextResponse.json(
+        { error: 'Invalid action. Must be "validate" or "extend"' },
+        { status: 400 }
+      );
+    }
+
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
+      return NextResponse.json(
+        { error: 'User identity not found' },
+        { status: 404 }
+      );
+    }
+
+    const currentIdentity = currentIdentities[0];
+    const paperService = createPaperService(supabase);
+
+    if (action === 'validate') {
+      // Validate paper
+      const permissionService = createPermissionService(supabase);
+      const permissionResult = await permissionService.checkPermission({
+        identityId: currentIdentity.id,
+        resource: 'papers',
+        action: 'validate'
+      });
+
+      if (!permissionResult.success || !permissionResult.data?.granted) {
+        return NextResponse.json(
+          { 
+            error: 'Access forbidden',
+            message: permissionResult.data?.reason || 'Insufficient permissions to validate papers'
+          },
+          { status: 403 }
+        );
+      }
+
+      const validateRequest: ValidatePaperRequest = {
+        verificationStatus: body.verificationStatus || VerificationStatus.VERIFIED,
+        verificationData: {
+          validatedBy: currentIdentity.id,
+          validatedAt: new Date().toISOString(),
+          reason: body.reason
+        }
+      };
+
+      const result = await paperService.validatePaper(paperId, validateRequest);
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        message: 'Paper successfully validated',
+        paper: result.data
+      });
+
+    } else if (action === 'extend') {
+      // Extend paper validity
+      if (!body.newValidUntil) {
+        return NextResponse.json(
+          { error: 'New valid until date is required for extension' },
+          { status: 400 }
+        );
+      }
+
+      // Get existing paper to check ownership
+      const existingResult = await paperService.getPaperById(paperId);
+      if (!existingResult.success || !existingResult.data) {
+        return NextResponse.json(
+          { error: existingResult.error || 'Paper not found' },
+          { status: 404 }
+        );
+      }
+
+      const existingPaper = existingResult.data;
+      const isOwner = existingPaper.ownerIdentityId === currentIdentity.id;
+
+      if (!isOwner) {
+        const permissionService = createPermissionService(supabase);
+        const permissionResult = await permissionService.checkPermission({
+          identityId: currentIdentity.id,
+          resource: 'papers',
+          action: 'update',
+          businessContext: existingPaper.relatedBusinessId
+        });
+
+        if (!permissionResult.success || !permissionResult.data?.granted) {
+          return NextResponse.json(
+            { 
+              error: 'Access forbidden',
+              message: 'Only paper owner or authorized users can extend validity'
+            },
+            { status: 403 }
+          );
+        }
+      }
+
+      const result = await paperService.extendPaperValidity(
+        paperId, 
+        new Date(body.newValidUntil)
+      );
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        message: 'Paper validity successfully extended',
+        paper: result.data
+      });
+    }
+
+  } catch (error) {
+    console.error('Error processing paper action:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
