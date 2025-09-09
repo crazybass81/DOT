@@ -72,7 +72,7 @@ export const CheckInButton: React.FC<CheckInButtonProps> = ({
     >
       {isLoading ? (
         '처리중...'
-      ) : isCheckedIn ? (
+      ) : checkedInState ? (
         '퇴근하기'
       ) : (
         '출근하기'
