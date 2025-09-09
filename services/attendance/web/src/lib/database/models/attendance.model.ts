@@ -11,7 +11,6 @@ import {
 export interface AttendanceRecord extends CommonAttendanceRecord {
   // 기본 식별자 (공통 타입과 호환성 유지)
   attendanceId?: string; // 레거시 호환성을 위해 선택적으로 유지
-}
   
   // Work Details
   scheduledStartTime?: string;
