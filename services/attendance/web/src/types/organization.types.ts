@@ -45,6 +45,8 @@ export const LEGACY_ORG_STATUS_MAPPING: Record<OrganizationStatus, VerificationS
   [OrganizationStatus.SUSPENDED]: VerificationStatus.REJECTED,
 };
 
+// Legacy Organization interface - DEPRECATED: Use BusinessRegistration from unified system
+/** @deprecated Use BusinessRegistration from id-role-paper-unified.ts instead */
 export interface Organization {
   id: string;
   name: string;
@@ -66,6 +68,36 @@ export interface Organization {
   // 관계 정보
   parentOrganization?: Partial<Organization>;
   childOrganizations?: Partial<Organization>[];
+}
+
+// New ID-ROLE-PAPER compatible organization interface
+export interface ModernOrganization extends BusinessRegistration {
+  // Additional organization-specific fields
+  parentOrganizationId?: string;
+  
+  // Statistics (computed fields)
+  stats?: {
+    employeeCount: number;
+    activeEmployeeCount: number;
+    totalAttendance: number;
+    franchiseCount?: number; // For franchise headquarters
+  };
+  
+  // Hierarchical relationships
+  relationships?: {
+    parentOrganization?: Partial<ModernOrganization>;
+    childOrganizations: Partial<ModernOrganization>[];
+    franchisees?: Partial<ModernOrganization>[]; // For franchise headquarters
+  };
+  
+  // Owner identity information
+  ownerInfo?: {
+    identityId: string;
+    idType: IdType;
+    fullName: string;
+    email: string;
+    currentRole: RoleType;
+  };
 }
 
 export interface OrganizationListFilters {
