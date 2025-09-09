@@ -236,3 +236,106 @@ export interface UndoStatusChangeResponse {
   auditLogId: string;
   error?: string;
 }
+
+// ========== UTILITY FUNCTIONS ==========
+
+/**
+ * Convert legacy Organization to ModernOrganization
+ * 기존 Organization 인터페이스를 새로운 BusinessRegistration 기반으로 변환
+ */
+export const convertLegacyOrganizationToModern = (legacyOrg: Organization): Partial<ModernOrganization> => {
+  const businessType = LEGACY_ORG_TYPE_MAPPING[legacyOrg.type];
+  const verificationStatus = LEGACY_ORG_STATUS_MAPPING[legacyOrg.status];
+  
+  return {
+    id: legacyOrg.id,
+    registrationNumber: legacyOrg.businessRegistrationNumber || '',
+    businessName: legacyOrg.name,
+    businessType,
+    ownerIdentityId: legacyOrg.createdBy || '', // To be properly mapped
+    registrationData: {
+      address: legacyOrg.address,
+      phone: legacyOrg.phone,
+      legacyType: legacyOrg.type,
+    },
+    verificationStatus,
+    isActive: legacyOrg.status === OrganizationStatus.ACTIVE,
+    createdAt: legacyOrg.createdAt,
+    updatedAt: legacyOrg.updatedAt,
+    
+    // Additional fields
+    parentOrganizationId: legacyOrg.parentOrganizationId,
+    stats: {
+      employeeCount: legacyOrg.employeeCount || 0,
+      activeEmployeeCount: legacyOrg.activeEmployeeCount || 0,
+      totalAttendance: legacyOrg.totalAttendance || 0,
+    },
+  };
+};
+
+/**
+ * Convert ModernOrganization back to legacy Organization
+ * 호환성을 위한 역변환
+ */
+export const convertModernOrganizationToLegacy = (modernOrg: ModernOrganization): Partial<Organization> => {
+  // Find legacy type from business type
+  const legacyType = Object.entries(LEGACY_ORG_TYPE_MAPPING)
+    .find(([_, businessType]) => businessType === modernOrg.businessType)?.[0] as OrganizationType;
+    
+  // Find legacy status from verification status
+  const legacyStatus = Object.entries(LEGACY_ORG_STATUS_MAPPING)
+    .find(([_, verificationStatus]) => verificationStatus === modernOrg.verificationStatus)?.[0] as OrganizationStatus;
+  
+  return {
+    id: modernOrg.id,
+    name: modernOrg.businessName,
+    type: legacyType || OrganizationType.PERSONAL,
+    businessRegistrationNumber: modernOrg.registrationNumber,
+    address: modernOrg.registrationData?.address as string,
+    phone: modernOrg.registrationData?.phone as string,
+    status: legacyStatus || OrganizationStatus.PENDING,
+    parentOrganizationId: modernOrg.parentOrganizationId,
+    createdAt: modernOrg.createdAt,
+    updatedAt: modernOrg.updatedAt,
+    createdBy: modernOrg.ownerIdentityId,
+    
+    // Statistics
+    employeeCount: modernOrg.stats?.employeeCount,
+    activeEmployeeCount: modernOrg.stats?.activeEmployeeCount,
+    totalAttendance: modernOrg.stats?.totalAttendance,
+  };
+};
+
+/**
+ * Check if organization has specific legacy type
+ * 기존 조직 타입과의 호환성을 위한 유틸리티
+ */
+export const hasLegacyOrganizationType = (org: ModernOrganization, legacyType: OrganizationType): boolean => {
+  const mappedType = LEGACY_ORG_TYPE_MAPPING[legacyType];
+  return org.businessType === mappedType;
+};
+
+/**
+ * Get display name for organization type
+ * 조직 타입의 표시명 반환
+ */
+export const getOrganizationTypeDisplayName = (businessType: BusinessType): string => {
+  const displayNames: Record<BusinessType, string> = {
+    [BusinessType.INDIVIDUAL]: '개인사업자',
+    [BusinessType.CORPORATE]: '법인사업자'
+  };
+  return displayNames[businessType] || businessType;
+};
+
+/**
+ * Get display name for organization status
+ * 조직 상태의 표시명 반환
+ */
+export const getOrganizationStatusDisplayName = (verificationStatus: VerificationStatus): string => {
+  const displayNames: Record<VerificationStatus, string> = {
+    [VerificationStatus.PENDING]: '승인 대기',
+    [VerificationStatus.VERIFIED]: '활성',
+    [VerificationStatus.REJECTED]: '비활성'
+  };
+  return displayNames[verificationStatus] || verificationStatus;
+};
