@@ -534,12 +534,12 @@ export class RoleCalculator {
   static analyzeRolePotential(papers: Paper[] | PaperType[]): {
     currentRoles: RoleType[];
     potentialRoles: RoleType[];
-    nextSteps: Array<{ action: string; paperType: PaperType; role: RoleType }>;
+    nextSteps: Array<{ action: string; targetRole: RoleType; requiredPapers: PaperType[] }>;
     missingPapers: Record<RoleType, PaperType[]>;
   } {
     const currentRoles: RoleType[] = [];
     const potentialRoles: RoleType[] = [];
-    const nextSteps: Array<{ action: string; paperType: PaperType; role: RoleType }> = [];
+    const nextSteps: Array<{ action: string; targetRole: RoleType; requiredPapers: PaperType[] }> = [];
     const missingPapers: Record<RoleType, PaperType[]> = {} as Record<RoleType, PaperType[]>;
 
     // Extract paper types from Paper objects or use PaperType array directly
@@ -558,14 +558,12 @@ export class RoleCalculator {
           potentialRoles.push(rule.resultRole);
           missingPapers[rule.resultRole] = missingForRole;
           
-          // Add next steps for the most achievable roles
-          if (missingForRole.length === 1) {
-            nextSteps.push({
-              action: 'obtain',
-              paperType: missingForRole[0],
-              role: rule.resultRole
-            });
-          }
+          // Add next steps for achievable roles
+          nextSteps.push({
+            action: 'obtain',
+            targetRole: rule.resultRole,
+            requiredPapers: missingForRole
+          });
         }
       }
     }
