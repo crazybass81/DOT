@@ -159,92 +159,70 @@ export async function GET(request: NextRequest) {
  * Create new identity
  * POST /api/identity
  */
+/**
+ * Create new identity
+ * POST /api/identity
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      idType,
-      email,
-      phone,
-      fullName,
-      birthDate,
-      idNumber,
-      linkedPersonalId,
-      profileData
-    } = body;
 
-    // Validate required fields
-    if (!idType || !email || !fullName) {
-      return NextResponse.json(
-        { error: 'ID type, email, and full name are required' },
-        { status: 400 }
-      );
-    }
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    // Validate ID type
-    if (!Object.values(IdType).includes(idType)) {
-      return NextResponse.json(
-        { error: 'Invalid ID type' },
-        { status: 400 }
-      );
-    }
-
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Corporate IDs require linkedPersonalId
-    if (idType === IdType.CORPORATE && !linkedPersonalId) {
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
       return NextResponse.json(
-        { error: 'Corporate ID requires linked personal ID' },
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Use our Identity Service to create identity
+    const identityService = createIdentityService(supabase);
+    
+    const createRequest = {
+      idType: body.idType,
+      email: body.email,
+      fullName: body.fullName,
+      phone: body.phone,
+      birthDate: body.birthDate ? new Date(body.birthDate) : undefined,
+      idNumber: body.idNumber,
+      authUserId: authUser.id,
+      linkedPersonalId: body.linkedPersonalId,
+      profileData: body.profileData || {}
+    };
+
+    const result = await identityService.createIdentity(createRequest);
+    
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
         { status: 400 }
       );
     }
 
-    // Check if user already has an identity of this type
-    const existingIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (existingIdentity && existingIdentity.idType === idType) {
-      return NextResponse.json(
-        { error: `User already has a ${idType} identity` },
-        { status: 409 }
-      );
-    }
-
-    // Create identity
-    const identity = await identityService.createIdentity({
-      idType,
-      email,
-      phone,
-      fullName,
-      birthDate: birthDate ? new Date(birthDate) : undefined,
-      idNumber,
-      authUserId: authUser.id,
-      linkedPersonalId,
-      profileData
-    });
-
     return NextResponse.json(
-      { identity },
+      { identity: result.data },
       { status: 201 }
     );
 
   } catch (error) {
     console.error('Error creating identity:', error);
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
