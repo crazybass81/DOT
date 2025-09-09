@@ -83,10 +83,6 @@ export default {
   LEGACY_ID_TYPE_MAPPING,
   LEGACY_UNIFIED_ROLE_MAPPING,
 };
-  switch (orgType) {
-    case 'personal':
-      return true // Personal orgs can be owned by anyone
-    case 'business_owner':
       return ownerType === 'business_owner'
     case 'corporation':
       return ownerType === 'corporation'
