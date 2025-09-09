@@ -22,10 +22,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Check authentication and admin rights
     const checkAuth = async () => {
+      // TODO: Implement proper auth check
       // if (!await unifiedAuthService.isAuthenticated()) {
-        router.push('/login');
-        return;
-      }
+      //   router.push('/login');
+      //   return;
+      // }
 
       const user = userService.getCurrentUser();
       if (!user || !userService.isAdmin()) {
