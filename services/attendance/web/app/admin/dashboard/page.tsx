@@ -22,21 +22,31 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Check authentication and admin rights
     const checkAuth = async () => {
-      // if (!await unifiedAuthService.isAuthenticated()) {
+      if (!(await authService.isAuthenticated())) {
         router.push('/login');
         return;
       }
 
-      const user = userService.getCurrentUser();
-      if (!user || !userService.isAdmin()) {
+      const user = await authService.getCurrentUser();
+      if (!user) {
+        alert('인증이 필요합니다');
+        router.push('/login');
+        return;
+      }
+
+      // Check for admin privileges
+      const isAdmin = await authService.hasRole('admin') || 
+                      await authService.hasRole('master_admin') ||
+                      await authService.isMasterAdmin();
+      
+      if (!isAdmin) {
         alert('관리자 권한이 필요합니다');
         router.push('/attendance');
         return;
       }
 
       setUserName(user.name || user.email);
-      // TODO: Get actual organization ID from user
-      setOrganizationId((user as any).organizationId || 'default-org');
+      setOrganizationId(user.organizationId || 'default-org');
       setLoading(false);
     };
 
