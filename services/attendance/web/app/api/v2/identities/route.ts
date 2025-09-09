@@ -21,8 +21,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Create identity
-    const result = // await identityService.createIdentity(body)
+    // TODO: Create identity
+    // const result = await identityService.createIdentity(body)
+    const result = { success: false, error: 'Service not implemented' };
 
     if (!result.success) {
       return NextResponse.json({
