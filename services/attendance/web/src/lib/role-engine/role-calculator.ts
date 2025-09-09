@@ -455,6 +455,84 @@ export class RoleCalculator {
   }
 
   /**
+   * Get dependent roles (roles that depend on the given role)
+   */
+  static getDependentRoles(role: RoleType): RoleType[] {
+    return ROLE_DEPENDENCIES
+      .filter(dep => dep.parentRole === role)
+      .map(dep => dep.childRole);
+  }
+
+  /**
+   * Get prerequisite roles (roles required for the given role)
+   */
+  static getPrerequisiteRoles(role: RoleType): RoleType[] {
+    return ROLE_DEPENDENCIES
+      .filter(dep => dep.childRole === role)
+      .map(dep => dep.parentRole);
+  }
+
+  /**
+   * Analyze role potential for an identity
+   */
+  static analyzeRolePotential(papers: PaperType[]): {
+    currentRoles: RoleType[];
+    potentialRoles: RoleType[];
+    missingPapers: Record<RoleType, PaperType[]>;
+  } {
+    const currentRoles: RoleType[] = [];
+    const potentialRoles: RoleType[] = [];
+    const missingPapers: Record<RoleType, PaperType[]> = {} as Record<RoleType, PaperType[]>;
+
+    // Find current roles
+    for (const rule of ROLE_CALCULATION_RULES) {
+      if (this.checkRuleMatch(papers, rule.papers)) {
+        currentRoles.push(rule.resultRole);
+      } else {
+        // Find missing papers for potential roles
+        const missingForRole = rule.papers.filter(p => !papers.includes(p));
+        if (missingForRole.length > 0) {
+          potentialRoles.push(rule.resultRole);
+          missingPapers[rule.resultRole] = missingForRole;
+        }
+      }
+    }
+
+    return { currentRoles, potentialRoles, missingPapers };
+  }
+
+  /**
+   * Generate role transition plan
+   */
+  static generateRoleTransitionPlan(currentPapers: PaperType[], targetRole: RoleType): {
+    isAchievable: boolean;
+    requiredActions: Array<{ action: string; paperType: PaperType; description: string }>;
+    estimatedSteps: number;
+  } {
+    const rule = ROLE_CALCULATION_RULES.find(r => r.resultRole === targetRole);
+    if (!rule) {
+      return {
+        isAchievable: false,
+        requiredActions: [],
+        estimatedSteps: 0
+      };
+    }
+
+    const missingPapers = rule.papers.filter(p => !currentPapers.includes(p));
+    const requiredActions = missingPapers.map(paperType => ({
+      action: 'obtain',
+      paperType,
+      description: `Obtain ${paperType} to qualify for ${targetRole} role`
+    }));
+
+    return {
+      isAchievable: true,
+      requiredActions,
+      estimatedSteps: requiredActions.length
+    };
+  }
+
+  /**
    * Create structured error object
    */
   private static createError(
