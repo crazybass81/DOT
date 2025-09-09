@@ -109,7 +109,7 @@ export class IdentityService {
    */
   async getIdentityWithContext(identityId: string): Promise<IdentityWithContext | null> {
     try {
-      const identity = await this.getIdentity(identityId);
+      const identity = await this._getIdentity(identityId);
       if (!identity) return null;
 
       const [papers, businessRegistrations] = await Promise.all([
