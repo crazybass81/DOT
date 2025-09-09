@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { qrCodeService } from '@/src/services/qr-code.service';
-import { qr-auth.service } from '@/src/services/qr-auth.service';
+import { qr-auth.service } from "@/src/services/qr-auth.service"';
 import { apiService } from '@/src/services/api.service';
 import { businessService } from '@/src/services/business.service';
 import { useDeviceFingerprint } from '@/hooks/useDeviceFingerprint';
