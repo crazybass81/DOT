@@ -213,7 +213,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       const errorMessage = error.message || '인증 확인 중 오류가 발생했습니다.';
       
       if (showToastOnFail) {
-        toast.error(errorMessage);
+        console.log(errorMessage);
       }
       
       setState(prev => ({ 
