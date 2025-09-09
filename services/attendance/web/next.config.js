@@ -161,14 +161,18 @@ const nextConfig = {
       };
     }
 
-    // Add custom aliases
+    // Add custom aliases - Fixed path resolution for src directory structure
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(__dirname, '.'),
-      '@components': path.resolve(__dirname, 'components'),
+      '@': path.resolve(__dirname, 'src'),
+      '@components': path.resolve(__dirname, 'src/components'),
       '@lib': path.resolve(__dirname, 'src/lib'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
       '@types': path.resolve(__dirname, 'src/types'),
+      '@services': path.resolve(__dirname, 'src/services'),
+      '@utils': path.resolve(__dirname, 'src/utils'),
+      '@hooks': path.resolve(__dirname, 'src/hooks'),
+      '@middleware': path.resolve(__dirname, 'src/middleware'),
     };
 
     // Handle SVG imports
