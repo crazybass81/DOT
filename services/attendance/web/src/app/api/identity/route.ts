@@ -447,11 +447,16 @@ export async function DELETE(request: NextRequest) {
  * Verify identity
  * POST /api/identity/{id}/verify
  */
+/**
+ * Verify identity
+ * PATCH /api/identity?id={identityId}&action=verify
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const identityId = searchParams.get('id');
     const action = searchParams.get('action');
+    const body = await request.json();
 
     if (!identityId) {
       return NextResponse.json(
@@ -467,66 +472,88 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Get current user from authentication
-    const supabase = await getSupabaseServerClient();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
+    // Get authenticated user from Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Get current user's identity
-    const currentIdentity = await identityService.getIdentityByAuthUser(authUser.id);
-    if (!currentIdentity) {
+    const token = authHeader.substring(7);
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Get current user's identity and check permissions
+    const identityService = createIdentityService(supabase);
+    const { data: currentIdentities } = await identityService.searchIdentities({ 
+      limit: 1 
+    });
+
+    if (!currentIdentities || currentIdentities.length === 0) {
       return NextResponse.json(
         { error: 'User identity not found' },
         { status: 404 }
       );
     }
 
-    // Get user context for permission check
-    const userContext = await identityService.getIdentityWithContext(currentIdentity.id);
-    if (!userContext) {
-      return NextResponse.json(
-        { error: 'Unable to determine user permissions' },
-        { status: 403 }
-      );
-    }
+    const currentIdentity = currentIdentities[0];
 
-    // Check permissions - only specific roles can verify identities
-    const canVerify = permissionService.hasMultiRolePermission(
-      userContext.availableRoles,
-      Resource.IDENTITY,
-      Action.VERIFY
-    );
-
-    if (!canVerify) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions to verify identity' },
-        { status: 403 }
-      );
-    }
-
-    // Verify identity
-    await identityService.verifyIdentity(identityId);
-
-    return NextResponse.json({
-      message: 'Identity successfully verified'
+    // Check permissions for identity verification
+    const permissionService = createPermissionService(supabase);
+    const permissionResult = await permissionService.checkPermission({
+      identityId: currentIdentity.id,
+      resource: 'identity',
+      action: 'update'  // Verification is considered an update action
     });
 
-  } catch (error) {
-    console.error('Error verifying identity:', error);
-    
-    if (error instanceof Error) {
+    if (!permissionResult.success || !permissionResult.data?.granted) {
       return NextResponse.json(
-        { error: error.message },
+        { 
+          error: 'Access forbidden',
+          message: permissionResult.data?.reason || 'Insufficient permissions to verify identity'
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verify identity using Identity Service
+    const result = await identityService.verifyIdentity(identityId, {
+      verified: true,
+      verificationData: body.verificationData || {
+        verifiedBy: currentIdentity.id,
+        verifiedAt: new Date().toISOString(),
+        method: 'manual'
+      }
+    });
+    
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
         { status: 400 }
       );
     }
 
+    return NextResponse.json({
+      message: 'Identity successfully verified',
+      identity: result.data
+    });
+
+  } catch (error) {
+    console.error('Error verifying identity:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
