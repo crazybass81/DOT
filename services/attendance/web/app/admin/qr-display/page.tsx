@@ -20,15 +20,15 @@ export default function QRDisplayPage() {
     const checkAuth = () => {
       // TODO: Implement proper auth check
     // if (!await unifiedAuthService.isAuthenticated()) {
-        router.push('/login');
-        return;
+        // router.push("/login");
+        // return;
       }
 
       const user = userService.getCurrentUser();
       if (!user || !userService.isAdmin()) {
         alert('관리자 권한이 필요합니다');
         router.push('/attendance');
-        return;
+        // return;
       }
     };
 

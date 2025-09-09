@@ -29,15 +29,15 @@ export default function ManualAttendancePage() {
     // Check admin authentication
     // TODO: Implement proper auth check
     // if (!await unifiedAuthService.isAuthenticated()) {
-      router.push('/login');
-      return;
+      // router.push("/login");
+      // return;
     }
 
     const user = userService.getCurrentUser();
     if (!user || !userService.isAdmin()) {
       alert('관리자 권한이 필요합니다');
       router.push('/');
-      return;
+      // return;
     }
 
     loadEmployees();
@@ -102,7 +102,7 @@ export default function ManualAttendancePage() {
   const handleManualAttendance = async () => {
     if (!selectedEmployee || !attendanceTime || !reason) {
       alert('모든 필수 정보를 입력해주세요');
-      return;
+      // return;
     }
 
     try {

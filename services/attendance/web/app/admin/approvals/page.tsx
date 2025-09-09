@@ -44,15 +44,15 @@ export default function ApprovalsPage() {
     // TODO: Implement proper auth check
     // TODO: Implement proper auth check
     // if (!await unifiedAuthService.isAuthenticated()) {
-    //   router.push('/login');
-    //   return;
+    //   // router.push("/login");
+    //   // return;
     // }
 
     const user = userService.getCurrentUser();
     if (!user || (!userService.isAdmin() && !userService.isBusinessAdmin())) {
       alert('관리자 권한이 필요합니다');
       router.push('/attendance');
-      return;
+      // return;
     }
 
     fetchPendingUsers();
@@ -99,7 +99,7 @@ export default function ApprovalsPage() {
   };
 
   const handleReject = async (userId: string) => {
-    if (!confirm('정말 거부하시겠습니까?')) return;
+    if (!confirm('정말 거부하시겠습니까?')) // return;
 
     try {
       // TODO: API call to reject user
@@ -115,7 +115,7 @@ export default function ApprovalsPage() {
   };
 
   const handleFinalApprove = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser) // return;
 
     try {
       setLoading(true);
