@@ -67,9 +67,11 @@ export async function GET(request: NextRequest) {
 
     let organization
     if (id) {
-      organization = await organizationService.getById(id)
+      // organization = await organizationService.getById(id)
+      organization = null; // TODO: Implement service
     } else if (code) {
-      organization = await organizationService.getByCode(code)
+      // organization = await organizationService.getByCode(code)
+      organization = null; // TODO: Implement service
     }
 
     if (!organization) {
