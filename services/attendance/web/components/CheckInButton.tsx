@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 interface CheckInButtonProps {
   employeeId: string;
   businessId: string;
+  isCheckedIn?: boolean;
   onCheckIn?: (result: any) => void;
-  onError?: (error: Error) => void;
+  onSuccess?: (result: any) => void;
+  onError?: (error: Error | string) => void;
   disabled?: boolean;
   className?: string;
 }
