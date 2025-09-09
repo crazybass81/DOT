@@ -84,9 +84,9 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
       // Get current user
       const user = await authService.getCurrentUser();
       
-      if (!user || !user.employee) {
+      if (!user) {
         if (showToastOnFail) {
-          toast.error('사용자 정보를 찾을 수 없습니다.');
+          console.log('사용자 정보를 찾을 수 없습니다.');
         }
         setState(prev => ({ 
           ...prev, 
@@ -100,10 +100,10 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
         return;
       }
 
-      const isApproved = user.employee.approval_status === 'APPROVED' && user.employee.is_active;
-      const isAdmin = user.employee.is_master_admin || 
-                     user.employee.role === 'ADMIN' || 
-                     user.employee.role === 'MASTER_ADMIN';
+      const isApproved = user.isVerified || (user.employee?.is_active !== false);
+      const isAdmin = await authService.isMasterAdmin() ||
+                      await authService.hasRole('admin') ||
+                      await authService.hasRole('master_admin');
 
       // Check approval requirement
       if (requireApproval && !isApproved && user.employee) {
