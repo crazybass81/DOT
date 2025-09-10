@@ -2,28 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { qrCodeService } from '@/src/services/qrCodeService';
-import { qrAuthService } from '@/src/services/qrAuthService';
-import { apiService } from '@/src/services/apiService';
-import { businessService } from '@/src/services/businessService';
-import { useDeviceFingerprint } from '@/hooks/useDeviceFingerprint';
+import { validateQRForAttendance, QRValidationResult, QRData } from '../../../lib/qr-utils';
+import { CheckCircle, XCircle, Loader2, Smartphone, MapPin, Clock } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
 
 interface Location {
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
   accuracy?: number;
 }
 
 export default function QRHandlerPage() {
   const router = useRouter();
   const params = useParams();
-  const deviceInfo = useDeviceFingerprint();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [status, setStatus] = useState<'checking' | 'gps' | 'processing' | 'success' | 'error' | 'web-redirect'>('checking');
   const [message, setMessage] = useState('');
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
-  const [nearestLocation, setNearestLocation] = useState<any>(null);
+  const [qrData, setQrData] = useState<QRData | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
