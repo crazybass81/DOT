@@ -173,10 +173,10 @@ export default function QRManagePage() {
           {/* 가이드 탭 */}
           <TabsContent value="docs" className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
-              <Card>
+              <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Settings className="w-5 h-5 text-blue-400" />
                     QR 코드 유형
                   </CardTitle>
                 </CardHeader>
