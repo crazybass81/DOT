@@ -150,11 +150,12 @@ function generateQRCodeSVG(data: string): string {
 }
 
 /**
- * 위치 기반 해시 생성 (보안 강화)
+ * 위치 기반 해시 생성 (보안 강화) - 임시 구현
  */
 export function generateLocationHash(latitude: number, longitude: number): string {
   const locationString = `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
-  return CryptoJS.MD5(locationString + ENCRYPTION_KEY).toString();
+  // 임시로 간단한 해시 구현 (실제로는 MD5 또는 SHA256 사용)
+  return btoa(locationString + ENCRYPTION_KEY).substring(0, 16);
 }
 
 /**
