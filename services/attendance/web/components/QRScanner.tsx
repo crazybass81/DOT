@@ -146,20 +146,36 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   }, []);
 
   // 스캔 시작 (임시 구현)
-  const startScanning = useCallback(async () => {
+  const const startScanning = useCallback(async () => {
     if (isScanning || !hasCamera) return;
 
     try {
       setIsScanning(true);
       setError('');
-      // 실제로는 카메라 스트림을 시작하고 QR 스캐닝을 시작
-      // 현재는 테스트 모드로만 동작
+      
+      // 카메라 스트림 시작
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: cameras.length > 1 ? cameras[currentCameraIndex].facingMode || 'environment' : 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        
+        // 실제 QR 스캐닝 시작
+        startQRDetection();
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '스캔 시작 중 오류가 발생했습니다';
+      const errorMessage = err instanceof Error ? err.message : '카메라 시작 중 오류가 발생했습니다';
       setError(errorMessage);
+      setIsScanning(false);
       onScanError?.(errorMessage);
     }
-  }, [isScanning, hasCamera, onScanError]);
+  }, [isScanning, hasCamera, cameras, currentCameraIndex, onScanError]);
 
   // 스캔 정지 (임시 구현)
   const stopScanning = useCallback(() => {
