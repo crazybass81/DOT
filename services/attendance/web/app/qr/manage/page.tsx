@@ -55,7 +55,7 @@ export default function QRManagePage() {
 
         {/* 메인 탭 */}
         <Tabs defaultValue="generate" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto">
+          <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto backdrop-blur-lg bg-white/10 border-white/20">
             <TabsTrigger value="generate" className="flex items-center gap-2">
               <QrCode className="w-4 h-4" />
               생성
