@@ -1,5 +1,4 @@
 // QR 시스템 테스트 스크립트
-const { encryptQRData, decryptQRData, validateQRForAttendance } = require('./lib/qr-utils.ts');
 
 // 테스트 데이터 생성
 console.log('=== QR 코드 시스템 테스트 ===\n');
