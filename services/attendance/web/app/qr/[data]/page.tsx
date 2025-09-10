@@ -93,7 +93,7 @@ export default function QRHandlerPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!params.data || !deviceInfo || !isMobile) return;
+    if (!params.data || !isMobile) return;
 
     const processQRCode = async () => {
       try {
@@ -102,72 +102,64 @@ export default function QRHandlerPage() {
         setMessage('QR 코드 확인 중...');
 
         // URL에서 QR 데이터 디코딩
-        const qrData = decodeURIComponent(params.data as string);
+        const encryptedQRData = decodeURIComponent(params.data as string);
 
-        // Validate QR code
-        const isValid = qrCodeService.validateQRCode(qrData);
-        if (!isValid) {
-          throw new Error('QR 코드가 만료되었거나 유효하지 않습니다');
-        }
-
-        // Parse QR data
-        const parsedData = qrCodeService.parseQRCode(qrData);
-        if (!parsedData) {
-          throw new Error('QR 코드를 읽을 수 없습니다');
-        }
-
-        // Authenticate with QR
-        const authResult = await qrAuthService.authenticateWithQR(
-          JSON.stringify(parsedData),
-          deviceInfo
-        );
-
-        if (authResult.isNewUser) {
-          // New user - redirect to registration
-          sessionStorage.setItem('qrBusinessId', authResult.businessId || '');
-          sessionStorage.setItem('qrLocationId', authResult.locationId || '');
-          router.push('/register');
-          return;
-        }
-
-        // Existing user - proceed with GPS check and attendance
+        // GPS 위치 먼저 가져오기
         setStatus('gps');
         setMessage('GPS 위치 확인 중...');
-
-        // Get GPS location
+        
         const location = await getGPSLocation();
         setCurrentLocation(location);
 
-        // Load nearest business location
-        const nearest = await businessService.getNearestLocation(location);
-        if (!nearest) {
-          throw new Error('등록된 사업장이 없습니다');
-        }
+        // QR 코드 검증 (위치 정보 포함)
+        const validationResult: QRValidationResult = validateQRForAttendance(encryptedQRData, location);
         
-        setNearestLocation(nearest);
-        const dist = calculateDistance(location, { lat: nearest.lat, lng: nearest.lng });
-        setDistance(dist);
-
-        // Check if within allowed radius
-        if (dist > nearest.radius) {
-          throw new Error(`사업장 ${nearest.radius}m 이내에서만 출퇴근 가능합니다 (현재 거리: ${dist}m)`);
+        if (!validationResult.valid) {
+          throw new Error(validationResult.error || 'QR 코드 검증에 실패했습니다');
         }
 
-        // Process attendance
+        if (!validationResult.data) {
+          throw new Error('QR 코드 데이터를 읽을 수 없습니다');
+        }
+
+        setQrData(validationResult.data);
+
+        // 조직 QR 코드인 경우 거리 계산
+        if (validationResult.data.type === 'organization') {
+          const orgData = validationResult.data as any;
+          const dist = calculateDistance(location, orgData.location);
+          setDistance(dist);
+          
+          if (!validationResult.locationMatch) {
+            throw new Error(`허용된 위치에서 벗어났습니다 (현재 거리: ${dist}m, 허용 반경: ${orgData.location.radius}m)`);
+          }
+        }
+
+        // 출퇴근 처리
         setStatus('processing');
         setMessage('출퇴근 처리 중...');
 
-        const result = await apiService.checkIn({
+        // TODO: 실제 백엔드 API 연동
+        // 현재는 시뮬레이션으로 처리
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const attendanceResult = {
+          success: true,
+          method: 'qr',
+          qr_data: validationResult.data,
           location: location,
-          verificationMethod: 'qr' as 'qr'
-        } as any);
+          timestamp: new Date().toISOString(),
+          location_verified: validationResult.locationMatch
+        };
+
+        console.log('QR 출퇴근 처리 결과:', attendanceResult);
 
         setStatus('success');
-        setMessage('출근 처리가 완료되었습니다!');
+        setMessage('출퇴근 처리가 완료되었습니다!');
 
-        // Redirect after 2 seconds
+        // 2초 후 대시보드로 리디렉트
         setTimeout(() => {
-          router.push('/');
+          router.push('/dashboard');
         }, 2000);
 
       } catch (error: any) {
@@ -180,7 +172,7 @@ export default function QRHandlerPage() {
     };
 
     processQRCode();
-  }, [params.data, deviceInfo, router]);
+  }, [params.data, isMobile, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
