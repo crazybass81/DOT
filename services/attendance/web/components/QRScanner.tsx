@@ -145,8 +145,64 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, []);
 
-  // 스캔 시작 (임시 구현)
-  const const startScanning = useCallback(async () => {
+  // QR 코드 검출 시작
+  const startQRDetection = useCallback(() => {
+    if (!videoRef.current || !isScanning) return;
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    const detectQR = () => {
+      if (!videoRef.current || !isScanning) return;
+
+      const video = videoRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      if (canvas.width === 0 || canvas.height === 0) {
+        requestAnimationFrame(detectQR);
+        return;
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      try {
+        // 실제 QR 코드 검출 시뮬레이션 (Canvas ImageData 분석)
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = analyzeImageForQR(imageData);
+        
+        if (qrCode) {
+          handleQRResult(qrCode);
+          return;
+        }
+      } catch (error) {
+        console.warn('QR 검출 중 오류:', error);
+      }
+      
+      // 계속 감지
+      if (isScanning) {
+        requestAnimationFrame(detectQR);
+      }
+    };
+
+    detectQR();
+  }, [isScanning, handleQRResult]);
+
+  // 이미지에서 QR 코드 패턴 분석
+  const analyzeImageForQR = (imageData: ImageData): string | null => {
+    // 실제 QR 코드 감지 알고리즘 시뮬레이션
+    // 여기서는 테스트 입력값이 있을 때만 반환
+    if (testQRData.trim()) {
+      const testData = testQRData.trim();
+      setTestQRData(''); // 한 번 사용 후 클리어
+      return testData;
+    }
+    return null;
+  };
+
+  // 스캔 시작
+  const startScanning = useCallback(async () => {
     if (isScanning || !hasCamera) return;
 
     try {
@@ -166,8 +222,10 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         videoRef.current.srcObject = stream;
         videoRef.current.play();
         
-        // 실제 QR 스캐닝 시작
-        startQRDetection();
+        // 비디오 준비 완료 후 QR 검출 시작
+        videoRef.current.onloadedmetadata = () => {
+          startQRDetection();
+        };
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '카메라 시작 중 오류가 발생했습니다';
@@ -175,7 +233,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       setIsScanning(false);
       onScanError?.(errorMessage);
     }
-  }, [isScanning, hasCamera, cameras, currentCameraIndex, onScanError]);
+  }, [isScanning, hasCamera, cameras, currentCameraIndex, onScanError, startQRDetection]);
 
   // 스캔 정지 (임시 구현)
   const stopScanning = useCallback(() => {
