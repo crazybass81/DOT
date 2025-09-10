@@ -43,11 +43,11 @@ export default function QRManagePage() {
         {/* 페이지 헤더 */}
         <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-3 text-2xl">
-              <QrCode className="w-8 h-8 text-blue-600" />
+            <CardTitle className="flex items-center justify-center gap-3 text-2xl text-white">
+              <QrCode className="w-8 h-8 text-blue-400" />
               QR 코드 관리 시스템
             </CardTitle>
-            <CardDescription className="text-lg">
+            <CardDescription className="text-lg text-slate-300">
               출퇴근용 QR 코드 생성 및 테스트 도구
             </CardDescription>
           </CardHeader>
