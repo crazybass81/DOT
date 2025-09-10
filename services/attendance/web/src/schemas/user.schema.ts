@@ -217,14 +217,6 @@ export type AuthSession = z.infer<typeof AuthSessionSchema>
 export type IdType = z.infer<typeof IdTypeSchema>
 export type UnifiedRole = z.infer<typeof UnifiedRoleSchema>
 export type OrgType = z.infer<typeof OrgTypeSchema>
-=======
- * Zod-based User Schema - Single Source of Truth
- * 
- * Runtime validation + Compile-time type generation
- * 이 스키마가 모든 User 관련 타입의 원천입니다
- */
-
-import { z } from 'zod';
 
 // ============================================
 // Core Role Schema - 4-tier hierarchy
