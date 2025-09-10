@@ -198,8 +198,8 @@ export default function QRHandlerPage() {
                 <Smartphone className="w-10 h-10 text-orange-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">모바일 전용 기능</h2>
-                <p className="text-gray-600 mb-4">{message}</p>
+                <h2 className="text-xl font-bold text-white mb-2">모바일 전용 기능</h2>
+                <p className="text-slate-300 mb-4">{message}</p>
               </div>
               
               <Alert>
