@@ -175,11 +175,11 @@ export const QRGenerator: React.FC<QRGeneratorProps> = ({ className = '' }) => {
   return (
     <Card className={`w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl ${className}`}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <QrCode className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-white">
+          <QrCode className="w-5 h-5 text-blue-400" />
           QR 코드 생성기
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-slate-300">
           출근/퇴근용 QR 코드를 생성합니다
         </CardDescription>
       </CardHeader>
