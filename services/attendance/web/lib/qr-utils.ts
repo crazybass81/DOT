@@ -103,31 +103,107 @@ function simpleHash(str: string): number {
 export function decryptQRData(encryptedData: string): QRData | null {
   try {
     // Base64 디코딩
-    const decoded = atob(encryptedData);
-    const [jsonString, key] = decoded.split('|');
+    const scrambled = atob(encryptedData);
     
+    // 스크램블링 해제를 위해 salt를 추출해야 하므로 역과정 시도
+    const unscrambled = unscrambleString(scrambled);
+    const decoded = atob(unscrambled);
+    
+    const parts = decoded.split('|');
+    if (parts.length < 4) {
+      throw new Error('Invalid data format');
+    }
+    
+    const [jsonString, key, timestamp, salt] = parts;
+    
+    // 키 검증
     if (key !== ENCRYPTION_KEY) {
       throw new Error('Invalid encryption key');
     }
     
-    if (!jsonString) {
-      throw new Error('Failed to decrypt data');
-    }
-    
-    const data = JSON.parse(jsonString) as QRData;
-    
     // 타임스탬프 검증 (24시간 유효)
     const now = Date.now();
+    const dataTime = parseInt(timestamp);
     const maxAge = 24 * 60 * 60 * 1000; // 24시간
     
-    if (now - data.timestamp > maxAge) {
+    if (isNaN(dataTime) || now - dataTime > maxAge) {
       throw new Error('QR code has expired');
+    }
+    
+    // JSON 파싱 및 반환
+    const data = JSON.parse(jsonString) as QRData;
+    
+    // 데이터 무결성 검증
+    if (!validateQRDataStructure(data)) {
+      throw new Error('Invalid QR data structure');
     }
     
     return data;
   } catch (error) {
     console.error('QR 코드 복호화 실패:', error);
     return null;
+  }
+}
+
+// 스크램블링 해제
+function unscrambleString(scrambled: string): string {
+  // 모든 가능한 salt 조합을 시도 (브루트 포스 방식)
+  // 실제로는 salt를 별도로 저장하거나 다른 방식을 사용해야 함
+  for (let i = 0; i < 1000; i++) {
+    try {
+      const testSalt = i.toString().padStart(3, '0') + 'salt';
+      const result = attemptUnscramble(scrambled, testSalt);
+      if (result && result.includes('|')) {
+        return result;
+      }
+    } catch {
+      continue;
+    }
+  }
+  
+  // 실패하면 원본 반환 (Base64로 인코딩된 경우)
+  return scrambled;
+}
+
+// 스크램블링 해제 시도
+function attemptUnscramble(input: string, salt: string): string {
+  try {
+    const saltHash = simpleHash(salt);
+    let result = '';
+    
+    for (let i = 0; i < input.length; i++) {
+      const charCode = input.charCodeAt(i);
+      const scrambleKey = (saltHash + i) % 94 + 33;
+      const originalCode = ((charCode - 33 - scrambleKey + 94) % 94) + 33;
+      result += String.fromCharCode(originalCode);
+    }
+    
+    return result;
+  } catch {
+    return '';
+  }
+}
+
+// QR 데이터 구조 검증
+function validateQRDataStructure(data: any): data is QRData {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+  
+  // 공통 필드 검증
+  if (!data.type || !data.timestamp || typeof data.timestamp !== 'number') {
+    return false;
+  }
+  
+  // 타입별 검증
+  switch (data.type) {
+    case 'employee':
+      return !!(data.employeeId && data.organizationId && data.name && data.position);
+    case 'organization':
+      return !!(data.organizationId && data.name && data.location && 
+               data.location.latitude && data.location.longitude && data.location.radius);
+    default:
+      return false;
   }
 }
 
