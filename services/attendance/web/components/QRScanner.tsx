@@ -22,15 +22,17 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   className = ''
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const qrScannerRef = useRef<QrScanner | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const qrScannerRef = useRef<QrScanner | null>(null); // 임시 비활성화
   
   const [isScanning, setIsScanning] = useState(false);
   const [hasCamera, setHasCamera] = useState(false);
   const [hasFlash, setHasFlash] = useState(false);
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [error, setError] = useState<string>('');
-  const [cameras, setCameras] = useState<QrScanner.Camera[]>([]);
+  const [cameras, setCameras] = useState<any[]>([]);
   const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
+  const [testQRData, setTestQRData] = useState<string>('');
 
   // 현재 위치 가져오기
   const getCurrentLocation = useCallback((): Promise<{latitude: number; longitude: number}> => {
