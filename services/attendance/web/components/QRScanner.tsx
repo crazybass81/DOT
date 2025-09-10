@@ -145,49 +145,45 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, []);
 
-  // 스캔 시작
+  // 스캔 시작 (임시 구현)
   const startScanning = useCallback(async () => {
-    if (!qrScannerRef.current || isScanning) return;
+    if (isScanning || !hasCamera) return;
 
     try {
-      await qrScannerRef.current.start();
       setIsScanning(true);
       setError('');
+      // 실제로는 카메라 스트림을 시작하고 QR 스캐닝을 시작
+      // 현재는 테스트 모드로만 동작
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '스캔 시작 중 오류가 발생했습니다';
       setError(errorMessage);
       onScanError?.(errorMessage);
     }
-  }, [isScanning, onScanError]);
+  }, [isScanning, hasCamera, onScanError]);
 
-  // 스캔 정지
+  // 스캔 정지 (임시 구현)
   const stopScanning = useCallback(() => {
-    if (!qrScannerRef.current || !isScanning) return;
-
-    qrScannerRef.current.stop();
+    if (!isScanning) return;
     setIsScanning(false);
   }, [isScanning]);
 
-  // 카메라 전환
+  // 카메라 전환 (임시 구현)
   const switchCamera = useCallback(async () => {
     if (cameras.length <= 1) return;
 
     const nextIndex = (currentCameraIndex + 1) % cameras.length;
     setCurrentCameraIndex(nextIndex);
-
-    if (qrScannerRef.current) {
-      await qrScannerRef.current.setCamera(cameras[nextIndex].id);
-    }
+    // 실제로는 카메라 스트림을 전환
   }, [cameras, currentCameraIndex]);
 
-  // 플래시 토글
+  // 플래시 토글 (임시 구현)
   const toggleFlash = useCallback(async () => {
-    if (!qrScannerRef.current || !hasFlash) return;
+    if (!hasFlash) return;
 
     try {
       const newFlashState = !flashEnabled;
-      await qrScannerRef.current.setFlash(newFlashState);
       setFlashEnabled(newFlashState);
+      // 실제로는 카메라 플래시를 제어
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '플래시 제어 중 오류가 발생했습니다';
       setError(errorMessage);
