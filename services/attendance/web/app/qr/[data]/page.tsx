@@ -182,10 +182,10 @@ export default function QRHandlerPage() {
         <div className="absolute top-1/3 -right-4 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute -bottom-8 left-1/3 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
-      <Card className="max-w-md w-full">
+      <Card className="max-w-md w-full backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl relative z-10">
         <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
-            <Smartphone className="w-6 h-6" />
+          <CardTitle className="flex items-center justify-center gap-2 text-white">
+            <Smartphone className="w-6 h-6 text-blue-400" />
             QR 출퇴근 처리
           </CardTitle>
         </CardHeader>
