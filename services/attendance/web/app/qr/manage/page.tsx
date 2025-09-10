@@ -224,7 +224,7 @@ export default function QRManagePage() {
                     
                     <div>
                       <h4 className="font-semibold text-purple-600">2. QR 코드 배치</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-300 mt-1">
                         직원용: 직원 개인에게 제공 (모바일 지갑 등)<br />
                         조직용: 사무실 입구, 작업장 등에 부착
                       </p>
@@ -232,14 +232,14 @@ export default function QRManagePage() {
                     
                     <div>
                       <h4 className="font-semibold text-purple-600">3. 출퇴근 처리</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-300 mt-1">
                         모바일에서 QR 코드를 스캔하여 즉시 출퇴근 처리됩니다.
                       </p>
                     </div>
                     
                     <div>
                       <h4 className="font-semibold text-purple-600">4. 관리 및 모니터링</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-300 mt-1">
                         대시보드에서 출퇴근 기록을 실시간으로 확인할 수 있습니다.
                       </p>
                     </div>
@@ -256,7 +256,7 @@ export default function QRManagePage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <h4 className="font-semibold text-red-600">암호화</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
+                    <ul className="text-sm text-slate-300 space-y-1">
                       <li>• AES 암호화를 통한 데이터 보호</li>
                       <li>• 복호화 불가능한 QR 코드는 거부</li>
                       <li>• 서버에서만 복호화 키 관리</li>
@@ -264,7 +264,7 @@ export default function QRManagePage() {
                   </div>
                   <div className="space-y-2">
                     <h4 className="font-semibold text-red-600">검증</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
+                    <ul className="text-sm text-slate-300 space-y-1">
                       <li>• 24시간 후 자동 만료</li>
                       <li>• GPS 위치 기반 접근 제어</li>
                       <li>• 중복 스캔 방지</li>
