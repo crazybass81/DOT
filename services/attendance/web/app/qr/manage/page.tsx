@@ -104,7 +104,7 @@ export default function QRManagePage() {
               </Card>
 
               {/* 스캔 결과 */}
-              <Card>
+              <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
                 <CardHeader>
                   <CardTitle>스캔 결과</CardTitle>
                   <CardDescription>
