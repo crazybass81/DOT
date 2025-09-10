@@ -264,33 +264,34 @@ export default function LoginForm({
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Submit Button - GitHub Style Large Button */}
         <button
           type="submit"
           disabled={isSubmitting || submitSuccess}
           className={`
-            w-full flex justify-center items-center px-4 py-3 border border-transparent 
-            rounded-lg shadow-sm text-sm font-medium text-white
+            w-full flex justify-center items-center px-6 py-4 border border-transparent 
+            rounded-xl shadow-lg text-base font-semibold text-white font-korean
+            transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]
             ${
               isSubmitting || submitSuccess
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                ? 'bg-gray-400 cursor-not-allowed shadow-md'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 focus:outline-none shadow-blue-200/50'
             }
-            transition-colors duration-200
+            min-h-[56px] touch-manipulation
           `}
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-              로그인 중...
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+              <span className="font-korean">로그인 중...</span>
             </>
           ) : submitSuccess ? (
             <>
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              로그인 완료
+              <CheckCircle2 className="h-5 w-5 mr-3" />
+              <span className="font-korean">로그인 완료</span>
             </>
           ) : (
-            '로그인'
+            <span className="font-korean text-lg">로그인</span>
           )}
         </button>
       </form>
