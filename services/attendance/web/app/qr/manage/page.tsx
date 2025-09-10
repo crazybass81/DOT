@@ -184,10 +184,10 @@ export default function QRManagePage() {
                   <div className="space-y-3">
                     <div className="border rounded-lg p-3">
                       <h4 className="font-semibold text-blue-600">직원용 QR 코드</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-300 mt-1">
                         개별 직원이 소지하는 QR 코드입니다. 위치 제한 없이 어디서든 출퇴근 가능합니다.
                       </p>
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-xs text-slate-400 mt-2">
                         • 직원 ID, 이름, 직급 정보 포함<br />
                         • 24시간 유효<br />
                         • GPS 위치는 참고용으로만 사용
