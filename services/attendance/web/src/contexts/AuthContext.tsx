@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { authService, User } from '../services/auth.service';
-import { UserRole } from '../types/user.types';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { authService, type AuthState, type LoginResult, type AuthError } from '@/src/services/authService';
+import { type LoginFormData, type User, type UserRole } from '@/src/schemas/auth.schema';
 
 /**
  * Authentication state interface
