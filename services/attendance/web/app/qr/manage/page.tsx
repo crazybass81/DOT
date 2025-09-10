@@ -196,10 +196,10 @@ export default function QRManagePage() {
                     
                     <div className="border rounded-lg p-3">
                       <h4 className="font-semibold text-green-600">조직/장소용 QR 코드</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-300 mt-1">
                         특정 장소에 부착된 QR 코드입니다. 지정된 반경 내에서만 출퇴근 가능합니다.
                       </p>
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-xs text-slate-400 mt-2">
                         • 조직 ID, 장소명, GPS 좌표 포함<br />
                         • 허용 반경 설정 가능 (기본 100m)<br />
                         • 위치 검증 필수
