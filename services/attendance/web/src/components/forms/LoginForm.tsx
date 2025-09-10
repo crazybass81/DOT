@@ -300,8 +300,8 @@ export default function LoginForm({
         </button>
       </form>
 
-      {/* Additional Links */}
-      <div className="mt-6 text-center space-y-2">
+      {/* Additional Links - GitHub Style */}
+      <div className="mt-8 text-center space-y-3">
         <div className="text-sm">
           <button
             type="button"
@@ -309,19 +309,19 @@ export default function LoginForm({
               // Handle password reset
               console.log('Password reset requested');
             }}
-            className="text-indigo-600 hover:text-indigo-500 hover:underline"
+            className="text-blue-600 hover:text-blue-700 hover:underline font-korean transition-colors touch-manipulation p-2"
             disabled={isSubmitting}
           >
             비밀번호를 잊으셨나요?
           </button>
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 font-korean">
           계정이 없으신가요?{' '}
           <a 
             href="/register" 
-            className="text-indigo-600 hover:text-indigo-500 hover:underline"
+            className="text-blue-600 hover:text-blue-700 hover:underline font-semibold transition-colors touch-manipulation"
           >
-            회원가입
+            회원가입하기
           </a>
         </div>
       </div>
