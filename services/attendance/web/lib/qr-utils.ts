@@ -38,21 +38,26 @@ export type QRData = QRAttendanceData | QREmployeeData | QROrganizationData;
 const ENCRYPTION_KEY = process.env.QR_ENCRYPTION_KEY || 'dot-attendance-qr-key-2024';
 
 /**
- * QR 코드 데이터 암호화
+ * QR 코드 데이터 암호화 (임시 구현 - Base64)
  */
 export function encryptQRData(data: QRData): string {
   const jsonString = JSON.stringify(data);
-  const encrypted = CryptoJS.AES.encrypt(jsonString, ENCRYPTION_KEY).toString();
-  return encrypted;
+  // 임시로 Base64 인코딩 사용 (실제로는 AES 암호화 필요)
+  return btoa(jsonString + '|' + ENCRYPTION_KEY);
 }
 
 /**
- * QR 코드 데이터 복호화 및 검증
+ * QR 코드 데이터 복호화 및 검증 (임시 구현)
  */
 export function decryptQRData(encryptedData: string): QRData | null {
   try {
-    const decrypted = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
-    const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
+    // Base64 디코딩
+    const decoded = atob(encryptedData);
+    const [jsonString, key] = decoded.split('|');
+    
+    if (key !== ENCRYPTION_KEY) {
+      throw new Error('Invalid encryption key');
+    }
     
     if (!jsonString) {
       throw new Error('Failed to decrypt data');
