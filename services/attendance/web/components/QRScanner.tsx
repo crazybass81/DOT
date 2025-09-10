@@ -249,14 +249,21 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, [isScanning]);
 
-  // 카메라 전환 (임시 구현)
+  // 카메라 전환
   const switchCamera = useCallback(async () => {
     if (cameras.length <= 1) return;
 
     const nextIndex = (currentCameraIndex + 1) % cameras.length;
     setCurrentCameraIndex(nextIndex);
-    // 실제로는 카메라 스트림을 전환
-  }, [cameras, currentCameraIndex]);
+    
+    // 현재 스트림 정지 후 새 카메라로 재시작
+    if (isScanning) {
+      stopScanning();
+      setTimeout(() => {
+        startScanning();
+      }, 100);
+    }
+  }, [cameras, currentCameraIndex, isScanning, stopScanning, startScanning]);
 
   // 플래시 토글 (임시 구현)
   const toggleFlash = useCallback(async () => {
