@@ -1,5 +1,6 @@
-import CryptoJS from 'crypto-js';
-import QRCode from 'qrcode';
+// 임시로 내장 기능만 사용 (의존성 설치 후 crypto-js, qrcode로 교체 예정)
+// import CryptoJS from 'crypto-js';
+// import QRCode from 'qrcode';
 
 // QR 코드 데이터 타입 정의
 export interface QRAttendanceData {
