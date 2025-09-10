@@ -69,14 +69,14 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     });
   }, []);
 
-  // QR 코드 처리
-  const handleQRResult = useCallback(async (result: QrScanner.ScanResult) => {
+  // QR 코드 처리 (임시 구현)
+  const handleQRResult = useCallback(async (qrData: string) => {
     try {
       // 현재 위치 가져오기
       const currentLocation = await getCurrentLocation();
       
       // QR 코드 검증
-      const validationResult = validateQRForAttendance(result.data, currentLocation);
+      const validationResult = validateQRForAttendance(qrData, currentLocation);
       
       if (validationResult.valid) {
         onScanSuccess(validationResult);
@@ -87,7 +87,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       }
     } catch (locationError) {
       // 위치 정보 없이도 QR 검증 시도
-      const validationResult = validateQRForAttendance(result.data);
+      const validationResult = validateQRForAttendance(qrData);
       
       if (validationResult.valid) {
         onScanSuccess({
@@ -101,6 +101,13 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       }
     }
   }, [onScanSuccess, onScanError, getCurrentLocation]);
+
+  // 테스트 QR 데이터 처리
+  const handleTestQRSubmit = useCallback(() => {
+    if (testQRData.trim()) {
+      handleQRResult(testQRData.trim());
+    }
+  }, [testQRData, handleQRResult]);
 
   // 카메라 초기화
   const initializeCamera = useCallback(async () => {
