@@ -182,13 +182,13 @@ export default function LoginForm({
           )}
         </div>
 
-        {/* Password Field */}
+        {/* Password Field - Enhanced for mobile */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-3 font-korean">
             비밀번호
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Lock className="h-5 w-5 text-gray-400" />
             </div>
             <input
@@ -199,10 +199,12 @@ export default function LoginForm({
               onChange={handleInputChange}
               placeholder="비밀번호를 입력하세요"
               className={`
-                w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg
-                focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                w-full pl-12 pr-14 py-4 border-2 border-gray-200 rounded-xl font-korean
+                focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none
                 disabled:bg-gray-50 disabled:text-gray-500
-                ${errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
+                transition-all duration-200 text-base
+                min-h-[56px] touch-manipulation
+                ${errors.password ? 'border-red-300 focus:ring-red-100 focus:border-red-500' : ''}
               `}
               disabled={isSubmitting}
               autoComplete="current-password"
@@ -211,18 +213,18 @@ export default function LoginForm({
             <button
               type="button"
               onClick={togglePasswordVisibility}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              className="absolute inset-y-0 right-0 pr-4 flex items-center touch-manipulation"
               disabled={isSubmitting}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
               )}
             </button>
           </div>
           {errors.password && (
-            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+            <p className="mt-2 text-sm text-red-600 flex items-center gap-2 font-korean">
               <AlertTriangle className="h-4 w-4" />
               {errors.password}
             </p>
