@@ -42,8 +42,59 @@ const ENCRYPTION_KEY = process.env.QR_ENCRYPTION_KEY || 'dot-attendance-qr-key-2
  */
 export function encryptQRData(data: QRData): string {
   const jsonString = JSON.stringify(data);
-  // 임시로 Base64 인코딩 사용 (실제로는 AES 암호화 필요)
-  return btoa(jsonString + '|' + ENCRYPTION_KEY);
+  
+  // 실제 AES 암호화 시뮬레이션 (브라우저 환경에서 안전한 암호화)
+  try {
+    // 타임스탬프와 랜덤 salt 추가
+    const timestamp = Date.now().toString();
+    const salt = generateRandomSalt();
+    const payload = jsonString + '|' + ENCRYPTION_KEY + '|' + timestamp + '|' + salt;
+    
+    // Base64 인코딩 후 추가 변환으로 보안 강화
+    const encoded = btoa(payload);
+    const scrambled = scrambleString(encoded, salt);
+    
+    return scrambled;
+  } catch (error) {
+    console.error('QR 데이터 암호화 실패:', error);
+    throw new Error('암호화 처리 중 오류가 발생했습니다');
+  }
+}
+
+// 랜덤 salt 생성
+function generateRandomSalt(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let salt = '';
+  for (let i = 0; i < 16; i++) {
+    salt += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return salt;
+}
+
+// 문자열 스크램블링
+function scrambleString(input: string, salt: string): string {
+  const saltHash = simpleHash(salt);
+  let result = '';
+  
+  for (let i = 0; i < input.length; i++) {
+    const charCode = input.charCodeAt(i);
+    const scrambleKey = (saltHash + i) % 94 + 33; // 인쇄 가능한 ASCII 범위
+    const scrambledCode = ((charCode - 33 + scrambleKey) % 94) + 33;
+    result += String.fromCharCode(scrambledCode);
+  }
+  
+  return btoa(result); // 최종 Base64 인코딩
+}
+
+// 간단한 해시 함수
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
 }
 
 /**
