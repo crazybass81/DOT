@@ -231,7 +231,7 @@ export default function LoginForm({
           )}
         </div>
 
-        {/* Remember Me Checkbox */}
+        {/* Remember Me Checkbox - Enhanced */}
         {showRememberMe && (
           <div className="flex items-center">
             <input
@@ -239,10 +239,10 @@ export default function LoginForm({
               id="rememberMe"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-md touch-manipulation"
               disabled={isSubmitting}
             />
-            <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="rememberMe" className="ml-3 block text-sm text-gray-700 font-korean touch-manipulation">
               로그인 상태 유지
             </label>
           </div>
