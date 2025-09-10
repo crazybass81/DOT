@@ -79,7 +79,7 @@ export default function QRManagePage() {
           <TabsContent value="scan" className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               {/* 스캐너 */}
-              <Card>
+              <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Scan className="w-5 h-5" />
