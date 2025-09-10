@@ -1,152 +1,113 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Building2 } from 'lucide-react';
+import { useAuth, NotAuthenticated } from '@/src/contexts/AuthContext';
+import LoginForm from '@/src/components/forms/LoginForm';
 
 export default function Home() {
-  const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const auth = useAuth();
+  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // 임시 로그인 로직 (실제 인증 없음)
-    setTimeout(() => {
-      alert(`로그인 시도: ${id} / ${password}`);
-      setLoading(false);
-    }, 1000);
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (!auth.isLoading && auth.isAuthenticated && auth.user) {
+      const redirectUrl = getRedirectUrlForRole(auth.user.role);
+      router.push(redirectUrl);
+    }
+  }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
+
+  const getRedirectUrlForRole = (role: string) => {
+    switch (role) {
+      case 'master':
+        return '/super-admin/dashboard';
+      case 'admin':
+        return '/admin/dashboard';
+      case 'manager':
+        return '/manager/dashboard';
+      case 'worker':
+      default:
+        return '/attendance';
+    }
   };
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '40px',
-        borderRadius: '10px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-        width: '100%',
-        maxWidth: '400px'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1 style={{ 
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #667eea, #764ba2)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            margin: '0 0 10px 0'
-          }}>
-            DOT 근태관리
-          </h1>
-          <p style={{ color: '#666', margin: '0' }}>
-            근태관리 시스템에 로그인하세요
-          </p>
-        </div>
-
-        <form onSubmit={handleLogin} style={{ marginBottom: '20px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold',
-              color: '#333'
-            }}>
-              이메일 또는 사용자 ID
-            </label>
-            <input
-              type="text"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              required
-              placeholder="이메일을 입력하세요"
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '6px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '25px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold',
-              color: '#333'
-            }}>
-              비밀번호
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="비밀번호를 입력하세요"
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '6px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: loading ? '#ccc' : 'linear-gradient(135deg, #667eea, #764ba2)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            {loading ? '로그인 중...' : '로그인'}
-          </button>
-        </form>
-
-        <div style={{
-          padding: '15px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '6px',
-          fontSize: '14px',
-          color: '#666'
-        }}>
-          <strong>테스트 계정:</strong><br />
-          • 관리자: archt723@gmail.com / Master123!@#<br />
-          • 사업자: crazybass81@naver.com / Test123!
-        </div>
-
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '20px',
-          fontSize: '14px',
-          color: '#666'
-        }}>
-          <span>회원가입</span>
-          <span style={{ margin: '0 10px', color: '#ddd' }}>|</span>
-          <span>ID/PW 찾기</span>
+  // Show loading state while checking auth
+  if (auth.isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <NotAuthenticated
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">인증된 사용자를 리디렉션 중...</p>
+          </div>
+        </div>
+      }
+    >
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4 py-8">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="blob blob-admin-1 opacity-20"></div>
+          <div className="blob blob-admin-2 opacity-15"></div>
+          <div className="blob blob-admin-3 opacity-10"></div>
+        </div>
+        
+        {/* Login Container */}
+        <div className="relative z-10 w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">DOT 근태관리</h1>
+              <p className="text-gray-600">
+                근태관리 시스템에 로그인하세요
+              </p>
+            </div>
+
+            {/* Login Form */}
+            <LoginForm 
+              onSuccess={(redirectUrl) => {
+                console.log('Login successful, redirecting to:', redirectUrl);
+              }}
+            />
+
+            {/* Test Accounts Info */}
+            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">테스트 계정</h3>
+              <div className="space-y-1 text-xs text-blue-800">
+                <div>
+                  <strong>마스터 관리자:</strong> archt723@gmail.com / Master123!@#
+                </div>
+                <div>
+                  <strong>사업자:</strong> crazybass81@naver.com / Test123!
+                </div>
+              </div>
+            </div>
+
+            {/* System Info */}
+            <div className="mt-6 text-center">
+              <p className="text-xs text-gray-500">
+                DOT Attendance Management System v2.0
+                <br />
+                Powered by Supabase & Next.js
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </NotAuthenticated>
   );
 }
