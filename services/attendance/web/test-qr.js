@@ -37,7 +37,7 @@ const organizationData = {
 console.log('\n2. 조직용 QR 데이터:');
 console.log(JSON.stringify(organizationData, null, 2));
 
-const organizationEncrypted = btoa(JSON.stringify(organizationData) + '|' + ENCRYPTION_KEY);
+const organizationEncrypted = Buffer.from(JSON.stringify(organizationData) + '|' + ENCRYPTION_KEY).toString('base64');
 console.log('암호화된 데이터:', organizationEncrypted);
 
 // 3. QR 코드 URL 생성
