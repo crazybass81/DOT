@@ -26,14 +26,14 @@ export default function QRHandlerPage() {
   const [distance, setDistance] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Calculate distance
-  const calculateDistance = (loc1: Location, loc2: Location): number => {
-    const R = 6371000;
-    const dLat = (loc2.lat - loc1.lat) * Math.PI / 180;
-    const dLon = (loc2.lng - loc1.lng) * Math.PI / 180;
+  // Calculate distance using Haversine formula
+  const calculateDistance = (loc1: Location, loc2: { latitude: number; longitude: number }): number => {
+    const R = 6371000; // Earth's radius in meters
+    const dLat = (loc2.latitude - loc1.latitude) * Math.PI / 180;
+    const dLon = (loc2.longitude - loc1.longitude) * Math.PI / 180;
     const a = 
       Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(loc1.lat * Math.PI / 180) * Math.cos(loc2.lat * Math.PI / 180) *
+      Math.cos(loc1.latitude * Math.PI / 180) * Math.cos(loc2.latitude * Math.PI / 180) *
       Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return Math.round(R * c);
@@ -49,8 +49,8 @@ export default function QRHandlerPage() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           resolve({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
             accuracy: position.coords.accuracy
           });
         },
