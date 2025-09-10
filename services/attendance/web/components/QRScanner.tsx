@@ -308,7 +308,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   }
 
   return (
-    <Card className={`w-full max-w-md mx-auto ${className}`}>
+    <Card className={`w-full max-w-md mx-auto backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl ${className}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Camera className="w-5 h-5" />
