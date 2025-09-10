@@ -111,7 +111,7 @@ const nextConfig = {
     return [
       {
         source: '/',
-        destination: '/id-role-paper',
+        destination: '/dashboard',
         permanent: false,
       },
     ];
