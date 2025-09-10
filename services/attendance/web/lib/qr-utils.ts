@@ -302,16 +302,6 @@ async function generateQRCodeSVG(data: string): Promise<string> {
   }
 }
 
-// 간단한 해시 함수
-function simpleHash(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // 32bit 정수로 변환
-  }
-  return Math.abs(hash);
-}
 
 // QR 패턴 생성
 function generateQRPattern(hash: number, size: number): boolean[][] {
