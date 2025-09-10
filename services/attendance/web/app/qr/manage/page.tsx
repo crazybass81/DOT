@@ -217,7 +217,7 @@ export default function QRManagePage() {
                   <div className="space-y-3">
                     <div>
                       <h4 className="font-semibold text-purple-600">1. QR 코드 생성</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-300 mt-1">
                         '생성' 탭에서 직원용 또는 조직용 QR 코드를 만들 수 있습니다.
                       </p>
                     </div>
