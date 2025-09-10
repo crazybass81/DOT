@@ -1,219 +1,322 @@
+/**
+ * Individual User Registration Page
+ * Production-ready registration with comprehensive validation and error handling
+ */
+
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle2, AlertTriangle, ArrowLeft, Building2 } from 'lucide-react';
+import RegistrationForm from '@/components/forms/RegistrationForm';
+import { type RegistrationFormData, type RegistrationResponse } from '@/src/schemas/registration.schema';
 
-interface FormData {
-  name: string;
-  phone: string;
-  birthDate: string;
-  accountNumber: string;
-  userType: 'worker' | 'individual_business' | 'corporate_business' | '';
+type RegistrationStep = 'form' | 'success' | 'verification' | 'error';
+
+interface QRContext {
+  organizationId?: string;
+  locationId?: string;
+  inviteCode?: string;
 }
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    phone: '',
-    birthDate: '',
-    accountNumber: ''
-  });
+  const searchParams = useSearchParams();
+  
+  // State management
+  const [step, setStep] = useState<RegistrationStep>('form');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [step, setStep] = useState<'form' | 'success'>('form');
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<{
+    userId: string;
+    email: string;
+    requiresVerification: boolean;
+    verificationMethod?: 'email' | 'phone' | 'none';
+  } | null>(null);
+  
+  // QR context from URL params or session storage
+  const [qrContext, setQrContext] = useState<QRContext>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Initialize QR context on component mount
+  useEffect(() => {
+    const context: QRContext = {};
     
-    // Validation
-    if (!formData.name || !formData.phone || !formData.birthDate) {
-      setError('필수 정보를 모두 입력해주세요');
-      return;
+    // Get from URL search params first
+    const orgId = searchParams.get('org');
+    const locationId = searchParams.get('location');
+    const inviteCode = searchParams.get('invite');
+    
+    if (orgId) context.organizationId = orgId;
+    if (locationId) context.locationId = locationId;
+    if (inviteCode) context.inviteCode = inviteCode;
+    
+    // Fall back to session storage if not in URL
+    if (!context.organizationId) {
+      const sessionOrgId = sessionStorage.getItem('qrBusinessId') || sessionStorage.getItem('qrOrganizationId');
+      if (sessionOrgId) context.organizationId = sessionOrgId;
     }
+    
+    if (!context.locationId) {
+      const sessionLocationId = sessionStorage.getItem('qrLocationId');
+      if (sessionLocationId) context.locationId = sessionLocationId;
+    }
+    
+    setQrContext(context);
+  }, [searchParams]);
 
-    // Phone number validation
-    const phoneRegex = /^01[0-9]-?[0-9]{4}-?[0-9]{4}$/;
-    if (!phoneRegex.test(formData.phone.replace(/-/g, ''))) {
-      setError('올바른 전화번호 형식이 아닙니다');
-      return;
-    }
+  // Handle form submission
+  const handleRegistrationSubmit = useCallback(async (formData: RegistrationFormData) => {
+    setLoading(true);
+    setError('');
 
     try {
-      setLoading(true);
-      setError('');
+      const requestData = {
+        name: formData.name,
+        phone: formData.phone.replace(/-/g, ''), // Remove formatting
+        birthDate: formData.birthDate,
+        email: formData.email || undefined,
+        password: formData.password,
+        accountNumber: formData.accountNumber || undefined,
+        qrContext: Object.keys(qrContext).length > 0 ? qrContext : undefined,
+      };
 
-      // Get business info from session
-      const businessId = sessionStorage.getItem('qrBusinessId');
-      const locationId = sessionStorage.getItem('qrLocationId');
-
-      // TODO: API call to register user
-      const response = await fetch('/api/users/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          businessId,
-          locationId,
-          deviceFingerprint: btoa(navigator.userAgent) // Simple fingerprint
-        })
+        body: JSON.stringify(requestData),
       });
 
-      if (!response.ok) {
-        throw new Error('등록 실패');
+      const result: RegistrationResponse = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error.message || '등록에 실패했습니다');
       }
 
-      // Success
-      setStep('success');
+      // Success - store result and update step
+      setSuccess(result.data);
       
-      // Clear session storage
+      if (result.data.requiresVerification) {
+        setStep('verification');
+      } else {
+        setStep('success');
+      }
+
+      // Clean up session storage
       sessionStorage.removeItem('qrBusinessId');
+      sessionStorage.removeItem('qrOrganizationId');
       sessionStorage.removeItem('qrLocationId');
-      
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      setError(error.message || '등록 중 오류가 발생했습니다');
+
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.message || '등록 중 오류가 발생했습니다');
+      setStep('error');
     } finally {
       setLoading(false);
     }
+  }, [qrContext]);
+
+  // Handle back to form
+  const handleBackToForm = () => {
+    setStep('form');
+    setError('');
+    setSuccess(null);
   };
 
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/[^\d]/g, '');
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  // Handle navigation
+  const handleNavigateHome = () => {
+    router.push('/');
   };
 
-  if (step === 'success') {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+  const handleNavigateLogin = () => {
+    router.push('/login');
+  };
+
+  // Render based on current step
+  const renderContent = () => {
+    switch (step) {
+      case 'form':
+        return (
+          <div className="w-full max-w-lg mx-auto">
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-8 h-8 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">개인 회원가입</h1>
+                <p className="text-gray-600">
+                  DOT 근태관리 시스템에 가입하여 출퇴근을 편리하게 관리하세요
+                </p>
+              </div>
+
+              {/* QR Context Info */}
+              {qrContext.organizationId && (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-800">
+                      조직 초대를 통한 가입
+                    </span>
+                  </div>
+                  <p className="text-sm text-blue-600 mt-1">
+                    가입 완료 후 해당 조직의 직원으로 등록됩니다
+                  </p>
+                </div>
+              )}
+
+              {/* Registration Form */}
+              <RegistrationForm
+                onSubmit={handleRegistrationSubmit}
+                loading={loading}
+                qrContext={qrContext}
+              />
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">등록 신청 완료!</h2>
-          <p className="text-gray-600 mb-6">
-            관리자 승인 후 출퇴근 기록이 가능합니다.<br />
-            승인 완료 시 문자로 안내드립니다.
-          </p>
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            확인
-          </button>
-        </div>
-      </div>
-    );
-  }
+        );
+
+      case 'verification':
+        return (
+          <div className="w-full max-w-md mx-auto">
+            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-blue-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">이메일 인증 필요</h2>
+              <div className="space-y-4 text-left">
+                <p className="text-gray-600">
+                  회원가입이 완료되었습니다! 계정을 활성화하려면 이메일 인증이 필요합니다.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>인증 이메일 발송:</strong> {success?.email}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600">
+                  • 이메일함을 확인하여 인증 링크를 클릭해주세요<br />
+                  • 스팸함도 함께 확인해보세요<br />
+                  • 인증 완료 후 로그인이 가능합니다
+                </p>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleNavigateLogin}
+                  className="flex-1 btn-primary"
+                >
+                  로그인 페이지로
+                </button>
+                <button
+                  onClick={handleNavigateHome}
+                  className="flex-1 btn-secondary"
+                >
+                  홈으로
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'success':
+        return (
+          <div className="w-full max-w-md mx-auto">
+            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">가입 완료!</h2>
+              <div className="space-y-4 text-left">
+                <p className="text-gray-600">
+                  DOT 근태관리 시스템 가입이 완료되었습니다.
+                </p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-green-800">
+                    <strong>등록 계정:</strong> {success?.email}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600">
+                  • 바로 로그인하여 서비스를 이용하실 수 있습니다<br />
+                  • 관리자 승인이 필요한 조직의 경우 승인 후 이용 가능합니다<br />
+                  • 문의사항이 있으시면 고객센터로 연락주세요
+                </p>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleNavigateLogin}
+                  className="flex-1 btn-primary"
+                >
+                  로그인하기
+                </button>
+                <button
+                  onClick={handleNavigateHome}
+                  className="flex-1 btn-secondary"
+                >
+                  홈으로
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'error':
+        return (
+          <div className="w-full max-w-md mx-auto">
+            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">가입 실패</h2>
+              <div className="space-y-4 text-left">
+                <p className="text-gray-600">
+                  회원가입 중 오류가 발생했습니다.
+                </p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-800">
+                    <strong>오류 내용:</strong> {error}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600">
+                  • 입력하신 정보를 다시 확인해주세요<br />
+                  • 문제가 계속되면 고객센터로 문의해주세요<br />
+                  • 이미 가입된 정보일 수 있으니 로그인을 시도해보세요
+                </p>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleBackToForm}
+                  className="flex-1 btn-primary"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  다시 시도
+                </button>
+                <button
+                  onClick={handleNavigateLogin}
+                  className="flex-1 btn-secondary"
+                >
+                  로그인
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">직원 등록</h1>
-        <p className="text-gray-600 mb-6">
-          정보를 입력하면 관리자 승인 후 출퇴근이 가능합니다
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              이름 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="홍길동"
-              required
-            />
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              전화번호 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="010-1234-5678"
-              maxLength={13}
-              required
-            />
-          </div>
-
-          {/* Birth Date */}
-          <div>
-            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
-              생년월일 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              id="birthDate"
-              value={formData.birthDate}
-              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              max={new Date().toISOString().split('T')[0]}
-              required
-            />
-          </div>
-
-          {/* Account Number */}
-          <div>
-            <label htmlFor="accountNumber" className="block text-sm font-medium text-gray-700 mb-1">
-              계좌번호 <span className="text-gray-400">(선택)</span>
-            </label>
-            <input
-              type="text"
-              id="accountNumber"
-              value={formData.accountNumber}
-              onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="은행명 계좌번호"
-            />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 rounded-lg text-white font-medium transition-colors ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {loading ? '등록 중...' : '등록 신청'}
-          </button>
-        </form>
-
-        {/* Privacy Notice */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-600">
-            <strong>개인정보 수집 안내</strong><br />
-            입력하신 정보는 근태 관리 목적으로만 사용되며,
-            관련 법령에 따라 안전하게 보호됩니다.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4 py-8">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="blob blob-admin-1 opacity-20"></div>
+        <div className="blob blob-admin-2 opacity-15"></div>
+        <div className="blob blob-admin-3 opacity-10"></div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative z-10 w-full">
+        {renderContent()}
       </div>
     </div>
   );
