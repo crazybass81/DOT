@@ -41,7 +41,7 @@ export default function QRManagePage() {
       </div>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* 페이지 헤더 */}
-        <Card>
+        <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-3 text-2xl">
               <QrCode className="w-8 h-8 text-blue-600" />
