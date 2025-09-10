@@ -256,6 +256,41 @@ export const QRScanner: React.FC<QRScannerProps> = ({
               </div>
             </div>
           )}
+          
+          {/* 임시 테스트 모드 표시 */}
+          {!isScanning && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center bg-white bg-opacity-90 p-4 rounded-lg">
+                <Camera className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm text-gray-600">테스트 모드</p>
+                <p className="text-xs text-gray-500">아래에서 QR 데이터를 직접 입력하세요</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 테스트용 QR 데이터 입력 */}
+        <div className="space-y-2">
+          <label htmlFor="test-qr-input" className="text-sm font-medium text-gray-700">
+            테스트용 QR 데이터 입력
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="test-qr-input"
+              type="text"
+              value={testQRData}
+              onChange={(e) => setTestQRData(e.target.value)}
+              placeholder="QR 코드 데이터를 입력하세요..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <Button
+              onClick={handleTestQRSubmit}
+              disabled={!testQRData.trim()}
+              size="sm"
+            >
+              테스트
+            </Button>
+          </div>
         </div>
 
         <div className="flex gap-2 justify-center">
