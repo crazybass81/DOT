@@ -109,13 +109,11 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, [testQRData, handleQRResult]);
 
-  // 카메라 초기화
+  // 카메라 초기화 (임시 구현)
   const initializeCamera = useCallback(async () => {
-    if (!videoRef.current) return;
-
     try {
       // 카메라 권한 확인
-      const hasPermission = await QrScanner.hasCamera();
+      const hasPermission = await checkCameraPermission();
       setHasCamera(hasPermission);
 
       if (!hasPermission) {
@@ -123,27 +121,9 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         return;
       }
 
-      // 사용 가능한 카메라 목록 가져오기
-      const availableCameras = await QrScanner.listCameras(true);
-      setCameras(availableCameras);
-
-      // QR 스캐너 초기화
-      const scanner = new QrScanner(
-        videoRef.current,
-        handleQRResult,
-        {
-          returnDetailedScanResult: true,
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
-          preferredCamera: availableCameras[currentCameraIndex]?.id || 'environment'
-        }
-      );
-
-      qrScannerRef.current = scanner;
-
-      // 플래시 지원 여부 확인
-      const flashSupported = await scanner.hasFlash();
-      setHasFlash(flashSupported);
+      // 임시로 카메라 정보 설정
+      setCameras([{ id: 'default', label: 'Default Camera' }]);
+      setHasFlash(false); // 임시로 플래시 비지원
 
       setError('');
     } catch (err) {
@@ -151,7 +131,19 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       setError(errorMessage);
       onScanError?.(errorMessage);
     }
-  }, [handleQRResult, onScanError, currentCameraIndex]);
+  }, [onScanError]);
+
+  // 카메라 권한 확인 (임시 구현)
+  const checkCameraPermission = useCallback(async (): Promise<boolean> => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (err) {
+      console.error('Camera permission check failed:', err);
+      return false;
+    }
+  }, []);
 
   // 스캔 시작
   const startScanning = useCallback(async () => {
