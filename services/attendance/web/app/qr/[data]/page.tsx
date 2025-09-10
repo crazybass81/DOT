@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { validateQRForAttendance, QRValidationResult, QRData } from '../../../lib/qr-utils';
-import { CheckCircle, XCircle, Loader2, Smartphone, MapPin, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Smartphone, MapPin, Clock, Building2, User } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
