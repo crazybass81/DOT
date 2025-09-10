@@ -1,3 +1,152 @@
 #!/usr/bin/env node
 
-const { createClient } = require('@supabase/supabase-js');\nrequire('dotenv').config({ path: './.env.local' });\n\n// Supabase 설정\nconst supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';\nconst supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;\n\nconsole.log('🚀 DOT 근태관리 시스템 - 테스트 데이터 초기화');\nconsole.log('===============================================\\n');\n\nasync function setupTestData() {\n  try {\n    const supabase = createClient(supabaseUrl, supabaseKey, {\n      auth: { persistSession: false }\n    });\n\n    console.log('📡 Supabase 연결 성공\\n');\n\n    // 1. 테스트 조직 생성\n    console.log('🏢 1. 테스트 조직 생성 중...');\n    \n    const testOrganization = {\n      id: '550e8400-e29b-41d4-a716-446655440000',\n      name: 'DOT 테스트 카페',\n      description: '근태관리 시스템 테스트용 조직',\n      type: 'company',\n      address: '서울특별시 강남구 테헤란로 123',\n      phone: '02-1234-5678',\n      email: 'test@dotcafe.com',\n      settings: {\n        work_start_time: '09:00',\n        work_end_time: '18:00',\n        break_time: 60,\n        overtime_rate: 1.5\n      },\n      business_hours: {\n        monday: { open: '09:00', close: '18:00' },\n        tuesday: { open: '09:00', close: '18:00' },\n        wednesday: { open: '09:00', close: '18:00' },\n        thursday: { open: '09:00', close: '18:00' },\n        friday: { open: '09:00', close: '18:00' },\n        saturday: { open: '10:00', close: '16:00' },\n        sunday: { closed: true }\n      },\n      location: {\n        latitude: 37.5665,\n        longitude: 126.9780,\n        radius: 100\n      },\n      is_active: true\n    };\n\n    const { data: orgData, error: orgError } = await supabase\n      .from('organizations_v3')\n      .upsert(testOrganization)\n      .select()\n      .single();\n\n    if (orgError) {\n      console.log(`   ❌ 조직 생성 실패: ${orgError.message}`);\n    } else {\n      console.log(`   ✅ 조직 생성 성공: ${orgData.name}`);\n    }\n\n    // 2. 테스트 사용자들 생성\n    console.log('\\n👥 2. 테스트 사용자 생성 중...');\n    \n    const testUsers = [\n      {\n        id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',\n        email: 'master@dotcafe.com',\n        full_name: '김관리자',\n        phone: '010-1234-5678',\n        id_type: 'corporate',\n        is_active: true,\n        metadata: { \n          department: 'IT',\n          position: '시스템 관리자',\n          hire_date: '2024-01-01'\n        }\n      },\n      {\n        id: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',\n        email: 'admin@dotcafe.com',\n        full_name: '박매니저',\n        phone: '010-2345-6789',\n        id_type: 'corporate',\n        is_active: true,\n        metadata: { \n          department: '운영',\n          position: '매장 관리자',\n          hire_date: '2024-02-01'\n        }\n      },\n      {\n        id: '6ba7b812-9dad-11d1-80b4-00c04fd430c8',\n        email: 'employee1@dotcafe.com',\n        full_name: '이직원',\n        phone: '010-3456-7890',\n        id_type: 'personal',\n        is_active: true,\n        metadata: { \n          department: '서비스',\n          position: '바리스타',\n          hire_date: '2024-03-01'\n        }\n      },\n      {\n        id: '6ba7b813-9dad-11d1-80b4-00c04fd430c8',\n        email: 'employee2@dotcafe.com',\n        full_name: '최알바',\n        phone: '010-4567-8901',\n        id_type: 'personal',\n        is_active: true,\n        metadata: { \n          department: '서비스',\n          position: '서빙스태프',\n          hire_date: '2024-04-01'\n        }\n      }\n    ];\n\n    let userCount = 0;\n    for (const user of testUsers) {\n      const { data: userData, error: userError } = await supabase\n        .from('unified_identities')\n        .upsert(user)\n        .select()\n        .single();\n\n      if (userError) {\n        console.log(`   ❌ 사용자 생성 실패 (${user.full_name}): ${userError.message}`);\n      } else {\n        console.log(`   ✅ 사용자 생성 성공: ${userData.full_name} (${userData.email})`);\n        userCount++;\n      }\n    }\n\n    // 3. 역할 할당\n    console.log('\\n🎭 3. 역할 할당 중...');\n    \n    const roleAssignments = [\n      {\n        id: '7ba7b810-9dad-11d1-80b4-00c04fd430c8',\n        identity_id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',\n        organization_id: '550e8400-e29b-41d4-a716-446655440000',\n        role: 'master',\n        assigned_by: null,\n        assigned_at: new Date().toISOString(),\n        is_active: true,\n        employee_code: 'M001',\n        department: 'IT',\n        position: '시스템 관리자'\n      },\n      {\n        id: '7ba7b811-9dad-11d1-80b4-00c04fd430c8',\n        identity_id: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',\n        organization_id: '550e8400-e29b-41d4-a716-446655440000',\n        role: 'admin',\n        assigned_by: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',\n        assigned_at: new Date().toISOString(),\n        is_active: true,\n        employee_code: 'A001',\n        department: '운영',\n        position: '매장 관리자'\n      },\n      {\n        id: '7ba7b812-9dad-11d1-80b4-00c04fd430c8',\n        identity_id: '6ba7b812-9dad-11d1-80b4-00c04fd430c8',\n        organization_id: '550e8400-e29b-41d4-a716-446655440000',\n        role: 'worker',\n        assigned_by: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',\n        assigned_at: new Date().toISOString(),\n        is_active: true,\n        employee_code: 'W001',\n        department: '서비스',\n        position: '바리스타'\n      },\n      {\n        id: '7ba7b813-9dad-11d1-80b4-00c04fd430c8',\n        identity_id: '6ba7b813-9dad-11d1-80b4-00c04fd430c8',\n        organization_id: '550e8400-e29b-41d4-a716-446655440000',\n        role: 'worker',\n        assigned_by: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',\n        assigned_at: new Date().toISOString(),\n        is_active: true,\n        employee_code: 'W002',\n        department: '서비스',\n        position: '서빙스태프'\n      }\n    ];\n\n    let roleCount = 0;\n    for (const assignment of roleAssignments) {\n      const { data: roleData, error: roleError } = await supabase\n        .from('role_assignments')\n        .upsert(assignment)\n        .select()\n        .single();\n\n      if (roleError) {\n        console.log(`   ❌ 역할 할당 실패 (${assignment.employee_code}): ${roleError.message}`);\n      } else {\n        console.log(`   ✅ 역할 할당 성공: ${roleData.employee_code} - ${roleData.role}`);\n        roleCount++;\n      }\n    }\n\n    // 4. 샘플 출근 기록 생성 (최근 7일)\n    console.log('\\n⏰ 4. 샘플 출근 기록 생성 중...');\n    \n    const sampleAttendance = [];\n    const today = new Date();\n    \n    // 최근 7일간의 데이터 생성\n    for (let i = 6; i >= 0; i--) {\n      const workDate = new Date(today);\n      workDate.setDate(today.getDate() - i);\n      const dateString = workDate.toISOString().split('T')[0];\n      \n      // 주말 제외\n      if (workDate.getDay() === 0 || workDate.getDay() === 6) {\n        continue;\n      }\n\n      // 각 직원별로 출근 기록 생성\n      const employees = [\n        '6ba7b812-9dad-11d1-80b4-00c04fd430c8', // 이직원\n        '6ba7b813-9dad-11d1-80b4-00c04fd430c8'  // 최알바\n      ];\n\n      for (const employeeId of employees) {\n        const baseTime = new Date(workDate);\n        baseTime.setHours(9, 0, 0, 0); // 9시 출근 기준\n        \n        // 출근 시간 (±30분 랜덤)\n        const checkInTime = new Date(baseTime);\n        checkInTime.setMinutes(checkInTime.getMinutes() + (Math.random() - 0.5) * 60);\n        \n        // 퇴근 시간 (8시간 근무 + 1시간 휴게 + α)\n        const checkOutTime = new Date(checkInTime);\n        checkOutTime.setHours(checkOutTime.getHours() + 9);\n        checkOutTime.setMinutes(checkOutTime.getMinutes() + (Math.random() - 0.5) * 60);\n        \n        const record = {\n          employee_id: employeeId,\n          business_id: '550e8400-e29b-41d4-a716-446655440000',\n          check_in_time: checkInTime.toISOString(),\n          check_out_time: i < 2 ? null : checkOutTime.toISOString(), // 최근 2일은 미완료\n          work_date: dateString,\n          check_in_location: {\n            latitude: 37.5665 + (Math.random() - 0.5) * 0.001,\n            longitude: 126.9780 + (Math.random() - 0.5) * 0.001,\n            address: '서울특별시 강남구 테헤란로 123',\n            accuracy: 5\n          },\n          check_out_location: i < 2 ? null : {\n            latitude: 37.5665 + (Math.random() - 0.5) * 0.001,\n            longitude: 126.9780 + (Math.random() - 0.5) * 0.001,\n            address: '서울특별시 강남구 테헤란로 123',\n            accuracy: 5\n          },\n          verification_method: Math.random() > 0.5 ? 'gps' : 'qr',\n          status: i < 2 ? 'active' : 'completed',\n          break_time_minutes: 60,\n          overtime_minutes: Math.random() > 0.7 ? Math.floor(Math.random() * 120) : 0,\n          notes: i === 0 ? '테스트 출근 기록' : null\n        };\n        \n        sampleAttendance.push(record);\n      }\n    }\n\n    let attendanceCount = 0;\n    for (const record of sampleAttendance) {\n      const { data: attData, error: attError } = await supabase\n        .from('attendance_records')\n        .upsert(record)\n        .select()\n        .single();\n\n      if (attError) {\n        console.log(`   ❌ 출근 기록 생성 실패: ${attError.message}`);\n      } else {\n        console.log(`   ✅ 출근 기록 생성: ${record.work_date} - ${record.status}`);\n        attendanceCount++;\n      }\n    }\n\n    // 5. 생성된 데이터 검증\n    console.log('\\n🔍 5. 생성된 데이터 검증 중...');\n    \n    const { data: activeEmployees, error: viewError } = await supabase\n      .from('active_employees')\n      .select('*');\n    \n    if (viewError) {\n      console.log(`   ❌ active_employees 뷰 조회 실패: ${viewError.message}`);\n    } else {\n      console.log(`   ✅ active_employees 뷰: ${activeEmployees?.length || 0}명의 활성 직원`);\n      activeEmployees?.forEach(emp => {\n        console.log(`      - ${emp.full_name} (${emp.role}) - ${emp.organization_name}`);\n      });\n    }\n\n    // 최종 결과 요약\n    console.log('\\n📊 === 테스트 데이터 생성 완료 ===');\n    console.log(`✅ 조직: 1개 생성`);\n    console.log(`✅ 사용자: ${userCount}명 생성`);\n    console.log(`✅ 역할 할당: ${roleCount}개 생성`);\n    console.log(`✅ 출근 기록: ${attendanceCount}개 생성`);\n    \n    console.log('\\n🎯 테스트 계정 정보:');\n    console.log('   • 마스터 관리자: master@dotcafe.com (김관리자)');\n    console.log('   • 일반 관리자: admin@dotcafe.com (박매니저)');\n    console.log('   • 직원1: employee1@dotcafe.com (이직원)');\n    console.log('   • 직원2: employee2@dotcafe.com (최알바)');\n    \n    console.log('\\n💡 다음 단계:');\n    console.log('1. API 테스트: /api/attendance 엔드포인트 테스트');\n    console.log('2. 프론트엔드 테스트: 로그인 및 출근/퇴근 기능 테스트');\n    console.log('3. 실시간 기능 테스트: WebSocket 연결 및 업데이트');\n\n  } catch (error) {\n    console.error('❌ 테스트 데이터 생성 실패:', error.message);\n    console.error('   상세 오류:', error);\n    process.exit(1);\n  }\n}\n\n// 실행\nsetupTestData()\n  .then(() => {\n    console.log('\\n✨ 모든 테스트 데이터 생성이 완료되었습니다!');\n    process.exit(0);\n  })\n  .catch((error) => {\n    console.error('💥 예상치 못한 오류:', error);\n    process.exit(1);\n  });
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config({ path: './.env.local' });
+
+// Supabase 설정
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mljyiuzetchtjudbcfvd.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+console.log('🚀 DOT 근태관리 시스템 - 테스트 데이터 초기화');
+console.log('===============================================\n');
+
+async function setupTestData() {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false }
+    });
+
+    console.log('📡 Supabase 연결 성공\n');
+
+    // 1. 테스트 조직 생성
+    console.log('🏢 1. 테스트 조직 생성 중...');
+    
+    const testOrganization = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      name: 'DOT 테스트 카페',
+      description: '근태관리 시스템 테스트용 조직',
+      type: 'company',
+      address: '서울특별시 강남구 테헤란로 123',
+      phone: '02-1234-5678',
+      email: 'test@dotcafe.com',
+      settings: {
+        work_start_time: '09:00',
+        work_end_time: '18:00',
+        break_time: 60,
+        overtime_rate: 1.5
+      },
+      business_hours: {
+        monday: { open: '09:00', close: '18:00' },
+        tuesday: { open: '09:00', close: '18:00' },
+        wednesday: { open: '09:00', close: '18:00' },
+        thursday: { open: '09:00', close: '18:00' },
+        friday: { open: '09:00', close: '18:00' },
+        saturday: { open: '10:00', close: '16:00' },
+        sunday: { closed: true }
+      },
+      location: {
+        latitude: 37.5665,
+        longitude: 126.9780,
+        radius: 100
+      },
+      is_active: true
+    };
+
+    const { data: orgData, error: orgError } = await supabase
+      .from('organizations_v3')
+      .upsert(testOrganization)
+      .select()
+      .single();
+
+    if (orgError) {
+      console.log(`   ❌ 조직 생성 실패: ${orgError.message}`);
+    } else {
+      console.log(`   ✅ 조직 생성 성공: ${orgData.name}`);
+    }
+
+    // 2. 테스트 사용자들 생성
+    console.log('\n👥 2. 테스트 사용자 생성 중...');
+    
+    const testUsers = [
+      {
+        id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        email: 'master@dotcafe.com',
+        full_name: '김관리자',
+        phone: '010-1234-5678',
+        id_type: 'corporate',
+        is_active: true,
+        metadata: { 
+          department: 'IT',
+          position: '시스템 관리자',
+          hire_date: '2024-01-01'
+        }
+      },
+      {
+        id: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',
+        email: 'admin@dotcafe.com',
+        full_name: '박매니저',
+        phone: '010-2345-6789',
+        id_type: 'corporate',
+        is_active: true,
+        metadata: { 
+          department: '운영',
+          position: '매장 관리자',
+          hire_date: '2024-02-01'
+        }
+      },
+      {
+        id: '6ba7b812-9dad-11d1-80b4-00c04fd430c8',
+        email: 'employee1@dotcafe.com',
+        full_name: '이직원',
+        phone: '010-3456-7890',
+        id_type: 'personal',
+        is_active: true,
+        metadata: { 
+          department: '서비스',
+          position: '바리스타',
+          hire_date: '2024-03-01'
+        }
+      }
+    ];
+
+    let userCount = 0;
+    for (const user of testUsers) {
+      const { data: userData, error: userError } = await supabase
+        .from('unified_identities')
+        .upsert(user)
+        .select()
+        .single();
+
+      if (userError) {
+        console.log(`   ❌ 사용자 생성 실패 (${user.full_name}): ${userError.message}`);
+      } else {
+        console.log(`   ✅ 사용자 생성 성공: ${userData.full_name} (${userData.email})`);
+        userCount++;
+      }
+    }
+
+    console.log(`\n📊 테스트 데이터 생성 완료`);
+    console.log(`✅ 사용자: ${userCount}명 생성`);
+    
+    console.log('\n🎯 테스트 계정 정보:');
+    console.log('   • 마스터 관리자: master@dotcafe.com (김관리자)');
+    console.log('   • 일반 관리자: admin@dotcafe.com (박매니저)');
+    console.log('   • 직원1: employee1@dotcafe.com (이직원)');
+
+  } catch (error) {
+    console.error('❌ 테스트 데이터 생성 실패:', error.message);
+    console.error('   상세 오류:', error);
+    process.exit(1);
+  }
+}
+
+// 실행
+setupTestData()
+  .then(() => {
+    console.log('\n✨ 모든 테스트 데이터 생성이 완료되었습니다!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('💥 예상치 못한 오류:', error);
+    process.exit(1);
+  });
