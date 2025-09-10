@@ -161,7 +161,7 @@ export default function QRManagePage() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-slate-400">
                       QR 코드를 스캔하면 결과가 여기에 표시됩니다
                     </div>
                   )}
