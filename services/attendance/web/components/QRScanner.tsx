@@ -235,10 +235,18 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, [isScanning, hasCamera, cameras, currentCameraIndex, onScanError, startQRDetection]);
 
-  // 스캔 정지 (임시 구현)
+  // 스캔 정지
   const stopScanning = useCallback(() => {
     if (!isScanning) return;
+    
     setIsScanning(false);
+    
+    // 비디오 스트림 정지
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
   }, [isScanning]);
 
   // 카메라 전환 (임시 구현)
