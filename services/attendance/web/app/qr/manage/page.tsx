@@ -248,9 +248,9 @@ export default function QRManagePage() {
               </Card>
             </div>
 
-            <Card>
+            <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
               <CardHeader>
-                <CardTitle>보안 기능</CardTitle>
+                <CardTitle className="text-white">보안 기능</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
