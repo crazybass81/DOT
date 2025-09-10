@@ -197,10 +197,11 @@ export const QRScanner: React.FC<QRScannerProps> = ({
     }
 
     return () => {
-      if (qrScannerRef.current) {
-        qrScannerRef.current.destroy();
-        qrScannerRef.current = null;
-      }
+      // 임시로 정리 로직 비활성화
+      // if (qrScannerRef.current) {
+      //   qrScannerRef.current.destroy();
+      //   qrScannerRef.current = null;
+      // }
     };
   }, [enabled, initializeCamera]);
 
