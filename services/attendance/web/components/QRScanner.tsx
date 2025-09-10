@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import QrScanner from 'qr-scanner';
-import { Camera, CameraOff, Flashlight, FlashlightOff, RotateCcw } from 'lucide-react';
+// import QrScanner from 'qr-scanner'; // 임시로 주석 처리
+import { Camera, CameraOff, Flashlight, FlashlightOff, RotateCcw, Upload } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
