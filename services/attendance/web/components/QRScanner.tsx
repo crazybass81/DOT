@@ -310,11 +310,11 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   return (
     <Card className={`w-full max-w-md mx-auto backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl ${className}`}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Camera className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-white">
+          <Camera className="w-5 h-5 text-blue-400" />
           QR 코드 스캐너
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-slate-300">
           출근/퇴근을 위해 QR 코드를 스캔해주세요
         </CardDescription>
       </CardHeader>
