@@ -18,7 +18,7 @@ console.log(JSON.stringify(employeeData, null, 2));
 
 // Base64 인코딩 (encryptQRData 함수와 동일한 로직)
 const ENCRYPTION_KEY = 'dot-attendance-qr-key-2024';
-const employeeEncrypted = btoa(JSON.stringify(employeeData) + '|' + ENCRYPTION_KEY);
+const employeeEncrypted = Buffer.from(JSON.stringify(employeeData) + '|' + ENCRYPTION_KEY).toString('base64');
 console.log('암호화된 데이터:', employeeEncrypted);
 
 // 2. 조직용 QR 코드 데이터 생성
