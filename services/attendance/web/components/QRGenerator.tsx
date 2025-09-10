@@ -173,7 +173,7 @@ export const QRGenerator: React.FC<QRGeneratorProps> = ({ className = '' }) => {
   }, [handleGenerate]);
 
   return (
-    <Card className={`w-full max-w-2xl mx-auto ${className}`}>
+    <Card className={`w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl ${className}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <QrCode className="w-5 h-5" />
