@@ -209,9 +209,9 @@ export default function QRManagePage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
                 <CardHeader>
-                  <CardTitle>사용 방법</CardTitle>
+                  <CardTitle className="text-white">사용 방법</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
