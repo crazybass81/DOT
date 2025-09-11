@@ -103,6 +103,19 @@ export const QRGenerator: React.FC<QRGeneratorProps> = ({ className = '', onQRGe
     try {
       const qrDataUrl = await generateEmployeeQR(employeeId, organizationId, name, position);
       setQrImage(qrDataUrl);
+      
+      // 콜백 호출
+      if (onQRGenerated) {
+        const qrData: QREmployeeData = {
+          employeeId,
+          organizationId,
+          name,
+          position,
+          type: 'employee',
+          timestamp: Date.now()
+        };
+        onQRGenerated(qrData, qrDataUrl);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'QR 코드 생성 중 오류가 발생했습니다';
       setError(errorMessage);
