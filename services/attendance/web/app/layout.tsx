@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/src/contexts/AuthContext'
+import { RedirectHandler } from '@/src/components/RedirectHandler'
 
 export const metadata: Metadata = {
   title: 'DOT 근태관리',
