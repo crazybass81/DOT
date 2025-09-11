@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabaseAuthService } from '@/src/services/supabaseAuthService';
-import { Button, Input, Card } from '@/components/ui';
+import { useAuth } from '@/src/contexts/AuthContext';
+import { Eye, EyeOff, UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface FormData {
   // Step 1 - 기본 정보
