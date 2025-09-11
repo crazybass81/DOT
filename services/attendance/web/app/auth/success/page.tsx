@@ -59,18 +59,18 @@ export default function AuthSuccessPage() {
               환영합니다! 이제 DOT 출석 관리 시스템을 사용하실 수 있습니다.
               <br />
               <span className="text-sm text-gray-500">
-                {countdown}초 후 자동으로 대시보드로 이동합니다.
+                {countdown}초 후 자동으로 홈페이지로 이동합니다.
               </span>
             </p>
 
             {/* 버튼들 */}
             <div className="space-y-3">
               <Link
-                href="/dashboard"
+                href="/"
                 className="w-full inline-flex items-center justify-center py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
               >
                 <Home className="h-5 w-5 mr-2" />
-                대시보드로 이동
+                홈페이지로 이동
               </Link>
               
               <Link
