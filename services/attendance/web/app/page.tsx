@@ -167,6 +167,6 @@ export default function Home() {
           <div className="pb-8"></div>
         </div>
       </div>
-    </NotAuthenticated>
+    </div>
   );
 }
