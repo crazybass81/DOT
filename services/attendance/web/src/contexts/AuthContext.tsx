@@ -229,7 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      await authService.logout();
+      await supabaseAuthService.supabase.auth.signOut();
       
       // Redirect to home page after logout
       router.push('/');
