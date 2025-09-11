@@ -185,6 +185,9 @@ export class SupabaseAuthService {
         throw new Error('Invalid credentials');
       }
 
+      // Ensure profile exists
+      await this.createUserProfile(data.user);
+
       const user = await this.mapSupabaseUserToUser(data.user);
       
       if (!user) {
