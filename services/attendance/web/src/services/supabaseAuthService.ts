@@ -483,6 +483,40 @@ export class SupabaseAuthService {
   }
 
   /**
+   * Create user profile in profiles table
+   */
+  private async createUserProfile(supabaseUser: SupabaseUser, name?: string): Promise<void> {
+    try {
+      console.log('🚀 Creating user profile for:', supabaseUser.email);
+
+      const profileData = {
+        id: supabaseUser.id,
+        email: supabaseUser.email!,
+        name: name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '사용자',
+        role: 'worker',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .upsert(profileData)
+        .select()
+        .single();
+
+      if (!error && profile) {
+        console.log('✅ User profile created:', profile.id);
+      } else {
+        console.log('❌ Failed to create user profile:', error?.message);
+        // Don't throw error, let authentication continue
+      }
+    } catch (error) {
+      console.error('Create user profile error:', error);
+      // Don't throw error, let authentication continue
+    }
+  }
+
+  /**
    * Auto-create unified identity for auth user
    */
   private async autoCreateUnifiedIdentity(supabaseUser: SupabaseUser): Promise<void> {
