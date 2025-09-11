@@ -190,18 +190,30 @@ export default function AttendancePage() {
     };
   }, []);
 
-  // Load business info function
+  // Load business info function - mock implementation for now
   const loadBusinessInfo = async (userLocation: Location) => {
     try {
-      const info = await businessService.getBusinessInfo();
-      setBusinessInfo(info);
+      // Mock business info for testing
+      const mockBusinessInfo = {
+        locations: [
+          {
+            id: '1',
+            name: '본사',
+            address: '서울시 강남구 테헤란로 123',
+            lat: 37.5665,
+            lng: 126.9780,
+            radius: 100
+          }
+        ]
+      };
       
-      const nearest = await businessService.getNearestLocation(userLocation);
-      if (nearest) {
-        setNearestLocation(nearest);
-        const dist = calculateDistance(userLocation, { lat: nearest.lat, lng: nearest.lng });
-        setDistance(dist);
-      }
+      setBusinessInfo(mockBusinessInfo);
+      
+      // Find nearest location
+      const nearest = mockBusinessInfo.locations[0];
+      setNearestLocation(nearest);
+      const dist = calculateDistance(userLocation, { lat: nearest.lat, lng: nearest.lng });
+      setDistance(dist);
     } catch (error) {
       console.error('Failed to load business info:', error);
     }
