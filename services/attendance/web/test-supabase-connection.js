@@ -27,11 +27,11 @@ async function testConnection() {
     }
     console.log('✅ Supabase 연결 성공!');
 
-    // 2. 테스트 사용자 확인
+    // 2. 테스트 사용자 확인 (profiles 테이블 시도)
     console.log('\n👤 2. 기존 테스트 사용자 확인...');
     const { data: users, error: usersError } = await supabase
-      .from('employees')
-      .select('email, role, approval_status')
+      .from('profiles')
+      .select('*')
       .limit(10);
     
     if (usersError) {
@@ -39,7 +39,7 @@ async function testConnection() {
     } else {
       console.log(`📋 현재 등록된 사용자: ${users.length}명`);
       users.forEach(user => {
-        console.log(`  - ${user.email} (${user.role}, ${user.approval_status})`);
+        console.log(`  - ${user.email} (${user.role || '역할없음'})`);
       });
     }
 
