@@ -38,20 +38,41 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const validateStep1 = () => {
-    if (!formData.email || !formData.password || !formData.name) {
-      setError('필수 정보를 모두 입력해주세요.');
-      return false;
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = '이름을 입력해주세요.';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = '이름은 2자 이상이어야 합니다.';
     }
-    if (formData.password !== formData.passwordConfirm) {
-      setError('비밀번호가 일치하지 않습니다.');
-      return false;
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = '이메일을 입력해주세요.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = '올바른 이메일 형식을 입력해주세요.';
     }
-    if (formData.password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다.');
-      return false;
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = '비밀번호를 입력해주세요.';
+    } else if (formData.password.length < 8) {
+      newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = '대문자, 소문자, 숫자를 포함해야 합니다.';
     }
-    return true;
+
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = '비밀번호 확인을 입력해주세요.';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
