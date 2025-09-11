@@ -274,8 +274,8 @@ export default function SignUpPage() {
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                     비밀번호 확인
                   </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <div className="relative flex items-center">
+                    <Lock className="absolute left-3 h-5 w-5 text-gray-400 z-10" />
                     <input
                       id="confirmPassword"
                       name="confirmPassword"
@@ -291,7 +291,7 @@ export default function SignUpPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors z-10"
                     >
                       {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
