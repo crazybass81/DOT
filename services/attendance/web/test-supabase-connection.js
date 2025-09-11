@@ -56,8 +56,8 @@ async function testConnection() {
     
     // 먼저 유효한 이메일로 Supabase Auth에 사용자 생성
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: 'test.admin@example.com',
-      password: 'TestPass123!',
+      email: 'admin@dottest.com',
+      password: 'DotTest123!',
     });
 
     if (authError && !authError.message.includes('already registered')) {
@@ -66,8 +66,8 @@ async function testConnection() {
       // 기존 사용자로 로그인 시도
       console.log('🔄 기존 사용자로 로그인 시도...');
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: 'test.admin@example.com',
-        password: 'TestPass123!',
+        email: 'admin@dottest.com',
+        password: 'DotTest123!',
       });
       
       if (signInError) {
