@@ -4,8 +4,8 @@
  * Script to check registered accounts in the database
  */
 
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+const { createClient } = require('@supabase/supabase-js');
+const dotenv = require('dotenv');
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
