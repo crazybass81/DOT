@@ -318,7 +318,7 @@ export default function LoginForm({
         <div className="text-sm text-gray-600 font-korean">
           계정이 없으신가요?{' '}
           <a 
-            href="/register" 
+            href="/signup" 
             className="text-blue-600 hover:text-blue-700 hover:underline font-semibold transition-colors touch-manipulation"
           >
             회원가입하기
