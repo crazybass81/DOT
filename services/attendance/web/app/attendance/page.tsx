@@ -371,70 +371,23 @@ export default function AttendancePage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* GitHub-style Large Clock Display */}
-        <div className="text-center mb-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6">
-            <div className="mb-2">
-              <Clock className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500 mb-1">현재 시간</p>
-            </div>
-            <div className="text-5xl md:text-6xl font-mono font-bold text-gray-900 mb-2">
-              {formatTime(currentTime)}
-            </div>
-            <p className="text-lg text-gray-600">
-              {formatDate(currentTime)}
-            </p>
-          </div>
-        </div>
+        <GitHubStyleClock className="mb-8" />
 
         {/* Status Indicator */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white border border-gray-200">
-            <div className={`w-2 h-2 rounded-full ${attendanceStatus.isCheckedIn ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-            <span className="text-sm font-medium text-gray-700">
-              {attendanceStatus.isCheckedIn ? '근무중' : '미출근'}
-            </span>
-          </div>
+          <StatusIndicator 
+            status={attendanceStatus.isCheckedIn ? 'working' : 'not-working'} 
+          />
         </div>
 
         {/* Main Action Button - GitHub style large and centered */}
         <div className="mb-8">
-          {!attendanceStatus.isCheckedIn ? (
-            <button
-              onClick={handleCheckIn}
-              disabled={loading || !currentLocation || !nearestLocation || (distance !== null && distance > (nearestLocation?.radius || 100))}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-6 px-8 rounded-2xl text-xl transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none disabled:hover:scale-100 shadow-sm"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  <span>처리 중...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  <LogIn className="w-6 h-6" />
-                  <span>출근하기</span>
-                </div>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={handleCheckOut}
-              disabled={loading || !currentLocation}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-6 px-8 rounded-2xl text-xl transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none disabled:hover:scale-100 shadow-sm"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  <span>처리 중...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  <LogOut className="w-6 h-6" />
-                  <span>퇴근하기</span>
-                </div>
-              )}
-            </button>
-          )}
+          <AttendanceButton
+            type={attendanceStatus.isCheckedIn ? 'check-out' : 'check-in'}
+            onClick={attendanceStatus.isCheckedIn ? handleCheckOut : handleCheckIn}
+            disabled={!currentLocation || !nearestLocation || (distance !== null && distance > (nearestLocation?.radius || 100))}
+            loading={loading}
+          />
         </div>
 
         {/* Today's Work Status */}
