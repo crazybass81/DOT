@@ -149,19 +149,41 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      <div className="max-w-md w-full">
-        {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/20 text-blue-400 mb-4">
-            <UserPlus className="h-8 w-8" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* GitHub-style background pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header - consistent with home page */}
+        <header className="w-full pt-8 pb-6">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center">
+              <Link href="/" className="inline-block mb-4 text-blue-600 hover:text-blue-700 transition-colors">
+                ← 로그인 페이지로 돌아가기
+              </Link>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">DOT 출석관리</h1>
-          <p className="text-slate-400">새 계정을 만들어 시작하세요</p>
-        </div>
+        </header>
 
-        {/* Signup Form */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-8">
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center px-4 py-8">
+          <div className="w-full max-w-md">
+            {/* Brand Header - consistent with home page */}
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <UserPlus className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-3 font-korean">
+                DOT 출석 관리
+              </h1>
+              <p className="text-gray-600 text-lg font-korean">
+                새 계정을 만들어 시작하세요
+              </p>
+              <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            {/* Glass-morphism Signup Card - consistent with home page */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* General Error */}
             {errors.general && (
