@@ -81,21 +81,60 @@ async function testConnection() {
     if (authData?.user || !authError) {
       console.log('✅ Auth 사용자 처리 성공');
       
-      // Profiles 테이블에 데이터 추가
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
+      // 1) unified_identities 테이블에 사용자 추가
+      const { data: identityData, error: identityError } = await supabase
+        .from('unified_identities')
         .upsert({
           email: 'test.admin@example.com',
           full_name: '테스트 관리자',
+          auth_user_id: authData?.user?.id,
+          id_type: 'personal',
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (identityError) {
+        console.error('❌ Identity 생성 실패:', identityError);
+        return;
+      }
+      
+      console.log('✅ Identity 생성 성공:', identityData);
+
+      // 2) 기본 조직 생성 또는 확인
+      const { data: orgData, error: orgError } = await supabase
+        .from('organizations_v3')
+        .upsert({
+          name: '테스트 회사',
+          type: 'company',
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (orgError) {
+        console.error('❌ 조직 생성 실패:', orgError);
+        return;
+      }
+
+      // 3) role_assignments 테이블에 역할 할당
+      const { data: roleData, error: roleError } = await supabase
+        .from('role_assignments')
+        .upsert({
+          identity_id: identityData.id,
+          organization_id: orgData.id,
           role: 'admin',
-          avatar_url: null,
+          is_active: true,
+          employee_code: 'ADMIN001',
+          department: 'IT',
+          position: '시스템 관리자',
         })
         .select();
 
-      if (profileError) {
-        console.error('❌ Profile 생성 실패:', profileError);
+      if (roleError) {
+        console.error('❌ 역할 할당 실패:', roleError);
       } else {
-        console.log('✅ Profile 생성 성공:', profileData);
+        console.log('✅ 역할 할당 성공:', roleData);
       }
     } else {
       console.log('ℹ️  사용자가 이미 존재하거나 생성되지 않음');
