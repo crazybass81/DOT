@@ -142,7 +142,7 @@ async function testConnection() {
 
     console.log('\n🎯 로그인 테스트 정보:');
     console.log('📧 이메일: admin@dottest.com');
-    console.log('🔑 비밀번호: TestPass123!');
+    console.log('🔑 비밀번호: DotTest123!');
     console.log('👤 역할: admin');
     
   } catch (error) {
