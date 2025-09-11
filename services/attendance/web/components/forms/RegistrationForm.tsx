@@ -10,6 +10,7 @@ import { Eye, EyeOff, User, Phone, Calendar, Mail, Lock, CreditCard, AlertCircle
 import { 
   RegistrationFormSchema, 
   formatPhoneNumber, 
+  formatBusinessNumber,
   validatePasswordStrength,
   type RegistrationFormData 
 } from '@/src/schemas/registration.schema';
@@ -93,6 +94,12 @@ export default function RegistrationForm({ onSubmit, loading = false, registrati
     if (name === 'phone' && typeof value === 'string') {
       const formatted = formatPhoneNumber(value);
       setFormData(prev => ({ ...prev, phone: formatted }));
+    }
+
+    // Format business number on change
+    if (name === 'businessNumber' && typeof value === 'string') {
+      const formatted = formatBusinessNumber(value);
+      setFormData(prev => ({ ...prev, businessNumber: formatted }));
     }
 
     // Validate field if it has been touched
