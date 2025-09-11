@@ -12,6 +12,11 @@ import { type LoginFormData, type UserRole, type AuthError, type LoginResult } f
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginFormData, rememberMe?: boolean) => Promise<LoginResult>;
+  signUp: (email: string, password: string, metadata?: { name?: string }) => Promise<{
+    user?: User;
+    needsVerification?: boolean;
+    error?: AuthError;
+  }>;
   logout: () => Promise<void>;
   clearError: () => void;
   hasRole: (role: UserRole) => boolean;
