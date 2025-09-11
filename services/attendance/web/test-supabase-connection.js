@@ -27,19 +27,27 @@ async function testConnection() {
     }
     console.log('✅ Supabase 연결 성공!');
 
-    // 2. 테스트 사용자 확인 (profiles 테이블 시도)
+    // 2. 테스트 사용자 확인 (unified_identities + role_assignments)
     console.log('\n👤 2. 기존 테스트 사용자 확인...');
-    const { data: users, error: usersError } = await supabase
-      .from('profiles')
-      .select('*')
+    const { data: identities, error: identitiesError } = await supabase
+      .from('unified_identities')
+      .select(`
+        *,
+        role_assignments(
+          role,
+          organization_id,
+          is_active
+        )
+      `)
       .limit(10);
     
-    if (usersError) {
-      console.error('❌ 사용자 조회 실패:', usersError);
+    if (identitiesError) {
+      console.error('❌ 사용자 조회 실패:', identitiesError);
     } else {
-      console.log(`📋 현재 등록된 사용자: ${users.length}명`);
-      users.forEach(user => {
-        console.log(`  - ${user.email} (${user.role || '역할없음'})`);
+      console.log(`📋 현재 등록된 사용자: ${identities.length}명`);
+      identities.forEach(identity => {
+        const roles = identity.role_assignments?.filter(r => r.is_active)?.map(r => r.role) || [];
+        console.log(`  - ${identity.email} (${identity.full_name}, 역할: ${roles.join(', ') || '없음'})`);
       });
     }
 
