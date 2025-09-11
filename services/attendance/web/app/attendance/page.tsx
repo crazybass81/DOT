@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
-import { MapPin, Calendar, Activity, AlertCircle, User, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Activity, AlertCircle, User, Loader2, Clock } from 'lucide-react';
 import GitHubStyleClock from '@/components/ui/GitHubStyleClock';
 import StatusIndicator from '@/components/ui/StatusIndicator';
 import AttendanceButton from '@/components/ui/AttendanceButton';
