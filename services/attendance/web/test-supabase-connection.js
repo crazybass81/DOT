@@ -17,7 +17,7 @@ async function testConnection() {
     // 1. 기본 연결 테스트
     console.log('\n📡 1. 기본 연결 테스트...');
     const { data: connectionTest, error: connectionError } = await supabase
-      .from('organizations')
+      .from('organizations_v3')
       .select('*', { count: 'exact' })
       .limit(1);
     
