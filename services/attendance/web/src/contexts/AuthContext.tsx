@@ -440,6 +440,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const contextValue: AuthContextType = {
     ...authState,
     login,
+    signUp,
     logout,
     clearError,
     hasRole,
