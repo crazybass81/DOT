@@ -11,7 +11,8 @@ import QuickActionPanel from '@/components/dashboard/QuickActionPanel';
 import AttendanceChart from '@/components/dashboard/AttendanceChart';
 import NotificationSystem, { NotificationProvider, useNotifications } from '@/components/notifications/NotificationSystem';
 
-export default function AdminDashboard() {
+// Wrapper component to provide notification context
+function AdminDashboardContent() {
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [userName, setUserName] = useState('');
