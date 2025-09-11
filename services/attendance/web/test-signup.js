@@ -4,7 +4,7 @@ const client = createClient('https://mljyiuzetchtjudbcfvd.supabase.co', 'eyJhbGc
 async function testSignUp() {
   console.log('🔍 Testing Supabase auth signup...');
   
-  const testEmail = 'test@example.com';
+  const testEmail = 'test@gmail.com';
   const testPassword = 'Test123!@#';
   
   console.log('📧 Testing with email:', testEmail);
