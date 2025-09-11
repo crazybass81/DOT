@@ -8,8 +8,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { SupabaseAuthService, type User, type AuthState } from '@/src/services/supabaseAuthService';
-import { type LoginFormData, type AuthError, type LoginResult } from '@/src/schemas/auth.schema';
-import { type LoginFormData, type User, type UserRole } from '@/src/schemas/auth.schema';
+import { type LoginFormData, type UserRole, type AuthError, type LoginResult } from '@/src/schemas/auth.schema';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginFormData, rememberMe?: boolean) => Promise<LoginResult>;
