@@ -245,11 +245,11 @@ export default function SignUpPage() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 비밀번호
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="password"
                   name="password"
@@ -257,31 +257,31 @@ export default function SignUpPage() {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-12 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.password ? 'border-red-500' : 'border-white/20'
+                  className={`w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    errors.password ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="비밀번호를 입력하세요"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-red-400 text-sm">{errors.password}</p>
+                <p className="text-red-500 text-sm">{errors.password}</p>
               )}
             </div>
 
             {/* Confirm Password Field */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 비밀번호 확인
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -289,21 +289,21 @@ export default function SignUpPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-12 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-white/20'
+                  className={`w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="비밀번호를 다시 입력하세요"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-red-400 text-sm">{errors.confirmPassword}</p>
+                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
               )}
             </div>
 
