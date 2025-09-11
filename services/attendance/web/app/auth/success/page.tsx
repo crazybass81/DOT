@@ -10,11 +10,11 @@ export default function AuthSuccessPage() {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    // 5초 후 자동으로 대시보드로 이동
+    // 5초 후 자동으로 홈페이지로 이동
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          window.location.href = '/dashboard';
+          window.location.href = '/';
           return 0;
         }
         return prev - 1;
