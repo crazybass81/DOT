@@ -252,7 +252,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Check if user has specific role or higher
    */
   const hasRole = (role: UserRole): boolean => {
-    return authService.hasRole(role);
+    if (!authState.user?.role) return false;
+
+    const roleHierarchy = { worker: 1, manager: 2, admin: 3, master: 4 };
+    const userLevel = roleHierarchy[authState.user.role as keyof typeof roleHierarchy];
+    const requiredLevel = roleHierarchy[role as keyof typeof roleHierarchy];
+
+    return userLevel >= requiredLevel;
   };
 
   /**
@@ -260,7 +266,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const refreshSession = async (): Promise<boolean> => {
     try {
-      return await authService.refreshSession();
+      const { data, error } = await supabaseAuthService.supabase.auth.refreshSession();
+      return !error && !!data.session;
     } catch (error) {
       console.error('Session refresh error:', error);
       return false;
