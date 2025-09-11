@@ -11,6 +11,12 @@ const KOREAN_PHONE_REGEX = /^010-?[0-9]{4}-?[0-9]{4}$/;
 // Korean name validation (한글, 영문, 숫자 허용)
 const KOREAN_NAME_REGEX = /^[가-힣a-zA-Z\s]{2,20}$/;
 
+// Korean business registration number validation
+const KOREAN_BUSINESS_NUMBER_REGEX = /^\d{3}-?\d{2}-?\d{5}$/;
+
+// Business name validation
+const BUSINESS_NAME_REGEX = /^[가-힣a-zA-Z0-9\s\(\)\-\.]{2,50}$/;
+
 // Birth date validation (18+ years old)
 const validateAge = (birthDate: string): boolean => {
   const today = new Date();
@@ -31,6 +37,25 @@ export const RegistrationFormSchema = z.object({
     .min(2, '이름은 2글자 이상이어야 합니다')
     .max(20, '이름은 20글자 이하여야 합니다')
     .regex(KOREAN_NAME_REGEX, '올바른 이름 형식이 아닙니다 (한글, 영문만 허용)'),
+
+  // Business registration fields (optional for individual registration)
+  businessName: z
+    .string()
+    .min(2, '사업자명은 2글자 이상이어야 합니다')
+    .max(50, '사업자명은 50글자 이하여야 합니다')
+    .regex(BUSINESS_NAME_REGEX, '올바른 사업자명 형식이 아닙니다')
+    .optional(),
+
+  businessNumber: z
+    .string()
+    .regex(KOREAN_BUSINESS_NUMBER_REGEX, '올바른 사업자등록번호 형식이 아닙니다 (123-45-67890)')
+    .optional(),
+
+  businessAddress: z
+    .string()
+    .min(5, '주소는 5글자 이상이어야 합니다')
+    .max(200, '주소는 200글자 이하여야 합니다')
+    .optional(),
   
   phone: z
     .string()
@@ -106,11 +131,24 @@ export const RegistrationRequestSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(8),
   accountNumber: z.string().optional(),
+  registrationType: z.enum(['individual', 'business']).default('individual'),
+  businessName: z.string().optional(),
+  businessNumber: z.string().optional(),
+  businessAddress: z.string().optional(),
   qrContext: z.object({
     organizationId: z.string().uuid().optional(),
     locationId: z.string().optional(),
     inviteCode: z.string().optional(),
   }).optional(),
+}).refine((data) => {
+  // If business registration, require business fields
+  if (data.registrationType === 'business') {
+    return data.businessName && data.businessNumber;
+  }
+  return true;
+}, {
+  message: '사업자 등록 시 사업자명과 등록번호는 필수입니다',
+  path: ['businessName']
 });
 
 // Response schemas
@@ -174,6 +212,22 @@ export const validatePhoneNumber = (phone: string): boolean => {
 
 export const validateKoreanName = (name: string): boolean => {
   return KOREAN_NAME_REGEX.test(name);
+};
+
+export const validateBusinessNumber = (businessNumber: string): boolean => {
+  return KOREAN_BUSINESS_NUMBER_REGEX.test(businessNumber);
+};
+
+export const validateBusinessName = (businessName: string): boolean => {
+  return BUSINESS_NAME_REGEX.test(businessName);
+};
+
+// Format business number with dashes
+export const formatBusinessNumber = (value: string): string => {
+  const numbers = value.replace(/[^\d]/g, '');
+  if (numbers.length <= 3) return numbers;
+  if (numbers.length <= 5) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  return `${numbers.slice(0, 3)}-${numbers.slice(3, 5)}-${numbers.slice(5, 10)}`;
 };
 
 export const validatePasswordStrength = (password: string): {
