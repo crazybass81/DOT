@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building2, Users, Shield, Zap } from 'lucide-react';
-import { useAuth, NotAuthenticated } from '@/src/contexts/AuthContext';
+import { useAuth } from '@/src/contexts/AuthContext';
 import LoginForm from '@/src/components/forms/LoginForm';
 import { OptimizedRealTimeClock } from '@/components/ui/RealTimeClock';
 
