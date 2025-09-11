@@ -6,8 +6,10 @@ import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
 import { userService } from '@/src/services/userService';
 import AttendanceStats from '@/components/dashboard/AttendanceStats';
 import RealtimeAttendance from '@/components/dashboard/RealtimeAttendance';
+import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import QuickActionPanel from '@/components/dashboard/QuickActionPanel';
 import AttendanceChart from '@/components/dashboard/AttendanceChart';
-import NotificationSystem, { useNotifications } from '@/components/notifications/NotificationSystem';
+import NotificationSystem, { NotificationProvider, useNotifications } from '@/components/notifications/NotificationSystem';
 
 export default function AdminDashboard() {
   const router = useRouter();
