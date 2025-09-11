@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Eye, EyeOff, User, Phone, Calendar, Mail, Lock, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, User, Phone, Calendar, Mail, Lock, CreditCard, AlertCircle, CheckCircle, Building2, FileText, MapPin } from 'lucide-react';
 import { 
   RegistrationFormSchema, 
   formatPhoneNumber, 
@@ -15,9 +15,12 @@ import {
 } from '@/src/schemas/registration.schema';
 import { z } from 'zod';
 
+type RegistrationType = 'individual' | 'business' | null;
+
 interface RegistrationFormProps {
   onSubmit: (data: RegistrationFormData) => Promise<void>;
   loading?: boolean;
+  registrationType?: RegistrationType;
   qrContext?: {
     organizationId?: string;
     locationId?: string;
@@ -33,7 +36,7 @@ interface FormErrors {
   [key: string]: FieldError | undefined;
 }
 
-export default function RegistrationForm({ onSubmit, loading = false, qrContext }: RegistrationFormProps) {
+export default function RegistrationForm({ onSubmit, loading = false, registrationType = 'individual', qrContext }: RegistrationFormProps) {
   // Form state
   const [formData, setFormData] = useState<RegistrationFormData>({
     name: '',
@@ -43,6 +46,9 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
     password: '',
     confirmPassword: '',
     accountNumber: '',
+    businessName: registrationType === 'business' ? '' : undefined,
+    businessNumber: registrationType === 'business' ? '' : undefined,
+    businessAddress: registrationType === 'business' ? '' : undefined,
     agreeToTerms: false,
     agreeToPrivacy: false,
     agreeToMarketing: false,
@@ -347,6 +353,88 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
         )}
       </div>
 
+      {/* Business Fields for Business Registration */}
+      {registrationType === 'business' && (
+        <>
+          {/* Business Name Field */}
+          <div className="space-y-2">
+            <label htmlFor="businessName" className="label flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              사업자명/법인명 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="businessName"
+              value={formData.businessName || ''}
+              onChange={(e) => handleFieldChange('businessName', e.target.value)}
+              onBlur={(e) => handleFieldBlur('businessName', e.target.value)}
+              className={`input ${errors.businessName ? 'border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="(주)도트테크놀로지"
+              maxLength={100}
+              required
+            />
+            {errors.businessName && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {errors.businessName.message}
+              </p>
+            )}
+          </div>
+
+          {/* Business Registration Number Field */}
+          <div className="space-y-2">
+            <label htmlFor="businessNumber" className="label flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              사업자등록번호 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="businessNumber"
+              value={formData.businessNumber || ''}
+              onChange={(e) => handleFieldChange('businessNumber', e.target.value)}
+              onBlur={(e) => handleFieldBlur('businessNumber', e.target.value)}
+              className={`input ${errors.businessNumber ? 'border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="123-45-67890"
+              maxLength={12}
+              required
+            />
+            {errors.businessNumber && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {errors.businessNumber.message}
+              </p>
+            )}
+            <p className="text-xs text-gray-500">
+              사업자등록번호 10자리를 입력하세요 (예: 123-45-67890)
+            </p>
+          </div>
+
+          {/* Business Address Field */}
+          <div className="space-y-2">
+            <label htmlFor="businessAddress" className="label flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              사업장 주소 <span className="text-gray-400">(선택)</span>
+            </label>
+            <input
+              type="text"
+              id="businessAddress"
+              value={formData.businessAddress || ''}
+              onChange={(e) => handleFieldChange('businessAddress', e.target.value)}
+              onBlur={(e) => handleFieldBlur('businessAddress', e.target.value)}
+              className={`input ${errors.businessAddress ? 'border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="서울특별시 강남구 테헤란로 123"
+              maxLength={200}
+            />
+            {errors.businessAddress && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {errors.businessAddress.message}
+              </p>
+            )}
+          </div>
+        </>
+      )}
+
       {/* Account Number Field */}
       <div className="space-y-2">
         <label htmlFor="accountNumber" className="label flex items-center gap-2">
@@ -360,7 +448,7 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
           onChange={(e) => handleFieldChange('accountNumber', e.target.value)}
           onBlur={(e) => handleFieldBlur('accountNumber', e.target.value)}
           className={`input ${errors.accountNumber ? 'border-red-500 focus:ring-red-500' : ''}`}
-          placeholder="급여 지급 계좌 (예: 국민은행 123-456-789012)"
+          placeholder={registrationType === 'business' ? '법인 계좌번호 (예: 기업은행 123-456-789012)' : '급여 지급 계좌 (예: 국민은행 123-456-789012)'}
           maxLength={100}
         />
         {errors.accountNumber && (
@@ -381,15 +469,22 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
               id="agreeToTerms"
               checked={formData.agreeToTerms}
               onChange={(e) => handleFieldChange('agreeToTerms', e.target.checked)}
-              className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className={`mt-1 h-5 w-5 ${
+                registrationType === 'business' 
+                  ? 'text-purple-600 focus:ring-purple-500' 
+                  : 'text-blue-600 focus:ring-blue-500'
+              } border-gray-300 rounded`}
               required
             />
             <label htmlFor="agreeToTerms" className="text-sm">
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 font-korean">
                 이용약관에 동의합니다 <span className="text-red-500">*</span>
               </span>
-              <span className="block text-gray-500 mt-1">
-                서비스 이용을 위해 약관 동의가 필요합니다
+              <span className="block text-gray-500 mt-1 font-korean">
+                {registrationType === 'business' 
+                  ? '사업자 서비스 이용을 위해 약관 동의가 필요합니다'
+                  : '서비스 이용을 위해 약관 동의가 필요합니다'
+                }
               </span>
             </label>
           </div>
@@ -401,14 +496,18 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
               id="agreeToPrivacy"
               checked={formData.agreeToPrivacy}
               onChange={(e) => handleFieldChange('agreeToPrivacy', e.target.checked)}
-              className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className={`mt-1 h-5 w-5 ${
+                registrationType === 'business' 
+                  ? 'text-purple-600 focus:ring-purple-500' 
+                  : 'text-blue-600 focus:ring-blue-500'
+              } border-gray-300 rounded`}
               required
             />
             <label htmlFor="agreeToPrivacy" className="text-sm">
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 font-korean">
                 개인정보 처리방침에 동의합니다 <span className="text-red-500">*</span>
               </span>
-              <span className="block text-gray-500 mt-1">
+              <span className="block text-gray-500 mt-1 font-korean">
                 개인정보 수집 및 이용에 대한 동의가 필요합니다
               </span>
             </label>
@@ -421,14 +520,21 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
               id="agreeToMarketing"
               checked={formData.agreeToMarketing}
               onChange={(e) => handleFieldChange('agreeToMarketing', e.target.checked)}
-              className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className={`mt-1 h-5 w-5 ${
+                registrationType === 'business' 
+                  ? 'text-purple-600 focus:ring-purple-500' 
+                  : 'text-blue-600 focus:ring-blue-500'
+              } border-gray-300 rounded`}
             />
             <label htmlFor="agreeToMarketing" className="text-sm">
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 font-korean">
                 마케팅 정보 수신에 동의합니다 <span className="text-gray-400">(선택)</span>
               </span>
-              <span className="block text-gray-500 mt-1">
-                이벤트, 혜택 정보 등을 받아보실 수 있습니다
+              <span className="block text-gray-500 mt-1 font-korean">
+                {registrationType === 'business' 
+                  ? '새로운 기능, 업데이트 소식을 받아보실 수 있습니다'
+                  : '이벤트, 혜택 정보 등을 받아보실 수 있습니다'
+                }
               </span>
             </label>
           </div>
@@ -453,37 +559,78 @@ export default function RegistrationForm({ onSubmit, loading = false, qrContext 
         )}
       </div>
 
-      {/* Submit Button */}
+      {/* Submit Button - Enhanced with registration type */}
       <button
         type="submit"
         disabled={loading || isValidating}
-        className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${
+        className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
           loading || isValidating
             ? 'bg-gray-400 cursor-not-allowed'
-            : 'btn-primary hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+            : registrationType === 'business'
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
         }`}
       >
         {loading || isValidating ? (
-          <span className="flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            등록 중...
+          <span className="flex items-center justify-center gap-3">
+            <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span className="font-korean">등록 중...</span>
           </span>
         ) : (
-          <span className="flex items-center justify-center gap-2">
-            <CheckCircle className="w-5 h-5" />
-            회원 가입
+          <span className="flex items-center justify-center gap-3">
+            {registrationType === 'business' ? (
+              <Building2 className="w-6 h-6" />
+            ) : (
+              <CheckCircle className="w-6 h-6" />
+            )}
+            <span className="text-lg font-korean">
+              {registrationType === 'business' ? '사업자 회원가입' : '개인 회원가입'}
+            </span>
           </span>
         )}
       </button>
 
-      {/* Form Footer */}
-      <div className="text-center text-sm text-gray-500 space-y-2">
-        <p>
-          이미 계정이 있으시나요?{' '}
-          <a href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
-            로그인
-          </a>
-        </p>
+      {/* Form Footer - Enhanced */}
+      <div className="text-center space-y-4">
+        {/* Features Highlight */}
+        {registrationType === 'business' && (
+          <div className="grid grid-cols-2 gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+            <div className="text-center">
+              <Users className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+              <span className="text-xs text-purple-800 font-korean">직원 관리</span>
+            </div>
+            <div className="text-center">
+              <Building2 className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+              <span className="text-xs text-purple-800 font-korean">조직 운영</span>
+            </div>
+          </div>
+        )}
+        
+        {registrationType === 'individual' && (
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+            <div className="text-center">
+              <Clock className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+              <span className="text-xs text-blue-800 font-korean">실시간 출근</span>
+            </div>
+            <div className="text-center">
+              <MapPin className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+              <span className="text-xs text-blue-800 font-korean">GPS 인증</span>
+            </div>
+            <div className="text-center">
+              <Shield className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+              <span className="text-xs text-blue-800 font-korean">보안 관리</span>
+            </div>
+          </div>
+        )}
+        
+        <div className="text-sm text-gray-500 space-y-2 font-korean">
+          <p>
+            이미 계정이 있으시나요?{' '}
+            <a href="/" className="text-blue-600 hover:text-blue-700 font-medium">
+              로그인
+            </a>
+          </p>
+        </div>
       </div>
     </form>
   );
