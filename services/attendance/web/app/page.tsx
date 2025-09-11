@@ -11,13 +11,6 @@ export default function Home() {
   const auth = useAuth();
   const router = useRouter();
 
-  // Temporarily disable auto redirect to see login page
-  // useEffect(() => {
-  //   if (!auth.isLoading && auth.isAuthenticated && auth.user) {
-  //     const redirectUrl = getRedirectUrlForRole(auth.user.role);
-  //     router.push(redirectUrl);
-  //   }
-  // }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
 
   const getRedirectUrlForRole = (role: string) => {
     switch (role) {
