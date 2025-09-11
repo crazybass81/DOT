@@ -116,14 +116,15 @@ const nextConfig = {
     ];
   },
 
-  // Redirect configuration
+  // Redirect configuration - DISABLED to allow login page
   async redirects() {
     return [
-      {
-        source: '/',
-        destination: '/dashboard',
-        permanent: false,
-      },
+      // REMOVED automatic redirect from / to /dashboard
+      // {
+      //   source: '/',
+      //   destination: '/dashboard',
+      //   permanent: false,
+      // },
     ];
   },
 
