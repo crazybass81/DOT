@@ -56,16 +56,18 @@ export default function Home() {
   }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
 
   return (
-    <NotAuthenticated
-      fallback={
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 font-korean">인증된 사용자를 리디렉션 중...</p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* 인증 상태에 관계없이 항상 로그인 페이지를 보여줌 */}
+      {auth.isAuthenticated && (
+        <div className="absolute top-4 right-4 z-20">
+          <button
+            onClick={auth.logout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-korean"
+          >
+            로그아웃
+          </button>
         </div>
-      }
-    >
+      )}
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         {/* GitHub-style background pattern */}
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
