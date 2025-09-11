@@ -127,7 +127,6 @@ export default function SignUpPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        {/* GitHub-style background pattern */}
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
@@ -155,11 +154,9 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* GitHub-style background pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header - consistent with home page */}
         <header className="w-full pt-8 pb-6">
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center">
@@ -170,10 +167,8 @@ export default function SignUpPage() {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="w-full max-w-md">
-            {/* Brand Header - consistent with home page */}
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <UserPlus className="w-10 h-10 text-white" />
@@ -187,10 +182,8 @@ export default function SignUpPage() {
               <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto mt-4 rounded-full"></div>
             </div>
 
-            {/* Glass-morphism Signup Card - consistent with home page */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* General Error */}
                 {errors.general && (
                   <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center space-x-3">
                     <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
@@ -198,7 +191,6 @@ export default function SignUpPage() {
                   </div>
                 )}
 
-                {/* Name Field */}
                 <div className="space-y-2">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                     이름
@@ -223,7 +215,6 @@ export default function SignUpPage() {
                   )}
                 </div>
 
-                {/* Email Field */}
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     이메일
@@ -248,7 +239,6 @@ export default function SignUpPage() {
                   )}
                 </div>
 
-                {/* Password Field */}
                 <div className="space-y-2">
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     비밀번호
@@ -280,7 +270,6 @@ export default function SignUpPage() {
                   )}
                 </div>
 
-                {/* Confirm Password Field */}
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                     비밀번호 확인
@@ -312,7 +301,6 @@ export default function SignUpPage() {
                   )}
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -332,7 +320,6 @@ export default function SignUpPage() {
                 </button>
               </form>
 
-              {/* Login Link */}
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
                   이미 계정이 있으신가요?{' '}
@@ -346,7 +333,6 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* System Info Footer - consistent with home page */}
             <footer className="mt-8 text-center">
               <div className="space-y-2">
                 <div className="flex items-center justify-center space-x-2 text-sm font-semibold text-gray-700">
@@ -363,7 +349,6 @@ export default function SignUpPage() {
           </div>
         </main>
 
-        {/* Bottom spacing */}
         <div className="pb-8"></div>
       </div>
     </div>
