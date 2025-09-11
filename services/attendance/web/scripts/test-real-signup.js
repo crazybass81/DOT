@@ -24,7 +24,7 @@ async function testRealSignup() {
   console.log('🚀 실제 이메일 회원가입 테스트 시작...\n');
 
   // 테스트 계정 정보
-  const testEmail = `test.user.${Date.now()}@example.com`;
+  const testEmail = `testuser${Date.now()}@gmail.com`;
   const testPassword = 'TestPassword123!';
   const testName = '테스트 사용자';
 
