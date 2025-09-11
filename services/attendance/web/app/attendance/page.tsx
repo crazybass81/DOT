@@ -323,24 +323,6 @@ export default function AttendancePage() {
     }, 100);
   };
 
-  // Format time function for Korean timezone
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('ko-KR', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
-    });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
