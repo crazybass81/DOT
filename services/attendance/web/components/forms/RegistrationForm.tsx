@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Eye, EyeOff, User, Phone, Calendar, Mail, Lock, CreditCard, AlertCircle, CheckCircle, Building2, FileText, MapPin } from 'lucide-react';
+import { Eye, EyeOff, User, Phone, Calendar, Mail, Lock, CreditCard, AlertCircle, CheckCircle, Building2, FileText, MapPin, Users, Clock, Shield } from 'lucide-react';
 import { 
   RegistrationFormSchema, 
   formatPhoneNumber, 
