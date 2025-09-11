@@ -6,28 +6,19 @@ import Link from 'next/link';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { Eye, EyeOff, UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
 
-interface FormData {
-  // Step 1 - 기본 정보
+interface SignUpFormData {
+  name: string;
   email: string;
   password: string;
-  passwordConfirm: string;
-  name: string;
-  phone: string;
-  
-  // Step 2 - 사용자 구분
-  userType: 'business' | 'worker' | '';
-  
-  // Step 3 - 사업자 정보 (사업자인 경우)
-  businessType: 'corporation' | 'personal' | '';
-  businessName: string;
-  businessNumber: string;
-  representativeName: string;
-  businessAddress: string;
-  
-  // Step 3 - 근로자 정보 (근로자인 경우)
-  organizationCode: string;
-  birthdate: string;
-  department: string;
+  confirmPassword: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  general?: string;
 }
 
 export default function SignUpPage() {
