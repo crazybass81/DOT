@@ -289,18 +289,31 @@ export default function AttendancePage() {
     setError('');
 
     try {
-      const result = await apiService.checkOut({
-        location: currentLocation
-      });
+      // Calculate work duration
+      const checkInTime = new Date(attendanceStatus.checkInTime!);
+      const checkOutTime = new Date();
+      const workDurationMs = checkOutTime.getTime() - checkInTime.getTime();
+      const workDurationMinutes = Math.floor(workDurationMs / (1000 * 60));
+      const workHours = Math.floor(workDurationMinutes / 60);
+      const workMinutes = workDurationMinutes % 60;
 
       setAttendanceStatus({
         isCheckedIn: false,
         checkInTime: attendanceStatus.checkInTime,
-        checkOutTime: result.checkOutTime,
-        workDuration: result.workDurationMinutes
+        checkOutTime: checkOutTime.toISOString(),
+        workDuration: workDurationMinutes
       });
 
-      alert(`퇴근 처리가 완료되었습니다! 근무시간: ${result.workHours}시간 ${result.workMinutes}분`);
+      // Show success message with work duration
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      notification.textContent = `✅ 퇴근 처리 완료! 근무시간: ${workHours}시간 ${workMinutes}분`;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 4000);
+
     } catch (err: any) {
       setError(err.message || '퇴근 처리에 실패했습니다');
     } finally {
