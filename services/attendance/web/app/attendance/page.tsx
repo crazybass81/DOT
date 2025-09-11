@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { multiRoleAuthService } from "@/src/services/multiRoleAuthService";
-import { apiService } from '@/src/services/apiService';
-import { businessService } from '@/src/services/businessService';
+import { Clock, MapPin, Calendar, Activity, LogIn, LogOut, Loader2, AlertCircle, User } from 'lucide-react';
 
 interface Location {
   lat: number;
@@ -16,6 +15,23 @@ interface AttendanceStatus {
   checkInTime?: string;
   checkOutTime?: string;
   workDuration?: number;
+  weeklyAttendance?: number;
+  monthlyHours?: number;
+  lateCount?: number;
+  earlyLeaveCount?: number;
+}
+
+interface WeeklyStats {
+  totalDays: number;
+  workingDays: number;
+  lateCount: number;
+  earlyLeaveCount: number;
+}
+
+interface MonthlyStats {
+  totalHours: number;
+  averageHours: number;
+  overtimeHours: number;
 }
 
 export default function AttendancePage() {
@@ -35,6 +51,7 @@ export default function AttendancePage() {
     
     checkMobile();
   }, [router]);
+  
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [nearestLocation, setNearestLocation] = useState<any>(null);
   const [businessInfo, setBusinessInfo] = useState<any>(null);
@@ -46,6 +63,9 @@ export default function AttendancePage() {
   const [error, setError] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [workHours, setWorkHours] = useState({ hours: 0, minutes: 0 });
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats>({ totalDays: 7, workingDays: 5, lateCount: 0, earlyLeaveCount: 0 });
+  const [monthlyStats, setMonthlyStats] = useState<MonthlyStats>({ totalHours: 160, averageHours: 8, overtimeHours: 12 });
+  const [user, setUser] = useState<any>(null);
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (loc1: Location, loc2: Location): number => {
