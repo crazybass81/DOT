@@ -85,7 +85,7 @@ async function testConnection() {
       const { data: identityData, error: identityError } = await supabase
         .from('unified_identities')
         .upsert({
-          email: 'test.admin@example.com',
+          email: 'admin@dottest.com',
           full_name: '테스트 관리자',
           auth_user_id: authData?.user?.id,
           id_type: 'personal',
@@ -141,7 +141,7 @@ async function testConnection() {
     }
 
     console.log('\n🎯 로그인 테스트 정보:');
-    console.log('📧 이메일: test.admin@example.com');
+    console.log('📧 이메일: admin@dottest.com');
     console.log('🔑 비밀번호: TestPass123!');
     console.log('👤 역할: admin');
     
