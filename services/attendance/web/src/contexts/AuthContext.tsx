@@ -303,6 +303,88 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   /**
+   * Sign up new user
+   */
+  const signUp = async (email: string, password: string, metadata?: { name?: string }) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+
+    try {
+      const { data, error } = await supabaseAuthService.supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata ? { name: metadata.name } : undefined
+        }
+      });
+
+      if (error) {
+        const authError: AuthError = {
+          code: error.message,
+          message: '회원가입에 실패했습니다',
+          details: error.message,
+        };
+
+        return { error: authError };
+      }
+
+      if (data.user) {
+        // Check if email confirmation is required
+        if (!data.session) {
+          return { 
+            needsVerification: true,
+            user: undefined 
+          };
+        }
+
+        // If session exists, create profile and return user
+        const { data: identity } = await supabaseAuthService.supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        let user: User | undefined;
+        if (identity) {
+          user = {
+            id: identity.id,
+            email: identity.email || '',
+            name: identity.name || metadata?.name || '',
+            role: identity.role || 'worker',
+            approvalStatus: 'APPROVED',
+            employee: {
+              ...identity,
+              employee_code: identity.employee_code,
+              department: identity.department,
+              position: identity.position,
+            }
+          };
+        }
+
+        return { user };
+      }
+
+      return { 
+        error: {
+          code: 'SIGNUP_FAILED',
+          message: '회원가입에 실패했습니다',
+        }
+      };
+    } catch (error: any) {
+      console.error('SignUp error in context:', error);
+      
+      const authError: AuthError = {
+        code: 'UNEXPECTED_ERROR',
+        message: '예상치 못한 오류가 발생했습니다',
+        details: error.message,
+      };
+
+      return { error: authError };
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  /**
    * Logout user and redirect to home
    */
   const logout = async (): Promise<void> => {
