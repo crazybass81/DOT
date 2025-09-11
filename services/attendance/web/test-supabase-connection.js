@@ -33,7 +33,7 @@ async function testConnection() {
       .from('unified_identities')
       .select(`
         *,
-        role_assignments(
+        role_assignments!role_assignments_identity_id_fkey(
           role,
           organization_id,
           is_active
