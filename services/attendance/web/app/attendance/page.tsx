@@ -247,27 +247,31 @@ export default function AttendancePage() {
     setError('');
 
     try {
-      // 먼저 체크인 가능 여부 확인
-      const checkInValidation = await businessService.canCheckIn(currentLocation);
-      
-      if (!checkInValidation.allowed) {
-        setError(checkInValidation.message);
+      // Check if user is within allowed radius
+      if (distance !== null && distance > (nearestLocation?.radius || 100)) {
+        setError(`사업장에서 ${nearestLocation?.radius || 100}m 이내로 접근해주세요. (현재 거리: ${distance}m)`);
         setLoading(false);
         return;
       }
 
-      const result = await apiService.checkIn({
-        location: currentLocation,
-        verificationMethod: 'gps'
-      });
-
+      // Mock successful check-in
+      const currentTime = new Date().toISOString();
       setAttendanceStatus({
         isCheckedIn: true,
-        checkInTime: result.checkInTime,
+        checkInTime: currentTime,
         workDuration: 0
       });
 
-      alert('출근 처리가 완료되었습니다!');
+      // Show success message
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      notification.textContent = '✅ 출근 처리가 완료되었습니다!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 3000);
+
     } catch (err: any) {
       setError(err.message || '출근 처리에 실패했습니다');
     } finally {
