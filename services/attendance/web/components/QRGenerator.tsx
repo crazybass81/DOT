@@ -12,6 +12,7 @@ import { generateEmployeeQR, generateOrganizationQR, QREmployeeData, QROrganizat
 
 interface QRGeneratorProps {
   className?: string;
+  onQRGenerated?: (qrData: QREmployeeData | QROrganizationData, qrImage: string) => void;
 }
 
 interface EmployeeForm {
