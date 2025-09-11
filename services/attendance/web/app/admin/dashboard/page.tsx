@@ -66,7 +66,7 @@ function AdminDashboardContent() {
   }, []);
 
   const handleLogout = async () => {
-    await unifiedAuthService.signOut();
+    await multiRoleAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {
