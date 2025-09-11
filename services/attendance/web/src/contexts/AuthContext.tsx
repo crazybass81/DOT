@@ -132,19 +132,80 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Login user and handle redirect
    */
   const login = async (credentials: LoginFormData, rememberMe = false): Promise<LoginResult> => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      const result = await authService.login(credentials, rememberMe);
-      
-      if (result.success && result.redirectUrl) {
+      const { data, error } = await supabaseAuthService.supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      if (error) {
+        const authError: AuthError = {
+          code: error.message,
+          message: '로그인에 실패했습니다',
+          details: error.message,
+        };
+
+        return {
+          success: false,
+          error: authError,
+        };
+      }
+
+      if (data.user) {
+        // Fetch employee data
+        const { data: employee } = await supabaseAuthService.supabase
+          .from('employees')
+          .select('*')
+          .eq('email', data.user.email)
+          .single();
+
+        const user: User = {
+          id: data.user.id,
+          email: data.user.email || '',
+          name: employee?.name,
+          role: employee?.role,
+          approvalStatus: employee?.approval_status,
+          employee
+        };
+
+        // Determine redirect URL based on role
+        const getRedirectUrlForRole = (role: string) => {
+          switch (role) {
+            case 'master':
+              return '/super-admin/dashboard';
+            case 'admin':
+              return '/admin/dashboard';
+            case 'manager':
+              return '/manager/dashboard';
+            case 'worker':
+            default:
+              return '/attendance';
+          }
+        };
+
+        const redirectUrl = getRedirectUrlForRole(user.role || 'worker');
+
         // Use setTimeout to allow state updates to complete
         setTimeout(() => {
-          router.push(result.redirectUrl!);
+          router.push(redirectUrl);
         }, 100);
+
+        return {
+          success: true,
+          user,
+          redirectUrl,
+        };
       }
-      
-      return result;
+
+      return {
+        success: false,
+        error: {
+          code: 'LOGIN_FAILED',
+          message: '로그인에 실패했습니다',
+        },
+      };
     } catch (error: any) {
       console.error('Login error in context:', error);
       
@@ -153,12 +214,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         message: '예상치 못한 오류가 발생했습니다',
         details: error.message,
       };
-
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: authError,
-      }));
 
       return {
         success: false,
