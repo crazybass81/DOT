@@ -23,25 +23,20 @@ interface FormErrors {
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [formData, setFormData] = useState<FormData>({
+  const { signUp } = useAuth();
+  
+  const [formData, setFormData] = useState<SignUpFormData>({
+    name: '',
     email: '',
     password: '',
-    passwordConfirm: '',
-    name: '',
-    phone: '',
-    userType: '',
-    businessType: '',
-    businessName: '',
-    businessNumber: '',
-    representativeName: '',
-    businessAddress: '',
-    organizationCode: '',
-    birthdate: '',
-    department: ''
+    confirmPassword: ''
   });
+  
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const validateStep1 = () => {
     if (!formData.email || !formData.password || !formData.name) {
