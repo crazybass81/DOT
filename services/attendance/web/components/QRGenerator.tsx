@@ -152,6 +152,18 @@ export const QRGenerator: React.FC<QRGeneratorProps> = ({ className = '', onQRGe
         { latitude: lat, longitude: lng, radius: rad }
       );
       setQrImage(qrDataUrl);
+      
+      // 콜백 호출
+      if (onQRGenerated) {
+        const qrData: QROrganizationData = {
+          organizationId,
+          name,
+          location: { latitude: lat, longitude: lng, radius: rad },
+          type: 'organization',
+          timestamp: Date.now()
+        };
+        onQRGenerated(qrData, qrDataUrl);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'QR 코드 생성 중 오류가 발생했습니다';
       setError(errorMessage);
