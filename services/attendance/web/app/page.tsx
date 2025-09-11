@@ -38,7 +38,7 @@ export default function Home() {
     );
   }
 
-  // Redirect authenticated users - WITH DEBUG LOGGING
+  // DISABLED: No automatic redirect - let users choose to login
   useEffect(() => {
     console.log('🏠 HomePage: Auth State Check:', {
       isLoading: auth.isLoading,
@@ -47,11 +47,12 @@ export default function Home() {
       userRole: auth.user?.role
     });
     
-    if (!auth.isLoading && auth.isAuthenticated && auth.user) {
-      const redirectUrl = getRedirectUrlForRole(auth.user.role);
-      console.log('🏠 HomePage: Redirecting authenticated user to:', redirectUrl);
-      router.push(redirectUrl);
-    }
+    // REMOVED AUTOMATIC REDIRECT - users can manually navigate or logout
+    // if (!auth.isLoading && auth.isAuthenticated && auth.user) {
+    //   const redirectUrl = getRedirectUrlForRole(auth.user.role);
+    //   console.log('🏠 HomePage: Redirecting authenticated user to:', redirectUrl);
+    //   router.push(redirectUrl);
+    // }
   }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
 
   return (
