@@ -30,7 +30,7 @@ interface OrganizationForm {
   radius: string;
 }
 
-export const QRGenerator: React.FC<QRGeneratorProps> = ({ className = '' }) => {
+export const QRGenerator: React.FC<QRGeneratorProps> = ({ className = '', onQRGenerated }) => {
   const [qrType, setQrType] = useState<'employee' | 'organization'>('employee');
   const [qrImage, setQrImage] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
