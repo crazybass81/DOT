@@ -267,14 +267,7 @@ export default function AttendancePage() {
       });
 
       // Show success message
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-      notification.textContent = '✅ 출근 처리가 완료되었습니다!';
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        document.body.removeChild(notification);
-      }, 3000);
+      showToast('success', '출근 처리가 완료되었습니다!', 3000);
 
     } catch (err: any) {
       setError(err.message || '출근 처리에 실패했습니다');
