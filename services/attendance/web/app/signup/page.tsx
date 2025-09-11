@@ -327,26 +327,39 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          {/* Login Link */}
-          <div className="mt-6 text-center">
-            <p className="text-slate-400">
-              이미 계정이 있으신가요?{' '}
-              <Link 
-                href="/" 
-                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-              >
-                로그인
-              </Link>
-            </p>
-          </div>
-        </div>
+              {/* Login Link */}
+              <div className="mt-6 text-center">
+                <p className="text-gray-600">
+                  이미 계정이 있으신가요?{' '}
+                  <Link 
+                    href="/" 
+                    className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  >
+                    로그인
+                  </Link>
+                </p>
+              </div>
+            </div>
 
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-slate-500 text-sm">
-            © 2024 DOT 출석관리. All rights reserved.
-          </p>
-        </div>
+            {/* System Info Footer - consistent with home page */}
+            <footer className="mt-8 text-center">
+              <div className="space-y-2">
+                <div className="flex items-center justify-center space-x-2 text-sm font-semibold text-gray-700">
+                  <UserPlus className="w-4 h-4" />
+                  <span className="font-korean">DOT Attendance System v2.0</span>
+                </div>
+                <p className="text-xs text-gray-500 font-korean">
+                  Powered by Supabase & Next.js
+                  <br />
+                  Enterprise Grade Security & Performance
+                </p>
+              </div>
+            </footer>
+          </div>
+        </main>
+
+        {/* Bottom spacing */}
+        <div className="pb-8"></div>
       </div>
     </div>
   );
