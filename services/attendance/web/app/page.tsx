@@ -45,6 +45,14 @@ export default function Home() {
     );
   }
 
+  // Redirect authenticated users
+  useEffect(() => {
+    if (!auth.isLoading && auth.isAuthenticated && auth.user) {
+      const redirectUrl = getRedirectUrlForRole(auth.user.role);
+      router.push(redirectUrl);
+    }
+  }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
+
   return (
     <NotAuthenticated
       fallback={
