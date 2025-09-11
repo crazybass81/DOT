@@ -333,7 +333,20 @@ export function useRequireRole(requiredRole: UserRole): AuthContextType {
         router.push('/');
       } else if (!auth.hasRole(requiredRole)) {
         // Redirect to appropriate page based on current role
-        const redirectUrl = authService.getRedirectUrl();
+        const getRedirectUrlForRole = (role: string) => {
+          switch (role) {
+            case 'master':
+              return '/super-admin/dashboard';
+            case 'admin':
+              return '/admin/dashboard';
+            case 'manager':
+              return '/manager/dashboard';
+            case 'worker':
+            default:
+              return '/attendance';
+          }
+        };
+        const redirectUrl = getRedirectUrlForRole(auth.user?.role || 'worker');
         router.push(redirectUrl);
       }
     }
