@@ -309,6 +309,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
+      console.log('🚀 회원가입 시작:', email);
+      
       const { data, error } = await supabaseAuthService.supabase.auth.signUp({
         email,
         password,
@@ -318,6 +320,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
       if (error) {
+        console.error('❌ Supabase Auth 회원가입 실패:', error);
         const authError: AuthError = {
           code: error.message,
           message: '회원가입에 실패했습니다',
@@ -328,15 +331,131 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       if (data.user) {
-        // Check if email confirmation is required
+        console.log('✅ Supabase Auth 사용자 생성 성공:', data.user.id);
+        
+        // 이메일 인증이 필요한 경우와 즉시 로그인 가능한 경우 모두 처리
+        let profileCreated = false;
+        
+        // 기본 조직 확인
+        console.log('🏢 기본 조직 확인 중...');
+        const { data: defaultOrg, error: orgError } = await supabaseAuthService.supabase
+          .from('organizations_v3')
+          .select('*')
+          .eq('name', 'default-org')
+          .maybeSingle();
+
+        if (orgError || !defaultOrg) {
+          console.warn('⚠️  기본 조직을 찾을 수 없습니다. 수동으로 생성해야 합니다.');
+          
+          // 기본 조직이 없으면 회원가입은 성공했지만 프로필 생성은 보류
+          if (!data.session) {
+            return { 
+              needsVerification: true,
+              user: undefined,
+              error: {
+                code: 'MISSING_ORGANIZATION',
+                message: '기본 조직을 생성한 후 이메일 인증을 완료해주세요.',
+              }
+            };
+          }
+        } else {
+          console.log('✅ 기본 조직 확인:', defaultOrg.display_name);
+          
+          // unified_identities 생성 시도
+          try {
+            console.log('👤 unified_identities 생성 중...');
+            
+            const { data: existingIdentity } = await supabaseAuthService.supabase
+              .from('unified_identities')
+              .select('*')
+              .eq('auth_user_id', data.user.id)
+              .maybeSingle();
+
+            if (existingIdentity) {
+              console.log('ℹ️  이미 unified_identities가 존재합니다.');
+            } else {
+              // API Route를 통해 서버사이드에서 생성
+              console.log('🔧 서버사이드 프로필 생성 API 호출...');
+              
+              const response = await fetch('/api/auth/create-profile', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  userId: data.user.id,
+                  email: data.user.email,
+                  name: metadata?.name || '사용자',
+                  organizationId: defaultOrg.id
+                }),
+              });
+
+              if (response.ok) {
+                const result = await response.json();
+                console.log('✅ 서버사이드 프로필 생성 성공:', result);
+                profileCreated = true;
+              } else {
+                console.warn('⚠️  서버사이드 프로필 생성 실패, 클라이언트 방식으로 시도...');
+                
+                // 클라이언트에서 직접 시도 (RLS 정책에 막힐 수 있음)
+                const identityData = {
+                  email: data.user.email,
+                  full_name: metadata?.name || '사용자',
+                  auth_user_id: data.user.id,
+                  is_active: true
+                };
+
+                const { data: newIdentity, error: identityError } = await supabaseAuthService.supabase
+                  .from('unified_identities')
+                  .insert(identityData)
+                  .select()
+                  .single();
+
+                if (identityError) {
+                  console.warn('⚠️  클라이언트 unified_identities 생성 실패:', identityError.message);
+                } else {
+                  console.log('✅ 클라이언트 unified_identities 생성 성공');
+                  profileCreated = true;
+
+                  // role_assignments 생성
+                  const roleData = {
+                    identity_id: newIdentity.id,
+                    organization_id: defaultOrg.id,
+                    role: 'WORKER',
+                    is_active: true,
+                    employee_code: `EMP${Date.now()}`,
+                    department: '일반',
+                    position: '사원'
+                  };
+
+                  const { error: roleError } = await supabaseAuthService.supabase
+                    .from('role_assignments')
+                    .insert(roleData);
+
+                  if (roleError) {
+                    console.warn('⚠️  role_assignments 생성 실패:', roleError.message);
+                  } else {
+                    console.log('✅ role_assignments 생성 성공');
+                  }
+                }
+              }
+            }
+          } catch (profileError) {
+            console.error('❌ 프로필 생성 중 오류:', profileError);
+          }
+        }
+
+        // 이메일 인증이 필요한 경우
         if (!data.session) {
+          console.log('📧 이메일 인증 필요');
           return { 
             needsVerification: true,
             user: undefined 
           };
         }
 
-        // If session exists, fetch identity and role data from unified tables
+        // 즉시 로그인된 경우 - unified_identities에서 사용자 정보 조회
+        console.log('🔍 사용자 정보 조회 중...');
         const { data: identity } = await supabaseAuthService.supabase
           .from('unified_identities')
           .select(`
@@ -362,7 +481,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             id: identity.id,
             email: identity.email || '',
             name: identity.full_name || metadata?.name || '',
-            role: primaryRole?.role || 'worker',
+            role: primaryRole?.role || 'WORKER',
             approvalStatus: 'APPROVED',
             employee: {
               ...identity,
@@ -371,6 +490,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
               position: primaryRole?.position,
               organization: primaryRole?.organizations_v3
             }
+          };
+          console.log('✅ 사용자 정보 매핑 완료:', user.name);
+        } else {
+          console.warn('⚠️  unified_identities에서 사용자를 찾을 수 없습니다.');
+          // 기본 사용자 객체라도 반환
+          user = {
+            id: data.user.id,
+            email: data.user.email || '',
+            name: metadata?.name || '사용자',
+            role: 'WORKER',
+            approvalStatus: 'PENDING'
           };
         }
 
@@ -384,7 +514,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       };
     } catch (error: any) {
-      console.error('SignUp error in context:', error);
+      console.error('❌ SignUp error in context:', error);
       
       const authError: AuthError = {
         code: 'UNEXPECTED_ERROR',
