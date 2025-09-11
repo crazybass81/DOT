@@ -11,15 +11,17 @@ const dotenv = require('dotenv');
 dotenv.config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
+if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ Missing Supabase environment variables');
-  console.error('Required: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY');
+  console.error('Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY');
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+console.log('🔗 Connecting to Supabase:', supabaseUrl);
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
