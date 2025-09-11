@@ -42,11 +42,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const initializeAuth = async () => {
       try {
+        console.log('🔄 AuthContext: 인증 상태 초기화 중...');
+        
         // Get initial session
         const { data: { session } } = await supabaseAuthService.supabase.auth.getSession();
+        console.log('🔐 AuthContext: 세션 확인 결과:', session ? `로그인됨 (${session.user.email})` : '로그인되지 않음');
         
         let user: User | null = null;
         if (session?.user) {
+          console.log('👤 AuthContext: 사용자 정보 매핑 중...');
           // Fetch identity and role data from unified tables
           const { data: identity } = await supabaseAuthService.supabase
             .from('unified_identities')
