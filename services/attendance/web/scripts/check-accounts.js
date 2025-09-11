@@ -32,20 +32,24 @@ async function checkAccounts() {
   try {
     console.log('🔍 데이터베이스 계정 확인 중...\n');
 
-    // Check auth.users table
+    // Check auth.users table (using anon key so this may not be accessible)
     console.log('📋 auth.users 테이블:');
-    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-    
-    if (authError) {
-      console.error('❌ Auth users 조회 실패:', authError.message);
-    } else {
-      console.log(`총 ${authUsers.users.length}개 계정 발견:`);
-      authUsers.users.forEach((user, index) => {
-        console.log(`${index + 1}. ${user.email} (ID: ${user.id})`);
-        console.log(`   생성일: ${new Date(user.created_at).toLocaleString()}`);
-        console.log(`   확인됨: ${user.email_confirmed_at ? 'Yes' : 'No'}`);
-        console.log('');
-      });
+    try {
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) {
+        console.log('⚠️  Auth users 접근 불가 (service key 필요):', authError.message);
+      } else {
+        console.log(`총 ${authUsers.users.length}개 계정 발견:`);
+        authUsers.users.forEach((user, index) => {
+          console.log(`${index + 1}. ${user.email} (ID: ${user.id})`);
+          console.log(`   생성일: ${new Date(user.created_at).toLocaleString()}`);
+          console.log(`   확인됨: ${user.email_confirmed_at ? 'Yes' : 'No'}`);
+          console.log('');
+        });
+      }
+    } catch (error) {
+      console.log('⚠️  Auth users 접근 불가 (권한 부족):', error.message);
     }
 
     // Check profiles table
