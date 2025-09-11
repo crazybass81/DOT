@@ -28,12 +28,13 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
+    session: null,
     isLoading: true, // Start with loading state
     isAuthenticated: false,
-    error: null,
   });
   
   const router = useRouter();
+  const supabaseAuthService = new SupabaseAuthService();
 
   // Initialize auth state on component mount
   useEffect(() => {
@@ -41,13 +42,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const initializeAuth = async () => {
       try {
-        // Initialize auth service and get current state
-        const initialState = authService.initializeAuth();
+        // Get initial session
+        const { data: { session } } = await supabaseAuthService.supabase.auth.getSession();
+        
+        let user: User | null = null;
+        if (session?.user) {
+          // Fetch employee data from database
+          const { data: employee } = await supabaseAuthService.supabase
+            .from('employees')
+            .select('*')
+            .eq('email', session.user.email)
+            .single();
+
+          user = {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: employee?.name,
+            role: employee?.role,
+            approvalStatus: employee?.approval_status,
+            employee
+          };
+        }
         
         if (mounted) {
           setAuthState({
-            ...initialState,
+            user,
+            session,
             isLoading: false,
+            isAuthenticated: !!session,
           });
         }
       } catch (error) {
@@ -56,12 +78,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (mounted) {
           setAuthState({
             user: null,
+            session: null,
             isLoading: false,
             isAuthenticated: false,
-            error: {
-              code: 'INIT_ERROR',
-              message: '인증 시스템 초기화에 실패했습니다',
-            },
           });
         }
       }
@@ -69,17 +88,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
-    // Subscribe to auth service state changes
-    const unsubscribe = authService.subscribe((newState: AuthState) => {
-      if (mounted) {
-        setAuthState(newState);
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabaseAuthService.supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        let user: User | null = null;
+        if (session?.user) {
+          // Fetch employee data from database
+          const { data: employee } = await supabaseAuthService.supabase
+            .from('employees')
+            .select('*')
+            .eq('email', session.user.email)
+            .single();
+
+          user = {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: employee?.name,
+            role: employee?.role,
+            approvalStatus: employee?.approval_status,
+            employee
+          };
+        }
+
+        setAuthState({
+          user,
+          session,
+          isLoading: false,
+          isAuthenticated: !!session,
+        });
       }
-    });
+    );
 
     // Cleanup
     return () => {
       mounted = false;
-      unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
