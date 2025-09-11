@@ -17,6 +17,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <AuthProvider>
+          <RedirectHandler />
           {children}
         </AuthProvider>
       </body>
