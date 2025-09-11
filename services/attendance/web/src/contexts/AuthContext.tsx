@@ -336,26 +336,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
           };
         }
 
-        // If session exists, create profile and return user
+        // If session exists, fetch identity and role data from unified tables
         const { data: identity } = await supabaseAuthService.supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
+          .from('unified_identities')
+          .select(`
+            *,
+            role_assignments!inner(
+              role,
+              organization_id,
+              is_active,
+              employee_code,
+              department,
+              position,
+              organizations_v3(name)
+            )
+          `)
+          .eq('auth_user_id', data.user.id)
+          .eq('role_assignments.is_active', true)
           .single();
 
         let user: User | undefined;
         if (identity) {
+          const primaryRole = identity.role_assignments?.[0];
           user = {
             id: identity.id,
             email: identity.email || '',
-            name: identity.name || metadata?.name || '',
-            role: identity.role || 'worker',
+            name: identity.full_name || metadata?.name || '',
+            role: primaryRole?.role || 'worker',
             approvalStatus: 'APPROVED',
             employee: {
               ...identity,
-              employee_code: identity.employee_code,
-              department: identity.department,
-              position: identity.position,
+              employee_code: primaryRole?.employee_code,
+              department: primaryRole?.department,
+              position: primaryRole?.position,
+              organization: primaryRole?.organizations_v3
             }
           };
         }
