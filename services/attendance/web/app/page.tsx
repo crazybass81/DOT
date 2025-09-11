@@ -38,10 +38,18 @@ export default function Home() {
     );
   }
 
-  // Redirect authenticated users
+  // Redirect authenticated users - WITH DEBUG LOGGING
   useEffect(() => {
+    console.log('🏠 HomePage: Auth State Check:', {
+      isLoading: auth.isLoading,
+      isAuthenticated: auth.isAuthenticated,
+      user: auth.user,
+      userRole: auth.user?.role
+    });
+    
     if (!auth.isLoading && auth.isAuthenticated && auth.user) {
       const redirectUrl = getRedirectUrlForRole(auth.user.role);
+      console.log('🏠 HomePage: Redirecting authenticated user to:', redirectUrl);
       router.push(redirectUrl);
     }
   }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
