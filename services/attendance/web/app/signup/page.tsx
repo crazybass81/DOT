@@ -126,22 +126,27 @@ export default function SignUpPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-        <div className="max-w-md w-full">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-8 text-center">
-            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 text-green-400 mb-6">
-              <CheckCircle className="h-8 w-8" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        {/* GitHub-style background pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+          <div className="max-w-md w-full">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 text-center">
+              <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 text-green-600 mb-6">
+                <CheckCircle className="h-8 w-8" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4 font-korean">회원가입 완료!</h1>
+              <p className="text-gray-600 mb-6 font-korean">
+                환영합니다! 계정이 성공적으로 생성되었습니다.
+              </p>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+              >
+                로그인 페이지로 이동
+              </Link>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">회원가입 완료!</h1>
-            <p className="text-slate-300 mb-6">
-              환영합니다! 계정이 성공적으로 생성되었습니다.
-            </p>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
-            >
-              로그인 페이지로 이동
-            </Link>
           </div>
         </div>
       </div>
