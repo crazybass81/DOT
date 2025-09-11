@@ -207,11 +207,18 @@ export default function AttendancePage() {
     }
   };
 
-  // Check authentication
+  // Check authentication and load user
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuthenticated = await unifiedAuthService.isAuthenticated();
-      if (!isAuthenticated) {
+      try {
+        const currentUser = await multiRoleAuthService.getCurrentUser();
+        if (!currentUser) {
+          router.push('/login');
+          return;
+        }
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Auth check failed:', error);
         router.push('/login');
       }
     };
