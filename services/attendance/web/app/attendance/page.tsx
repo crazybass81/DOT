@@ -294,7 +294,7 @@ export default function AttendancePage() {
 
   const handleLogout = async () => {
     console.log('[DEBUG] handleLogout called');
-    await unifiedAuthService.signOut();
+    await multiRoleAuthService.signOut();
     
     // Add delay to ensure localStorage is cleared before redirect
     setTimeout(() => {
@@ -304,16 +304,45 @@ export default function AttendancePage() {
     }, 100);
   };
 
+  // Format time function for Korean timezone
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('ko-KR', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* Clean Header with minimal info */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">DOT 근태관리</h1>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {user?.name || '직원'}
+                </h1>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
             <button
               onClick={handleLogout}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
               로그아웃
             </button>
@@ -321,193 +350,221 @@ export default function AttendancePage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Current Time Display */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-500">현재 시각</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {currentTime.toLocaleTimeString('ko-KR')}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              {currentTime.toLocaleDateString('ko-KR', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                weekday: 'long'
-              })}
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        {/* GitHub-style Large Clock Display */}
+        <div className="text-center mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6">
+            <div className="mb-2">
+              <Clock className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 mb-1">현재 시간</p>
+            </div>
+            <div className="text-5xl md:text-6xl font-mono font-bold text-gray-900 mb-2">
+              {formatTime(currentTime)}
+            </div>
+            <p className="text-lg text-gray-600">
+              {formatDate(currentTime)}
             </p>
           </div>
         </div>
 
-        {/* Attendance Status */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">출퇴근 상태</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-gray-50 rounded">
-              <p className="text-sm text-gray-500">상태</p>
-              <p className={`text-xl font-bold ${attendanceStatus.isCheckedIn ? 'text-green-600' : 'text-gray-600'}`}>
-                {attendanceStatus.isCheckedIn ? '근무중' : '퇴근'}
-              </p>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded">
-              <p className="text-sm text-gray-500">출근 시간</p>
-              <p className="text-xl font-bold">
-                {attendanceStatus.checkInTime 
-                  ? new Date(attendanceStatus.checkInTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-                  : '-'}
-              </p>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded">
-              <p className="text-sm text-gray-500">근무 시간</p>
-              <p className="text-xl font-bold">
-                {attendanceStatus.isCheckedIn 
-                  ? `${workHours.hours}시간 ${workHours.minutes}분`
-                  : attendanceStatus.workDuration 
-                    ? `${Math.floor(attendanceStatus.workDuration / 60)}시간 ${attendanceStatus.workDuration % 60}분`
-                    : '-'}
-              </p>
-            </div>
+        {/* Status Indicator */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white border border-gray-200">
+            <div className={`w-2 h-2 rounded-full ${attendanceStatus.isCheckedIn ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+            <span className="text-sm font-medium text-gray-700">
+              {attendanceStatus.isCheckedIn ? '근무중' : '미출근'}
+            </span>
           </div>
         </div>
 
-        {/* Location Status */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">위치 정보</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">현재 위치</span>
-              <span className="text-sm font-medium">
-                {currentLocation 
-                  ? '위치 확인 완료'
-                  : '위치 확인 중...'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">가장 가까운 사업장</span>
-              <span className="text-sm font-medium">
-                {nearestLocation?.name || '확인 중...'}
-              </span>
-            </div>
-            {nearestLocation && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">주소</span>
-                <span className="text-xs text-gray-600 text-right max-w-[200px]">
-                  {nearestLocation.address}
-                </span>
-              </div>
-            )}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">사업장과의 거리</span>
-              <span className={`text-sm font-medium ${distance && distance <= (nearestLocation?.radius || 100) ? 'text-green-600' : 'text-red-600'}`}>
-                {distance !== null ? `${distance}m` : '계산 중...'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">체크인 가능 여부</span>
-              <span className={`text-sm font-medium ${distance && distance <= (nearestLocation?.radius || 100) ? 'text-green-600' : 'text-amber-600'}`}>
-                {distance !== null 
-                  ? distance <= (nearestLocation?.radius || 100) ? '✓ 출퇴근 가능' : `⚠ ${(nearestLocation?.radius || 100)}m 이내로 접근 필요`
-                  : '확인 중...'}
-              </span>
-            </div>
-          </div>
-
-          {!nearestLocation && (
-            <div className="mt-4 p-3 bg-amber-50 rounded-md">
-              <p className="text-sm text-amber-800">
-                사업장 위치를 찾을 수 없습니다.
-                <a href="/attendance/setup" className="ml-2 underline">설정 확인</a>
-              </p>
-            </div>
+        {/* Main Action Button - GitHub style large and centered */}
+        <div className="mb-8">
+          {!attendanceStatus.isCheckedIn ? (
+            <button
+              onClick={handleCheckIn}
+              disabled={loading || !currentLocation || !nearestLocation || (distance !== null && distance > (nearestLocation?.radius || 100))}
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-6 px-8 rounded-2xl text-xl transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none disabled:hover:scale-100 shadow-sm"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>처리 중...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-2">
+                  <LogIn className="w-6 h-6" />
+                  <span>출근하기</span>
+                </div>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleCheckOut}
+              disabled={loading || !currentLocation}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-6 px-8 rounded-2xl text-xl transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none disabled:hover:scale-100 shadow-sm"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>처리 중...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-2">
+                  <LogOut className="w-6 h-6" />
+                  <span>퇴근하기</span>
+                </div>
+              )}
+            </button>
           )}
         </div>
 
-        {/* Error Message */}
+        {/* Today's Work Status */}
+        {attendanceStatus.isCheckedIn && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Activity className="w-5 h-5 mr-2" />
+              오늘의 근무 현황
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-500 mb-1">출근 시간</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {attendanceStatus.checkInTime 
+                    ? new Date(attendanceStatus.checkInTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                    : '-'}
+                </p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-500 mb-1">예상 퇴근</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {attendanceStatus.checkInTime 
+                    ? new Date(new Date(attendanceStatus.checkInTime).getTime() + 8 * 60 * 60 * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                    : '-'}
+                </p>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-600 mb-1">누적 근무</p>
+                <p className="text-lg font-semibold text-blue-700">
+                  {workHours.hours}시간 {workHours.minutes}분
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Weekly/Monthly Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Calendar className="w-5 h-5 mr-2" />
+              이번 주
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">출근 일수</span>
+                <span className="font-semibold text-gray-900">{weeklyStats.workingDays}/{weeklyStats.totalDays}일</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">지각</span>
+                <span className={`font-semibold ${weeklyStats.lateCount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                  {weeklyStats.lateCount}회
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">조퇴</span>
+                <span className={`font-semibold ${weeklyStats.earlyLeaveCount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                  {weeklyStats.earlyLeaveCount}회
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Clock className="w-5 h-5 mr-2" />
+              이번 달
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">총 근무시간</span>
+                <span className="font-semibold text-gray-900">{monthlyStats.totalHours}시간</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">일평균 근무</span>
+                <span className="font-semibold text-gray-900">{monthlyStats.averageHours}시간</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">초과근무</span>
+                <span className={`font-semibold ${monthlyStats.overtimeHours > 0 ? 'text-blue-600' : 'text-gray-600'}`}>
+                  {monthlyStats.overtimeHours}시간
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Status - Minimal */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <MapPin className="w-5 h-5 mr-2" />
+            위치 확인
+          </h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">
+                {nearestLocation?.name || '사업장 확인 중...'}
+              </p>
+              <p className="text-xs text-gray-500">
+                {distance !== null 
+                  ? `현재 위치에서 ${distance}m`
+                  : '위치 계산 중...'}
+              </p>
+            </div>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+              distance !== null && distance <= (nearestLocation?.radius || 100)
+                ? 'bg-green-100 text-green-700'
+                : 'bg-amber-100 text-amber-700'
+            }`}>
+              {distance !== null && distance <= (nearestLocation?.radius || 100) 
+                ? '출퇴근 가능' 
+                : '범위 밖'}
+            </div>
+          </div>
+        </div>
+
+        {/* Error Messages */}
         {error && (
-          <div className="bg-red-50 p-4 rounded-lg mb-6">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
             {error.includes('권한') && (
               <button
                 onClick={() => {
                   setError('');
                   window.location.reload();
                 }}
-                className="mt-2 px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
+                className="mt-2 px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors"
               >
                 위치 권한 재요청
               </button>
             )}
           </div>
         )}
-        
-        {/* GPS 권한 안내 */}
+
+        {/* GPS Loading Message */}
         {!currentLocation && !error && (
-          <div className="bg-blue-50 p-4 rounded-lg mb-6">
-            <p className="text-sm text-blue-800 mb-2">📍 위치 정보를 가져오는 중입니다...</p>
-            <p className="text-xs text-blue-600">
-              모바일에서 GPS가 켜져 있는지 확인하세요.
-              <br />
-              브라우저에서 위치 권한을 요청하면 '허용'을 선택해주세요.
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+              <p className="text-sm text-blue-800">위치 정보를 가져오는 중입니다...</p>
+            </div>
+            <p className="text-xs text-blue-600 mt-1">
+              GPS를 켜고 위치 권한을 허용해주세요.
             </p>
           </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          {!attendanceStatus.isCheckedIn ? (
-            <button
-              onClick={handleCheckIn}
-              disabled={loading || !currentLocation || !nearestLocation || (distance !== null && distance > (nearestLocation?.radius || 100))}
-              className="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? '처리 중...' : '출근하기'}
-            </button>
-          ) : (
-            <button
-              onClick={handleCheckOut}
-              disabled={loading || !currentLocation}
-              className="flex-1 bg-red-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? '처리 중...' : '퇴근하기'}
-            </button>
-          )}
-        </div>
-
-        {/* All Business Locations (Debug Info) */}
-        {businessInfo && (
-          <div className="mt-6 bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">등록된 모든 사업장</h3>
-            <div className="space-y-2">
-              {businessInfo.locations.map((loc: any, idx: number) => (
-                <div key={idx} className="text-xs text-gray-600 flex justify-between">
-                  <span>{loc.name}</span>
-                  <span className="text-gray-400">{loc.radius}m 반경</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Quick Links */}
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <a href="/attendance/history" className="text-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-            <span className="text-2xl mb-2 block">📊</span>
-            <span className="text-sm text-gray-700">근태 기록</span>
-          </a>
-          <a href="/attendance/setup" className="text-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-            <span className="text-2xl mb-2 block">⚙️</span>
-            <span className="text-sm text-gray-700">위치 설정</span>
-          </a>
-          <a href="/auth/mfa-setup" className="text-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-            <span className="text-2xl mb-2 block">🔐</span>
-            <span className="text-sm text-gray-700">보안 설정</span>
-          </a>
-          <a href="/auth/change-password" className="text-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-            <span className="text-2xl mb-2 block">🔑</span>
-            <span className="text-sm text-gray-700">비밀번호 변경</span>
-          </a>
-        </div>
       </main>
     </div>
   );
