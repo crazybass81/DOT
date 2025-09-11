@@ -195,11 +195,11 @@ export default function SignUpPage() {
 
             {/* Name Field */}
             <div className="space-y-2">
-              <label htmlFor="name" className="block text-sm font-medium text-slate-300">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 이름
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="name"
                   name="name"
@@ -207,14 +207,14 @@ export default function SignUpPage() {
                   required
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-500' : 'border-white/20'
+                  className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    errors.name ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="이름을 입력하세요"
                 />
               </div>
               {errors.name && (
-                <p className="text-red-400 text-sm">{errors.name}</p>
+                <p className="text-red-500 text-sm">{errors.name}</p>
               )}
             </div>
 
