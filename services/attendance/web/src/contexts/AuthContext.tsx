@@ -47,21 +47,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         let user: User | null = null;
         if (session?.user) {
-          // Fetch employee data from database
-          const { data: employee } = await supabaseAuthService.supabase
-            .from('employees')
-            .select('*')
-            .eq('email', session.user.email)
+          // Fetch identity and role data from unified tables
+          const { data: identity } = await supabaseAuthService.supabase
+            .from('unified_identities')
+            .select(`
+              *,
+              role_assignments!inner(
+                role,
+                organization_id,
+                is_active,
+                employee_code,
+                department,
+                position,
+                organizations_v3(name)
+              )
+            `)
+            .eq('auth_user_id', session.user.id)
+            .eq('role_assignments.is_active', true)
             .single();
 
-          user = {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: employee?.name,
-            role: employee?.role,
-            approvalStatus: employee?.approval_status,
-            employee
-          };
+          if (identity) {
+            const primaryRole = identity.role_assignments?.[0];
+            user = {
+              id: identity.id,
+              email: identity.email || '',
+              name: identity.full_name,
+              role: primaryRole?.role,
+              approvalStatus: 'APPROVED',
+              employee: {
+                ...identity,
+                employee_code: primaryRole?.employee_code,
+                department: primaryRole?.department,
+                position: primaryRole?.position,
+                organization: primaryRole?.organizations_v3
+              }
+            };
+          }
         }
         
         if (mounted) {
@@ -95,21 +116,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         let user: User | null = null;
         if (session?.user) {
-          // Fetch employee data from database
-          const { data: employee } = await supabaseAuthService.supabase
-            .from('employees')
-            .select('*')
-            .eq('email', session.user.email)
+          // Fetch identity and role data from unified tables
+          const { data: identity } = await supabaseAuthService.supabase
+            .from('unified_identities')
+            .select(`
+              *,
+              role_assignments!inner(
+                role,
+                organization_id,
+                is_active,
+                employee_code,
+                department,
+                position,
+                organizations_v3(name)
+              )
+            `)
+            .eq('auth_user_id', session.user.id)
+            .eq('role_assignments.is_active', true)
             .single();
 
-          user = {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: employee?.name,
-            role: employee?.role,
-            approvalStatus: employee?.approval_status,
-            employee
-          };
+          if (identity) {
+            const primaryRole = identity.role_assignments?.[0];
+            user = {
+              id: identity.id,
+              email: identity.email || '',
+              name: identity.full_name,
+              role: primaryRole?.role,
+              approvalStatus: 'APPROVED',
+              employee: {
+                ...identity,
+                employee_code: primaryRole?.employee_code,
+                department: primaryRole?.department,
+                position: primaryRole?.position,
+                organization: primaryRole?.organizations_v3
+              }
+            };
+          }
         }
 
         setAuthState({
@@ -154,20 +196,49 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       if (data.user) {
-        // Fetch employee data
-        const { data: employee } = await supabaseAuthService.supabase
-          .from('employees')
-          .select('*')
-          .eq('email', data.user.email)
+        // Fetch identity and role data
+        const { data: identity } = await supabaseAuthService.supabase
+          .from('unified_identities')
+          .select(`
+            *,
+            role_assignments!inner(
+              role,
+              organization_id,
+              is_active,
+              employee_code,
+              department,
+              position,
+              organizations_v3(name)
+            )
+          `)
+          .eq('auth_user_id', data.user.id)
+          .eq('role_assignments.is_active', true)
           .single();
 
+        if (!identity) {
+          return {
+            success: false,
+            error: {
+              code: 'USER_NOT_FOUND',
+              message: '사용자 정보를 찾을 수 없습니다',
+            },
+          };
+        }
+
+        const primaryRole = identity.role_assignments?.[0];
         const user: User = {
-          id: data.user.id,
-          email: data.user.email || '',
-          name: employee?.name,
-          role: employee?.role,
-          approvalStatus: employee?.approval_status,
-          employee
+          id: identity.id,
+          email: identity.email || '',
+          name: identity.full_name,
+          role: primaryRole?.role,
+          approvalStatus: 'APPROVED',
+          employee: {
+            ...identity,
+            employee_code: primaryRole?.employee_code,
+            department: primaryRole?.department,
+            position: primaryRole?.position,
+            organization: primaryRole?.organizations_v3
+          }
         };
 
         // Determine redirect URL based on role
