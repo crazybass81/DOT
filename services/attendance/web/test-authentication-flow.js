@@ -17,7 +17,7 @@ async function testAuthFlow() {
     // 1. Basic connection test
     const { data: connectionTest, error: connectionError } = await supabase
       .from('profiles')
-      .select('count(*)', { count: 'exact' })
+      .select('*')
       .limit(1);
     
     if (connectionError) {
