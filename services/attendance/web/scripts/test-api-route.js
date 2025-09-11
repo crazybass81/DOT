@@ -27,7 +27,7 @@ async function testApiRoute() {
     // 1. 테스트 사용자 회원가입
     console.log('1️⃣ 테스트 사용자 회원가입...');
     
-    const testEmail = `apitest${Date.now()}@test.com`;
+    const testEmail = `apitest${Date.now()}@gmail.com`;
     const testPassword = 'TestPassword123!';
     const testName = 'API 테스트 사용자';
 
