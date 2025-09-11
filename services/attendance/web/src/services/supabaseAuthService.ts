@@ -80,7 +80,8 @@ export class SupabaseAuthService {
         password,
         options: {
           data: {
-            name: metadata?.name || email.split('@')[0]
+            name: metadata?.name || email.split('@')[0],
+            full_name: metadata?.name || email.split('@')[0]
           },
           emailRedirectTo: `${window.location.origin}/auth/verify`
         }
@@ -102,6 +103,11 @@ export class SupabaseAuthService {
       }
 
       const needsVerification = !data.session && !!data.user && !data.user.email_confirmed_at;
+      
+      // If user is created and confirmed, create profile
+      if (data.user && data.session) {
+        await this.createUserProfile(data.user, metadata?.name);
+      }
       
       const user = data.user ? await this.mapSupabaseUserToUser(data.user) : null;
 
