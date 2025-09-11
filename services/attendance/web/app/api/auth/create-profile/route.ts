@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     console.log('🔧 Server-side 프로필 생성 시작:', { userId, email, fullName });
 
     // 1. 기본 조직 확인
-    const { data: defaultOrg, error: orgError } = await supabaseAdmin
+    let { data: defaultOrg, error: orgError } = await supabaseAdmin
       .from('organizations_v3')
       .select('*')
       .eq('name', 'default-org')
