@@ -1,7 +1,7 @@
 // Phase 1.4: 역할 기반 인증 서비스 확장
 // TDD: 테스트를 통과시키기 위한 다중 역할 인증 서비스 구현
 
-import { supabase } from '@lib/supabase-config';
+import { supabase } from '@/lib/supabase-config';
 import {
   MultiRoleUser,
   UserRole,

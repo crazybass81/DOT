@@ -1,355 +1,486 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/src/contexts/AuthContext';
-import { Eye, EyeOff, UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { supabaseAuthService } from '@/src/services/supabaseAuthService';
+import { Button, Input, Card } from '@/components/ui';
 
-interface SignUpFormData {
-  name: string;
+interface FormData {
+  // Step 1 - 기본 정보
   email: string;
   password: string;
-  confirmPassword: string;
-}
-
-interface FormErrors {
-  name?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  general?: string;
+  passwordConfirm: string;
+  name: string;
+  phone: string;
+  
+  // Step 2 - 사용자 구분
+  userType: 'business' | 'worker' | '';
+  
+  // Step 3 - 사업자 정보 (사업자인 경우)
+  businessType: 'corporation' | 'personal' | '';
+  businessName: string;
+  businessNumber: string;
+  representativeName: string;
+  businessAddress: string;
+  
+  // Step 3 - 근로자 정보 (근로자인 경우)
+  organizationCode: string;
+  birthdate: string;
+  department: string;
 }
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { signUp } = useAuth();
-  
-  const [formData, setFormData] = useState<SignUpFormData>({
-    name: '',
+  const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    confirmPassword: ''
+    passwordConfirm: '',
+    name: '',
+    phone: '',
+    userType: '',
+    businessType: '',
+    businessName: '',
+    businessNumber: '',
+    representativeName: '',
+    businessAddress: '',
+    organizationCode: '',
+    birthdate: '',
+    department: ''
   });
-  
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = '이름을 입력해주세요.';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = '이름은 2자 이상이어야 합니다.';
+  const validateStep1 = () => {
+    if (!formData.email || !formData.password || !formData.name) {
+      setError('필수 정보를 모두 입력해주세요.');
+      return false;
     }
-
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '올바른 이메일 형식을 입력해주세요.';
+    if (formData.password !== formData.passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return false;
     }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요.';
-    } else if (formData.password.length < 8) {
-      newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = '대문자, 소문자, 숫자를 포함해야 합니다.';
+    if (formData.password.length < 8) {
+      setError('비밀번호는 8자 이상이어야 합니다.');
+      return false;
     }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호 확인을 입력해주세요.';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다.';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const validateStep2 = () => {
+    if (!formData.userType) {
+      setError('사용자 유형을 선택해주세요.');
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (formData.userType === 'business') {
+      if (!formData.businessType || !formData.businessName || !formData.businessNumber) {
+        setError('사업자 정보를 모두 입력해주세요.');
+        return false;
+      }
+    } else if (formData.userType === 'worker') {
+      if (!formData.organizationCode) {
+        setError('조직 코드를 입력해주세요.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    setError('');
     
-    // Clear errors when user starts typing
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }));
+    if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
+    } else if (currentStep === 2 && validateStep2()) {
+      setCurrentStep(3);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+  const handlePrev = () => {
+    setError('');
+    setCurrentStep(currentStep - 1);
+  };
 
-    setIsLoading(true);
-    setErrors({});
+  const handleSubmit = async () => {
+    if (!validateStep3()) return;
+    
+    setError('');
+    setLoading(true);
 
     try {
-      const result = await signUp(formData.email, formData.password, { name: formData.name });
+      // 1. Create auth user
+      const authResult = await supabaseAuthService.signUp(formData.email, formData.password);
       
-      if (result.needsVerification) {
-        setIsSuccess(true);
-        // Don't redirect immediately, show success message
-      } else if (result.user) {
-        setIsSuccess(true);
-        // Redirect after a brief delay to show success
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
+      if (!authResult?.user) {
+        throw new Error('회원가입에 실패했습니다.');
       }
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      setErrors({ 
-        general: error.message || '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.' 
-      });
+      const authUser = authResult.user;
+
+      // 2. Create profile based on user type
+      if (formData.userType === 'business') {
+        // 먼저 로그인하여 세션 생성
+        await supabaseAuthService.signIn(formData.email, formData.password);
+        
+        // 사업자 등록 - organization 생성 (metadata만 사용)
+        const { data: org, error: orgError } = await supabaseAuthService.supabase
+          .from('organizations')
+          .insert({
+            name: formData.businessName,
+            metadata: {
+              business_type: formData.businessType === 'corporation' ? 'CORP' : 'PERSONAL',
+              business_number: formData.businessNumber,
+              representative_name: formData.representativeName,
+              business_address: formData.businessAddress,
+              code: Math.random().toString(36).substring(2, 10).toUpperCase()
+            }
+          })
+          .select()
+          .single();
+
+        if (orgError) {
+          console.error('Organization creation error:', orgError);
+          // 조직 생성 실패해도 계속 진행 (나중에 설정 가능)
+        }
+
+        // Employee 레코드 생성 (owner 역할)
+        if (org?.id) {
+          const { error: empError } = await supabaseAuthService.supabase
+            .from('employees')
+            .insert({
+              user_id: authUser.id,
+              organization_id: org.id,
+              email: formData.email,
+              name: formData.name,
+              phone: formData.phone,
+              position: 'owner',
+              is_active: true
+            });
+
+          if (empError) {
+            console.error('Employee creation error:', empError);
+            // 직원 생성 실패해도 계속 진행
+          }
+        }
+
+        // 대시보드로 이동
+        router.push('/business-dashboard');
+      } else {
+        // 근로자 등록
+        // 조직 코드로 organization 찾기
+        const { data: orgs, error: findOrgError } = await supabaseAuthService.supabase
+          .from('organizations')
+          .select('id')
+          .eq('code', formData.organizationCode);
+
+        if (findOrgError || !orgs || orgs.length === 0) {
+          console.error('Organization lookup error:', findOrgError);
+          throw new Error('유효하지 않은 조직 코드입니다.');
+        }
+
+        const orgId = orgs[0].id;
+
+        // Employee 레코드 생성 (worker 역할)
+        const { error: empError } = await supabaseAuthService.supabase
+          .from('employees')
+          .insert({
+            user_id: authUser.id,
+            organization_id: orgId,
+            email: formData.email,
+            name: formData.name,
+            phone: formData.phone,
+            position: 'worker',
+            department: formData.department,
+            metadata: {
+              birthdate: formData.birthdate
+            },
+            is_active: true
+          });
+
+        if (empError) {
+          console.error('Employee creation error:', empError);
+          throw new Error('직원 정보 생성 중 오류가 발생했습니다.');
+        }
+
+        // 자동 로그인 후 대시보드로 이동
+        await supabaseAuthService.signIn(formData.email, formData.password);
+        router.push('/worker-dashboard');
+      }
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.message || '회원가입 중 오류가 발생했습니다.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
-          <div className="max-w-md w-full">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 text-center">
-              <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 text-green-600 mb-6">
-                <CheckCircle className="h-8 w-8" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-4 font-korean">회원가입 완료!</h1>
-              <p className="text-gray-600 mb-6 font-korean">
-                환영합니다! 계정이 성공적으로 생성되었습니다.
-              </p>
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
-              >
-                로그인 페이지로 이동
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const updateFormData = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setError('');
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-      
-      <div className="relative z-10 min-h-screen flex flex-col">
-        <header className="w-full pt-8 pb-6">
-          <div className="max-w-4xl mx-auto px-4">
-            <div className="text-center">
-              <Link href="/" className="inline-block mb-4 text-blue-600 hover:text-blue-700 transition-colors">
-                ← 로그인 페이지로 돌아가기
-              </Link>
+    <div className="relative min-h-screen overflow-hidden bg-slate-50">
+      {/* Blob Animations */}
+      <div className="absolute inset-0 z-0">
+        <div className="blob blob-admin-1"></div>
+        <div className="blob blob-admin-2"></div>
+        <div className="blob blob-admin-3"></div>
+        <div className="blob blob-admin-4"></div>
+        <div className="blob blob-admin-5"></div>
+      </div>
+
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Progress Indicator */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center space-x-2">
+              {[1, 2, 3].map(step => (
+                <div key={step} className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                    step === currentStep 
+                      ? 'bg-blue-600 text-white' 
+                      : step < currentStep 
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    {step < currentStep ? '✓' : step}
+                  </div>
+                  {step < 3 && (
+                    <div className={`w-16 h-1 ${
+                      step < currentStep ? 'bg-green-500' : 'bg-gray-200'
+                    }`}></div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 text-center">
+              <h2 className="text-xl font-semibold">
+                {currentStep === 1 && '기본 정보'}
+                {currentStep === 2 && '사용자 구분'}
+                {currentStep === 3 && (formData.userType === 'business' ? '사업자 정보' : '근로자 정보')}
+              </h2>
             </div>
           </div>
-        </header>
 
-        <main className="flex-1 flex items-center justify-center px-4 py-8">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <UserPlus className="w-10 h-10 text-white" />
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/30">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{error}</p>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-3 font-korean">
-                DOT 출석 관리
-              </h1>
-              <p className="text-gray-600 text-lg font-korean">
-                새 계정을 만들어 시작하세요
-              </p>
-              <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto mt-4 rounded-full"></div>
-            </div>
+            )}
 
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {errors.general && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center space-x-3">
-                    <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
-                    <span className="text-red-400 text-sm">{errors.general}</span>
-                  </div>
-                )}
+            {/* Step 1: 기본 정보 */}
+            {currentStep === 1 && (
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  label="이메일"
+                  value={formData.email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('email', e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                />
+                <Input
+                  type="password"
+                  label="비밀번호"
+                  value={formData.password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('password', e.target.value)}
+                  placeholder="8자 이상"
+                  required
+                />
+                <Input
+                  type="password"
+                  label="비밀번호 확인"
+                  value={formData.passwordConfirm}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('passwordConfirm', e.target.value)}
+                  placeholder="비밀번호 재입력"
+                  required
+                />
+                <Input
+                  type="text"
+                  label="이름"
+                  value={formData.name}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('name', e.target.value)}
+                  placeholder="홍길동"
+                  required
+                />
+                <Input
+                  type="tel"
+                  label="전화번호"
+                  value={formData.phone}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('phone', e.target.value)}
+                  placeholder="010-0000-0000"
+                />
+              </div>
+            )}
 
-                <div className="space-y-2">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    이름
-                  </label>
-                  <div className="relative flex items-center">
-                    <User className="absolute left-3 h-5 w-5 text-gray-400 z-10" />
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.name ? 'border-red-500' : 'border-gray-200'
-                      }`}
-                      placeholder="이름을 입력하세요"
-                    />
-                  </div>
-                  {errors.name && (
-                    <p className="text-red-500 text-sm">{errors.name}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    이메일
-                  </label>
-                  <div className="relative flex items-center">
-                    <Mail className="absolute left-3 h-5 w-5 text-gray-400 z-10" />
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.email ? 'border-red-500' : 'border-gray-200'
-                      }`}
-                      placeholder="이메일을 입력하세요"
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="text-red-500 text-sm">{errors.email}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    비밀번호
-                  </label>
-                  <div className="relative flex items-center">
-                    <Lock className="absolute left-3 h-5 w-5 text-gray-400 z-10" />
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.password ? 'border-red-500' : 'border-gray-200'
-                      }`}
-                      placeholder="비밀번호를 입력하세요"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors z-10"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-red-500 text-sm">{errors.password}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                    비밀번호 확인
-                  </label>
-                  <div className="relative flex items-center">
-                    <Lock className="absolute left-3 h-5 w-5 text-gray-400 z-10" />
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      required
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
-                      }`}
-                      placeholder="비밀번호를 다시 입력하세요"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors z-10"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white font-medium rounded-xl transition-colors duration-200"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      계정 생성 중...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-5 w-5 mr-2" />
-                      계정 만들기
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-gray-600">
-                  이미 계정이 있으신가요?{' '}
-                  <Link 
-                    href="/" 
-                    className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            {/* Step 2: 사용자 구분 */}
+            {currentStep === 2 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => updateFormData('userType', 'business')}
+                    className={`p-6 rounded-lg border-2 transition-all ${
+                      formData.userType === 'business'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   >
-                    로그인
-                  </Link>
-                </p>
-              </div>
-            </div>
-
-            <footer className="mt-8 text-center">
-              <div className="space-y-2">
-                <div className="flex items-center justify-center space-x-2 text-sm font-semibold text-gray-700">
-                  <UserPlus className="w-4 h-4" />
-                  <span className="font-korean">DOT Attendance System v2.0</span>
+                    <div className="text-4xl mb-2">🏢</div>
+                    <div className="font-semibold">사업자</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      법인/개인사업자
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => updateFormData('userType', 'worker')}
+                    className={`p-6 rounded-lg border-2 transition-all ${
+                      formData.userType === 'worker'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">👤</div>
+                    <div className="font-semibold">근로자</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      직원/알바
+                    </div>
+                  </button>
                 </div>
-                <p className="text-xs text-gray-500 font-korean">
-                  Powered by Supabase & Next.js
-                  <br />
-                  Enterprise Grade Security & Performance
-                </p>
               </div>
-            </footer>
-          </div>
-        </main>
+            )}
 
-        <div className="pb-8"></div>
+            {/* Step 3: 사업자 정보 */}
+            {currentStep === 3 && formData.userType === 'business' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateFormData('businessType', 'corporation')}
+                    className={`p-3 rounded-md border ${
+                      formData.businessType === 'corporation'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200'
+                    }`}
+                  >
+                    법인사업자
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateFormData('businessType', 'personal')}
+                    className={`p-3 rounded-md border ${
+                      formData.businessType === 'personal'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200'
+                    }`}
+                  >
+                    개인사업자
+                  </button>
+                </div>
+                <Input
+                  type="text"
+                  label="상호명"
+                  value={formData.businessName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('businessName', e.target.value)}
+                  placeholder="(주)회사명"
+                  required
+                />
+                <Input
+                  type="text"
+                  label="사업자등록번호"
+                  value={formData.businessNumber}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('businessNumber', e.target.value)}
+                  placeholder="000-00-00000"
+                  required
+                />
+                <Input
+                  type="text"
+                  label="대표자명"
+                  value={formData.representativeName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('representativeName', e.target.value)}
+                  placeholder="홍길동"
+                />
+                <Input
+                  type="text"
+                  label="사업장 주소"
+                  value={formData.businessAddress}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('businessAddress', e.target.value)}
+                  placeholder="서울시 강남구..."
+                />
+              </div>
+            )}
+
+            {/* Step 3: 근로자 정보 */}
+            {currentStep === 3 && formData.userType === 'worker' && (
+              <div className="space-y-4">
+                <Input
+                  type="text"
+                  label="조직 코드"
+                  value={formData.organizationCode}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('organizationCode', e.target.value)}
+                  placeholder="회사에서 제공받은 코드 입력"
+                  required
+                />
+                <Input
+                  type="date"
+                  label="생년월일"
+                  value={formData.birthdate}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('birthdate', e.target.value)}
+                />
+                <Input
+                  type="text"
+                  label="부서"
+                  value={formData.department}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('department', e.target.value)}
+                  placeholder="개발팀"
+                />
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-6 pt-6 border-t">
+              {currentStep > 1 ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handlePrev}
+                  disabled={loading}
+                >
+                  이전
+                </Button>
+              ) : (
+                <Link href="/login">
+                  <Button type="button" variant="secondary">
+                    로그인으로
+                  </Button>
+                </Link>
+              )}
+              
+              {currentStep < 3 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={loading}
+                >
+                  다음
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading ? '가입 중...' : '가입 완료'}
+                </Button>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -80,8 +80,7 @@ export class SupabaseAuthService {
         password,
         options: {
           data: {
-            name: metadata?.name || email.split('@')[0],
-            full_name: metadata?.name || email.split('@')[0]
+            name: metadata?.name || email.split('@')[0]
           },
           emailRedirectTo: `${window.location.origin}/auth/verify`
         }
@@ -103,11 +102,6 @@ export class SupabaseAuthService {
       }
 
       const needsVerification = !data.session && !!data.user && !data.user.email_confirmed_at;
-      
-      // If user is created and confirmed, create profile
-      if (data.user && data.session) {
-        await this.createUserProfile(data.user, metadata?.name);
-      }
       
       const user = data.user ? await this.mapSupabaseUserToUser(data.user) : null;
 
@@ -184,9 +178,6 @@ export class SupabaseAuthService {
       if (!data.user || !data.session) {
         throw new Error('Invalid credentials');
       }
-
-      // Ensure profile exists
-      await this.createUserProfile(data.user);
 
       const user = await this.mapSupabaseUserToUser(data.user);
       
@@ -423,7 +414,7 @@ export class SupabaseAuthService {
   }
 
   /**
-   * Map Supabase user to our User interface using profiles table
+   * Map Supabase user to our User interface using unified identity system
    */
   private async mapSupabaseUserToUser(supabaseUser: SupabaseUser): Promise<User | null> {
     try {
@@ -434,42 +425,86 @@ export class SupabaseAuthService {
         name: supabaseUser.user_metadata?.full_name || 
               supabaseUser.user_metadata?.name || 
               supabaseUser.email?.split('@')[0] || 
-              '사용자',
-        role: 'WORKER' // Default role
+              '사용자'
       };
 
-      // profiles 테이블에서 사용자 정보 가져오기 (RLS 회피를 위해 간단하게)
+      // unified_identities 테이블에서 사용자 정보 가져오기
       try {
-        console.log('Looking up profile for auth user:', supabaseUser.id);
+        console.log('Looking up unified identity for auth user:', supabaseUser.id);
 
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', supabaseUser.id)
+        const { data: identity, error } = await supabase
+          .from('unified_identities')
+          .select(`
+            id, 
+            email, 
+            full_name, 
+            phone, 
+            id_type,
+            is_verified, 
+            is_active,
+            profile_data
+          `)
+          .eq('auth_user_id', supabaseUser.id)
+          .eq('is_active', true)
           .maybeSingle();
 
-        if (!error && profile) {
-          // Profile 정보가 있으면 사용
-          if (profile.name) baseUser.name = profile.name;
-          if (profile.full_name) baseUser.name = profile.full_name;
-          if (profile.role) baseUser.role = profile.role.toUpperCase();
-          console.log('✅ Profile found:', profile.id);
+        if (!error && identity) {
+          // Unified identity 정보가 있으면 사용
+          baseUser.name = identity.full_name || baseUser.name;
+          baseUser.role = 'EMPLOYEE'; // Default role, will be determined by role assignments
+          console.log('✅ Unified identity found:', identity.id);
 
-          // Store profile info for later use
+          // Get role assignments for this identity
+          try {
+            const { data: roles, error: roleError } = await supabase
+              .from('role_assignments')
+              .select(`
+                role,
+                is_primary,
+                is_active,
+                organization_id
+              `)
+              .eq('identity_id', identity.id)
+              .eq('is_active', true)
+              .order('is_primary', { ascending: false });
+
+            if (!roleError && roles && roles.length > 0) {
+              // Use primary role, or first active role
+              const primaryRole = roles.find(r => r.is_primary) || roles[0];
+              baseUser.role = primaryRole.role.toUpperCase();
+              console.log('✅ Role found:', primaryRole.role);
+            } else {
+              console.log('No active roles found, using default');
+            }
+          } catch (roleError) {
+            console.log('Role lookup error, using default role');
+          }
+
+          // Store identity info for later use
           baseUser.employee = {
-            id: profile.id,
-            name: baseUser.name,
-            email: baseUser.email,
-            phone: profile.phone,
+            id: identity.id,
+            name: identity.full_name,
+            email: identity.email,
+            phone: identity.phone,
             position: baseUser.role,
-            is_active: true
+            is_active: identity.is_active
           } as any;
 
+        } else if (error) {
+          console.log('Unified identity query error:', error.message);
+          
+          // If no identity exists, try to auto-create one
+          if (error.message.includes('does not exist') || !identity) {
+            console.log('No unified identity found, attempting auto-creation');
+            await this.autoCreateUnifiedIdentity(supabaseUser);
+          }
         } else {
-          console.log('No profile found, will create one after signup');
+          console.log('No unified identity record found for user:', supabaseUser.id);
+          // Auto-create unified identity
+          await this.autoCreateUnifiedIdentity(supabaseUser);
         }
-      } catch (profileError) {
-        console.log('Profile lookup error, using basic info:', profileError);
+      } catch (identityError) {
+        console.log('Unified identity lookup error, using basic info:', identityError);
       }
 
       return baseUser;
@@ -479,43 +514,8 @@ export class SupabaseAuthService {
       return {
         id: supabaseUser.id,
         email: supabaseUser.email!,
-        name: supabaseUser.email?.split('@')[0] || '사용자',
-        role: 'WORKER'
+        name: supabaseUser.email?.split('@')[0] || '사용자'
       };
-    }
-  }
-
-  /**
-   * Create user profile in profiles table
-   */
-  private async createUserProfile(supabaseUser: SupabaseUser, name?: string): Promise<void> {
-    try {
-      console.log('🚀 Creating user profile for:', supabaseUser.email);
-
-      const profileData = {
-        id: supabaseUser.id,
-        email: supabaseUser.email!,
-        name: name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '사용자',
-        role: 'worker',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .upsert(profileData)
-        .select()
-        .single();
-
-      if (!error && profile) {
-        console.log('✅ User profile created:', profile.id);
-      } else {
-        console.log('❌ Failed to create user profile:', error?.message);
-        // Don't throw error, let authentication continue
-      }
-    } catch (error) {
-      console.error('Create user profile error:', error);
-      // Don't throw error, let authentication continue
     }
   }
 

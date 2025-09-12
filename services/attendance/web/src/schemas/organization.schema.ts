@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { VALIDATION_PATTERNS } from '@/src/types/unified.types'
 import { 
   OrgTypeSchema, 
-  RoleSchema, 
+  UnifiedRoleSchema, 
   IdTypeSchema,
   OrganizationSettingsSchema 
 } from './user.schema'
