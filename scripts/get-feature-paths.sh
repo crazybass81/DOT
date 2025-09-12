@@ -1,0 +1,1 @@
+../spec-kit-project/scripts/get-feature-paths.sh
