@@ -1,1 +1,0 @@
-../spec-kit-project/scripts/check-task-prerequisites.sh
