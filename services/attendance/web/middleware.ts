@@ -20,7 +20,6 @@ const publicRoutes = [
   '/',
   '/login',
   '/register',
-  '/signup',  // Added signup route
   '/approval-pending',
   '/auth'
 ];
